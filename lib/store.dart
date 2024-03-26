@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stomp_dart_client/stomp.dart';
 import 'table.dart'; // RestaurantTable을 불러옵니다.
 
 class StorePage extends StatelessWidget {
