@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
-import 'store.dart';
+import '../store.dart';
 // import 'stomp_websocket.dart'; // Uncomment this line to import StompService
 
 class LoginData {
   final String status;  
-  final String storeCode;  
+  final int storeCode;  
   final String loginToken;
 
   LoginData({

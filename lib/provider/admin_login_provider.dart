@@ -1,9 +1,13 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/presenter/login.dart';
+import 'package:orre_manager/store.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
+
+import '../Model/login_data_model.dart';
 
 // LoginInfo 객체를 관리하는 프로바이더를 정의합니다.
 final loginProvider =
@@ -23,7 +27,7 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     _client = client; // 내부 변수에 StompClient 인스턴스 저장
   }
 
-  void subscribeToLoginData(String adminPhoneNumber) {
+  void subscribeToLoginData(BuildContext context, String adminPhoneNumber) {
     _client?.subscribe(
       destination: '/topic/admin/StoreAdmin/login/$adminPhoneNumber',
       callback: (StompFrame frame) {
@@ -32,6 +36,55 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
         print(frame.body.toString());
         if (frame.body != null) {
           print(frame.body.toString());
+        }//디버그용 확인!
+        
+        Map<String, dynamic> responseData = json.decode(frame.body ?? '');
+        LoginData loginResponse = LoginData.fromJson(responseData);
+
+        if (loginResponse.status == 'success') {
+          print('login successed');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => StorePage(storeCode: loginResponse.storeCode),
+            ),
+          );
+
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text('Login Succeeded'),
+                content: Text('Welcome!'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ]
+              );
+            },
+          );
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text('Login Failed'),
+                content: Text('Invalid ID or Password.'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
         }
       },
     );
@@ -39,7 +92,7 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
   }
 
   // Logindata를 보내는 메서드
-  void sendLoginData(String adminPhoneNumber, String pw) {
+  void sendLoginData(BuildContext context, String adminPhoneNumber, String pw) {
     print("sendLoginData : $adminPhoneNumber");
     _client?.send(
         destination: '/app/admin/StoreAdmin/login/$adminPhoneNumber',

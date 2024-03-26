@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/reference2.dart';
+// import 'package:orre_manager/references/reference2.dart';
 import 'presenter/login.dart';
 import 'presenter/login_screen.dart';
 import 'store.dart';
@@ -44,7 +44,7 @@ class MyApp extends ConsumerWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginScreenWidget(),
-        '/store': (context) => StorePage(storeCode: ''), // StorePage에 StompClient 전달
+        '/store': (context) => StorePage(storeCode: 9999), // StorePage에 StompClient 전달
       },
     );
   }

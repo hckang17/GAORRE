@@ -1,6 +1,6 @@
 class LoginData {
   final String status;
-  final String storeCode;
+  final int storeCode;
   final String loginToken;
 
   LoginData({

@@ -6,27 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
+import '../Model/login_data_model.dart';
 import '../store.dart';
-
-class LoginData {
-  final String status;
-  final String storeCode;
-  final String loginToken;
-
-  LoginData({
-    required this.status,
-    required this.storeCode,
-    required this.loginToken,
-  });
-
-  factory LoginData.fromJson(Map<String, dynamic> json) {
-    return LoginData(
-      status: json['status'],
-      storeCode: json['storeCode'],
-      loginToken: json['token'],
-    );
-  }
-}
 
 class LoginPage extends StatefulWidget {
   @override
@@ -38,25 +19,25 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController _pwController = TextEditingController();
   late StompClient stompClient;
 
-  @override
-  void initState() {
-    super.initState();
-    stompClient = StompClient(
-      config: StompConfig(
-        url: 'ws://172.30.1.85:8080/ws',
-        onConnect: (StompFrame frame) {
-          print("connected");
-        },
-        beforeConnect: () async {
-          print('waiting to connect...');
-          await Future.delayed(const Duration(milliseconds: 200));
-          print('connecting...');
-        },
-        onWebSocketError: (dynamic error) => print(error.toString()),
-      ),
-    );
-    stompClient.activate();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   stompClient = StompClient(
+  //     config: StompConfig(
+  //       url: 'ws://172.30.1.85:8080/ws',
+  //       onConnect: (StompFrame frame) {
+  //         print("connected");
+  //       },
+  //       beforeConnect: () async {
+  //         print('waiting to connect...');
+  //         await Future.delayed(const Duration(milliseconds: 200));
+  //         print('connecting...');
+  //       },
+  //       onWebSocketError: (dynamic error) => print(error.toString()),
+  //     ),
+  //   );
+  //   stompClient.activate();
+  // }
 
   @override
   void dispose() {
@@ -69,6 +50,7 @@ class _LoginPageState extends State<LoginPage> {
   void _login(BuildContext context) {
     String pw = _pwController.text;
     String adminPhoneNumber = _idController.text;
+    
 
     if (adminPhoneNumber.isNotEmpty && pw.isNotEmpty) {
       Map<String, dynamic> loginData = {
@@ -86,53 +68,54 @@ class _LoginPageState extends State<LoginPage> {
           print('subscribe, success!!');
           print(frame.body.toString());
 
-          Map<String, dynamic> responseData = json.decode(frame.body ?? '');
-          LoginData loginResponse = LoginData.fromJson(responseData);
+          // Map<String, dynamic> responseData = json.decode(frame.body ?? '');
+          // LoginData loginResponse = LoginData.fromJson(responseData);
 
-          if (loginResponse.status == 'success') {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => StorePage(storeCode: loginResponse.storeCode),
-              ),
-            );
+          // if (loginResponse.status == 'success') {
+          //   print('login successed');
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => StorePage(storeCode: loginResponse.storeCode),
+          //     ),
+          //   );
 
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text('Login Succeeded'),
-                  content: Text('Welcome!'),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          } else {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text('Login Failed'),
-                  content: Text('Invalid ID or Password.'),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          }
+          //   showDialog(
+          //     context: context,
+          //     builder: (context) {
+          //       return AlertDialog(
+          //         title: Text('Login Succeeded'),
+          //         content: Text('Welcome!'),
+          //         actions: <Widget>[
+          //           TextButton(
+          //             onPressed: () {
+          //               Navigator.of(context).pop();
+          //             },
+          //             child: Text('OK'),
+          //           ),
+          //         ],
+          //       );
+          //     },
+          //   );
+          // } else {
+          //   showDialog(
+          //     context: context,
+          //     builder: (context) {
+          //       return AlertDialog(
+          //         title: Text('Login Failed'),
+          //         content: Text('Invalid ID or Password.'),
+          //         actions: <Widget>[
+          //           TextButton(
+          //             onPressed: () {
+          //               Navigator.of(context).pop();
+          //             },
+          //             child: Text('OK'),
+          //           ),
+          //         ],
+          //       );
+          //     },
+          //   );
+          // }
         },
       );
 

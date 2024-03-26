@@ -3,13 +3,13 @@ import 'package:stomp_dart_client/stomp.dart';
 import 'table.dart'; // RestaurantTable을 불러옵니다.
 
 class StorePage extends StatelessWidget {
-  final String storeCode;
+  final int storeCode;
 
   StorePage({required this.storeCode});
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, String>? args = ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+    final Map<int, String>? args = ModalRoute.of(context)?.settings.arguments as Map<int, String>?;
 
     // args가 null인 경우를 처리
     // 여기서, storeCode를 입력받지 않으면 페이지 접속자체가 불가능하게 막아야 함.
