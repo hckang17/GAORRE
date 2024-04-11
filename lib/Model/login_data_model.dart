@@ -1,7 +1,7 @@
 class LoginData {
   final String status;
   final int storeCode;
-  final String loginToken;
+  final String? loginToken;
 
   LoginData({
     required this.status,

@@ -29,6 +29,12 @@ class _LoginScreenBody extends ConsumerWidget {
   TextEditingController _idController = TextEditingController();
   TextEditingController _pwController = TextEditingController();
   
+  void loginProcess(WidgetRef ref) {
+    ref.read(loginProvider.notifier).subscribeToLoginData(ref.context, _idController.text);
+    ref.read(loginProvider.notifier).sendLoginData(ref.context, _idController.text, _pwController.text);
+    // ref.read(loginProvider.notifier).unSubscribeLoginData();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -60,10 +66,7 @@ class _LoginScreenBody extends ConsumerWidget {
       ),
     );
   }
-  void loginProcess(WidgetRef ref) {
-    ref.read(loginProvider.notifier).subscribeToLoginData(ref.context, _idController.text);
-    ref.read(loginProvider.notifier).sendLoginData(ref.context, _idController.text, _pwController.text);
-  }
+
 }
 
 class _LoadingScreen extends StatelessWidget {

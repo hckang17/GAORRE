@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/provider/admin_login_provider.dart';
+import 'package:orre_manager/provider/store_provider.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
@@ -21,6 +22,7 @@ final stompClientProvider = FutureProvider<StompClient>((ref) async {
         // 필요한 초기화 수행, 여기서 client는 이미 정의되어 있으므로 사용 가능합니다.
        
         ref.read(loginProvider.notifier).setClient(client);
+        ref.read(waitingProvider.notifier).setClient(client);
         completer.complete(client);
       },
       beforeConnect: () async {
