@@ -102,11 +102,24 @@ class _StoreScreenBody extends ConsumerWidget {
                   );
                 },
             ),
-            ElevatedButton(
-              onPressed: () {
-                _showReservationList(context, ref);
-              },
-              child: Text('대기팀 확인하기')
+            // 여기서 ListView 를 사용하도록 수정합니다.
+            Expanded(
+              child: ListView.builder(
+                itemCount: currentWaitingData!.teamInfoList.length,
+                itemBuilder: (context, index) {
+                  WaitingTeam? team = currentWaitingData!.teamInfoList[index];
+                  return ListTile(
+                    title: Text('Reservation Number: ${team?.waitingTeam}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Name: ${team?.enteringTeam}'),
+                        Text('Contact: ${team?.phoneNumber}'),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
             ElevatedButton(
               onPressed: () {
