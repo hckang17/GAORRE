@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
-import 'store.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:orre_manager/references/reference2.dart';
+import 'presenter/login_screen.dart';
+import 'presenter/store_screen.dart';
+
 
 void main() {
-  runApp(MyApp());
+  runApp(ProviderScope(child : MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
     return MaterialApp(
       initialRoute: '/',
       routes: {
-        '/': (context) => LoginPage(),
-        '/store': (context) => StorePage(storeCode: '',),
+        '/': (context) => LoginScreenWidget(),
+        '/store': (context) => StoreScreenWidget(), // StorePage에 StompClient 전달
       },
     );
   }
