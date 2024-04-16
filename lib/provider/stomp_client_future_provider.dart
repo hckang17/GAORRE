@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/provider/admin_login_provider.dart';
 import 'package:orre_manager/provider/store_provider.dart';
+import 'package:orre_manager/provider/table_provider.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
@@ -23,6 +24,7 @@ final stompClientProvider = FutureProvider<StompClient>((ref) async {
        
         ref.read(loginProvider.notifier).setClient(client);
         ref.read(waitingProvider.notifier).setClient(client);
+        ref.read(tableProvider.notifier).setClient(client);
         completer.complete(client);
       },
       beforeConnect: () async {
