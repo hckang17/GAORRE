@@ -137,6 +137,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
         destination: '/topic/admin/StoreAdmin/noShow/$storeCode',
         callback: (StompFrame frame) {
           print('<NoShow> 메세지 수신. 다음은 수신된 메세지입니다.');
+          print(frame.body!.toString());
           Map<bool, dynamic> responseData = json.decode(frame.body!);
           bool status = responseData['success'];
           showDialog(

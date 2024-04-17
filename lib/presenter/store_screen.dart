@@ -118,6 +118,32 @@ class _StoreScreenBody extends ConsumerWidget {
                         Text('Contact: ${team?.phoneNumber}'),
                       ],
                     ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            ref.read(waitingProvider.notifier).sendCallRequest(
+                              context,
+                              team!.waitingTeam,
+                              storeCode,
+                              minutesToAdd,
+                            );
+                          },
+                          child: Text('Call Guest'),
+                        ),
+                        SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            ref.read(waitingProvider.notifier).sendNoShowMessage(
+                              storeCode,
+                              team!.waitingTeam
+                            );
+                          },
+                          child: Text('Delete Waiting'),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
