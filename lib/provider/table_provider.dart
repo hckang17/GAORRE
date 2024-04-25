@@ -27,7 +27,54 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
   }
 
   void updateState(RestaurantTable newState) {
-    state = newState;
+    print('update Table State 실행');
+    if(state == null) {
+      print('TableData가 null이므로, 그대로 newState적용');
+      state = newState;
+    } else {
+      RestaurantTable currentState = state!;
+      List<Seat> currentTableList = currentState.table;
+      if(currentTableList.length == newState.table.length){
+        print('Seat객체 하나하나 변경..');
+        for (var newSeat in newState.table) {
+          var existingSeatIndex = currentTableList.indexWhere((seat) => seat.tableNumber == newSeat.tableNumber);
+          if(existingSeatIndex != -1) {
+            currentTableList[existingSeatIndex] = Seat(
+              tableNumber: newSeat.tableNumber,
+              maxPersonPerTable: newSeat.maxPersonPerTable,
+              tableStatus: newSeat.tableStatus,
+              guestInfo: currentTableList[existingSeatIndex].guestInfo ?? newSeat.guestInfo
+            );
+          } else {
+            currentTableList.add(newSeat);
+          }
+        }
+      } else if(currentTableList.length > newState.table.length) {
+        print('Seat객체 삭제..');
+        List<int> deletedSeatIndexes = [];
+        for(int i=0; i < currentTableList.length; i++) {
+          var existingSeatIndex = newState.table.indexWhere((seat) => seat.tableNumber == currentTableList[i].tableNumber);
+          if(existingSeatIndex == -1){
+            deletedSeatIndexes.add(i);
+          }
+        }
+        //삭제할 항목을 List에서 제거~
+        for(int i = deletedSeatIndexes.length-1; i>=0; i--){
+          currentTableList.removeAt(deletedSeatIndexes[i]);
+        }
+      } else {
+        //테이블이 추가되었을 때
+        for(int i=0; i < newState.table.length; i++) {
+          var existingSeatIndex = currentTableList.indexWhere((seat) => seat.tableNumber == newState.table[i].tableNumber);
+          if(existingSeatIndex == -1){
+            currentTableList.add(newState.table[i]);
+          }
+        }
+      }
+      state = RestaurantTable(table:currentTableList);
+    }
+
+    // state = newState;
   }
 
   /* subscribe 관련 코드 */
@@ -86,19 +133,27 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
   void updateSeatWithGuest(Guest guest) {
     // Find the index of the seat with matching tableNumber
     int seatIndex = state?.table.indexWhere((seat) => seat.tableNumber == guest.tableNumber) ?? -1;
+    RestaurantTable? currentTable = state;
+    List<Seat> currentSeats = currentTable!.table;
+    currentSeats[seatIndex].guestInfo = guest;
+    currentSeats[seatIndex].tableStatus = 1;
+    RestaurantTable target = RestaurantTable(table: currentSeats);
+    updateState(target);
+
+    // if (seatIndex != -1) {
+    //   // Create a copy of the seat at the found index
+    //   Seat updatedSeat = state!.table[seatIndex];
+    //   // Update guestInfo
+    //   updatedSeat.guestInfo = guest;
+    //   // Replace the original seat with the updated seat
+    //   state!.table[seatIndex] = updatedSeat;
+    //   // Notify listeners about the state change
+    //   updateState(RestaurantTable(table: state!.table));
+    // } else {
+    //   print('Seat with table number ${guest.tableNumber} not found.');
+    // }
+
     
-    if (seatIndex != -1) {
-      // Create a copy of the seat at the found index
-      Seat updatedSeat = state!.table[seatIndex];
-      // Update guestInfo
-      updatedSeat.guestInfo = guest;
-      // Replace the original seat with the updated seat
-      state!.table[seatIndex] = updatedSeat;
-      // Notify listeners about the state change
-      updateState(RestaurantTable(table: state!.table));
-    } else {
-      print('Seat with table number ${guest.tableNumber} not found.');
-    }
   }
 
 
@@ -119,7 +174,18 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
           if(responseData['success'] == true){
             int tableNumber = responseData['tableNumber'];
             print('$tableNumber번 테이블을 잠금처리하였습니다.');
-            state!.table[tableNumber].guestInfo = null;
+            print('테이블의 손님정보를 업데이트합니다.');
+            // Update the guestInfo of the corresponding seat
+            RestaurantTable? currentState = state;
+            List<Seat> currentSeats = currentState!.table;
+            int targetSeat = currentSeats.indexWhere((seat) => tableNumber == seat.tableNumber);
+            if(targetSeat != -1){
+              currentSeats[targetSeat].guestInfo = null;
+              currentSeats[targetSeat].tableStatus = 0;
+            }
+            updateState(
+              RestaurantTable(table: currentSeats)
+            );
           }
         }
       );

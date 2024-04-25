@@ -48,7 +48,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       List<WaitingTeam> currentTeamInfoList = List.from(currentState!.teamInfoList);
       if(currentState.teamInfoList.length == newState.teamInfoList.length) {
         // 기존정보 갱신인 경우
-              print('WaitingTeam 객체 하나하나 변경..');
+        print('WaitingTeam 객체 하나하나 변경..');
 
         for (var newTeam in newState.teamInfoList) {
           // 동일한 waitingNumber를 가진 WaitingTeam을 찾습니다.

@@ -20,8 +20,8 @@ class RestaurantTable {
 class Seat {
   final int tableNumber;
   final int maxPersonPerTable;
-  int tableStatus;
-  // 0 = 사용불가능 , 1 = 사용(착석)가능
+  int tableStatus; /** tableStatus = 0 : 1 / now lock : now unlock */
+  // 0 = 락 , 1 = 착석중
   Guest? guestInfo;
   // 메뉴도 여기다가 추가해야지..
 
@@ -30,6 +30,7 @@ class Seat {
     required this.tableNumber,
     required this.maxPersonPerTable,
     required this.tableStatus,
+    this.guestInfo,
   });
 
   factory Seat.fromJson(Map<String, dynamic> json) {

@@ -88,7 +88,8 @@ class _TableManagementBody extends ConsumerWidget {
             SizedBox(height: 20), // 버튼과 GridView 사이 간격 조절
 
             Consumer(builder: (context, ref, child) {
-              List<Seat> currentSeats = ref.watch(tableProvider.select((data) => data!.table));
+              List<Seat> currentSeats = ref.watch(tableProvider)!.table;
+              
               return LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
                   return SizedBox(
@@ -123,40 +124,6 @@ class _TableManagementBody extends ConsumerWidget {
                 },
               );
             }),
-            // GridView
-            // LayoutBuilder(
-            //   builder: (BuildContext context, BoxConstraints constraints) {
-            //     return SizedBox(
-            //       width: constraints.maxWidth * 0.8, // 전체 너비의 80%
-            //       height: constraints.maxWidth * 0.8, // 전체 너비의 80%
-            //       child: GridView.builder(
-            //         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            //           crossAxisCount: 3,
-            //           mainAxisSpacing: 10.0,
-            //           crossAxisSpacing: 10.0,
-            //           childAspectRatio: 3 / 2, // 각 항목의 가로:세로 비율 설정
-            //         ),
-            //         itemCount: restaurantTable!.table.length,
-            //         itemBuilder: (BuildContext context, int index) {
-            //           return GestureDetector(
-            //             onTap: () {
-            //               _showTableInfoPopup(ref, context, restaurantTable!.table[index]);
-            //             },
-            //             child: Container(
-            //               color: restaurantTable!.table[index].tableStatus == 0 ? Colors.red : Colors.green, // 사용 가능 여부에 따라 색상 변경
-            //               child: Center(
-            //                 child: Text(
-            //                   restaurantTable!.table[index].tableNumber.toString(),
-            //                   style: TextStyle(color: Colors.white),
-            //                 ),
-            //               ),
-            //             ),
-            //           );
-            //         },
-            //       ),
-            //     );
-            //   },
-            // ),
           ],
         ),
       ),
@@ -179,7 +146,7 @@ class _TableManagementBody extends ConsumerWidget {
               Text('Max Persons Per Table: ${table.maxPersonPerTable}'),
               Text('Table Status: ${table.tableStatus == 0 ? '착석불가능' : '착석가능'}'),
               if (table.guestInfo != null) // 만약 guestInfo가 있다면 추가 정보 표시
-                Text('Guest Info: ${table.guestInfo}'),
+                Text('Guest Info: ${table.guestInfo.toString()}'),
               SizedBox(height: 10),
               // 숫자를 입력받는 TextField 추가
               if (table.tableStatus == 0) 
@@ -212,7 +179,7 @@ class _TableManagementBody extends ConsumerWidget {
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop(); // 팝업 닫기
-                      ref.read(tableProvider.notifier).sendStoreCode(loginData.storeCode);
+                      // ref.read(tableProvider.notifier).sendStoreCode(loginData.storeCode);
                     },
                     child: Text('닫기'),
                   ),

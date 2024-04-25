@@ -23,4 +23,9 @@ class Guest {
     this.userName = userName;
   }
 
+  @override
+  String toString(){
+    return userToken;
+  }
+
 }
