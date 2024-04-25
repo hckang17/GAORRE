@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/waiting_data_model.dart';
-import 'package:orre_manager/provider/store_provider.dart';
+import 'package:orre_manager/provider/waiting_provider.dart';
 
 void _showReservationList(BuildContext context, WidgetRef ref) {
   List<WaitingTeam?> teamList = ref.watch(waitingProvider.select((value) => value!.teamInfoList));
@@ -14,11 +14,11 @@ void _showReservationList(BuildContext context, WidgetRef ref) {
           child: Column(
             children: teamList.map((team) {
               return ListTile(
-                title: Text('Reservation Number: ${team?.waitingTeam}'),
+                title: Text('Reservation Number: ${team?.waitingNumber}'),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Name: ${team?.enteringTeam}'),
+                    Text('Name: ${team?.status}'),
                     Text('Contact: ${team?.phoneNumber}'),
                   ],
                 ),

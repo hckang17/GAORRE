@@ -3,7 +3,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/provider/admin_login_provider.dart';
-import 'package:orre_manager/provider/store_provider.dart';
+import 'package:orre_manager/provider/waiting_provider.dart';
 import 'package:orre_manager/provider/table_provider.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';

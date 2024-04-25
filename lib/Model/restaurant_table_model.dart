@@ -33,11 +33,21 @@ class Seat {
   });
 
   factory Seat.fromJson(Map<String, dynamic> json) {
-    return Seat(
-      tableNumber: json['tableNumber'],
-      maxPersonPerTable: json['tablePersonNumber'], // JSON 데이터에 있는 'tablePersonNumber' 값을 'maxPersonPerTable'에 할당
-      tableStatus: json['tableAvailable'],
+    if(json['tableAvailable'] == 1){
+      return Seat(
+        tableNumber: json['tableNumber'],
+        maxPersonPerTable: json['tablePersonNumber'], // JSON 데이터에 있는 'tablePersonNumber' 값을 'maxPersonPerTable'에 할당
+        tableStatus: json['tableAvailable'],
+      );
+    } else {
+      return Seat(
+        tableNumber: json['tableNumber'],
+        maxPersonPerTable: json['tablePersonNumber'], // JSON 데이터에 있는 'tablePersonNumber' 값을 'maxPersonPerTable'에 할당
+        tableStatus: json['tableAvailable'],
     );
+    }
+    
+
   }
 
 }

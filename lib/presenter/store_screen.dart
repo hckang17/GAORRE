@@ -6,7 +6,7 @@ import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 import '../Model/login_data_model.dart';
 import '../Model/waiting_data_model.dart';
-import '../provider/store_provider.dart';
+import '../provider/waiting_provider.dart';
 
 class StoreScreenWidget extends ConsumerWidget {
   final LoginData loginResponse;
@@ -95,10 +95,12 @@ class _StoreScreenBody extends ConsumerWidget {
           children: [
             Consumer(
                 builder: (context, ref, child) {
-                  print('rebuilded only this part');
-                  final int currentWaitingCount = ref.watch(waitingProvider.select((data) => data?.teamInfoList?.length ?? 0));
+                  print('waitingData에 변동점이 생겼으므로 리빌드합니다.');
+                  ref.watch(waitingProvider);
+                  final int currentWaitingCount = ref.watch(waitingProvider.select((data) => data?.teamInfoList.length ?? 0));
                   return Text(
                     '현재 대기 팀수 : $currentWaitingCount',
+                    // ignore: prefer_const_constructors
                     style: TextStyle(fontSize: 24),
                   );
                 },
@@ -109,13 +111,49 @@ class _StoreScreenBody extends ConsumerWidget {
                 itemCount: currentWaitingData!.teamInfoList.length,
                 itemBuilder: (context, index) {
                   WaitingTeam? team = currentWaitingData!.teamInfoList[index];
+                  Color textColor;
+                  String? guestStatus;
+                  switch (team.status) {
+                    case 1:
+                      textColor = Colors.blue;
+                      guestStatus = '대기중';
+                      break;
+                    case 2:
+                      textColor = Colors.green;
+                      guestStatus = '착석 완료';
+                      break;
+                    case 3:
+                      textColor = Colors.red;
+                      guestStatus = '삭제 완료';
+                      break;
+                    default:
+                      textColor = Colors.black; // 기본값, 필요에 따라 변경 가능
+                  }
+
+                  // 마감까지 남은 시간 계산
+                  Duration? timeRemaining;
+                  String? remainingTimeString;
+
+                  if (team.entryTime != null) {
+                    timeRemaining = team.entryTime!.difference(DateTime.now());
+                    remainingTimeString = '${timeRemaining.inHours.toString().padLeft(2, '0')}:${(timeRemaining.inMinutes % 60).toString().padLeft(2, '0')}';
+                  } else {
+                    remainingTimeString = 'Unknown';
+                  }
+
                   return ListTile(
-                    title: Text('Reservation Number: ${team?.waitingTeam}'),
+                    title: Text('Reservation Number: ${team.waitingNumber}'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Name: ${team?.enteringTeam}'),
-                        Text('Contact: ${team?.phoneNumber}'),
+                        Text(
+                          '상태 : $guestStatus',
+                          style: TextStyle(
+                            color: textColor,
+                          ),
+                        ),
+                        Text('연락처 : ${team.phoneNumber}'),
+                        if(remainingTimeString != 'Unknown') Text('마감까지 남은 시간: $remainingTimeString'), 
                       ],
                     ),
                     trailing: Row(
@@ -125,22 +163,22 @@ class _StoreScreenBody extends ConsumerWidget {
                           onPressed: () {
                             ref.read(waitingProvider.notifier).sendCallRequest(
                               context,
-                              team!.waitingTeam,
+                              team.waitingNumber,
                               storeCode,
                               minutesToAdd,
                             );
                           },
-                          child: Text('Call Guest'),
+                          child: const Text('Call Guest'),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: () {
                             ref.read(waitingProvider.notifier).sendNoShowMessage(
                               storeCode,
-                              team!.waitingTeam
+                              team.waitingNumber
                             );
                           },
-                          child: Text('Delete Waiting'),
+                          child: const Text('Delete Waiting'),
                         ),
                       ],
                     ),
@@ -148,6 +186,7 @@ class _StoreScreenBody extends ConsumerWidget {
                 },
               ),
             ),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
               children: [
@@ -155,7 +194,7 @@ class _StoreScreenBody extends ConsumerWidget {
                   onPressed: () {
                     ref.read(waitingProvider.notifier).sendCallRequest(
                       context, 
-                      currentWaitingData!.teamInfoList[0].waitingTeam, 
+                      currentWaitingData!.teamInfoList[0].waitingNumber, 
                       storeCode, 
                       minutesToAdd
                     );
