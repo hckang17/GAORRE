@@ -67,9 +67,9 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
             currentTeamInfoList.add(newTeam);
           }
         }
-      } else {
+      } else if(currentState.teamInfoList.length > newState.teamInfoList.length) {
         // 삭제, 착석 등으로 웨이팅 정보가 사라졌을 때.
-                      print('WaitingTeam 객체 삭제..');
+        print('WaitingTeam 객체 삭제..');
 
         List<int> deletedTeamIndexes = [];
 
@@ -84,6 +84,14 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
         // 삭제된 항목을 업데이트된 List에서 제거합니다.
         for (int i = deletedTeamIndexes.length - 1; i >= 0; i--) {
           currentTeamInfoList.removeAt(deletedTeamIndexes[i]);
+        }
+      } else if(currentState.teamInfoList.length < newState.teamInfoList.length) {
+        print("신규 WaitingTeam 추가됨");
+        for(int i=0; i < newState.teamInfoList.length; i++){
+          var existingTeamIndex = currentTeamInfoList.indexWhere((team) => team.waitingNumber == newState.teamInfoList[i].waitingNumber);
+          if(existingTeamIndex == -1){
+            currentTeamInfoList.add(newState.teamInfoList[i]);
+          }
         }
       }
 
