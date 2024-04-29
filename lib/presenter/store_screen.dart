@@ -1,17 +1,16 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/store_screen.dart';
+import 'package:orre_manager/presenter/table_status_screen.dart';
 import 'package:orre_manager/provider/stomp_client_future_provider.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 import '../Model/login_data_model.dart';
-import '../Model/store_data_model.dart';
-import '../provider/store_provider.dart';
+import '../Model/waiting_data_model.dart';
+import '../provider/waiting_provider.dart';
 
 class StoreScreenWidget extends ConsumerWidget {
-  final LoginData? loginResponse;
-  StoreScreenWidget({this.loginResponse});
+  final LoginData loginResponse;
+  StoreScreenWidget({required this.loginResponse});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,7 +18,7 @@ class StoreScreenWidget extends ConsumerWidget {
 
     return stompClientAsyncValue.when(
       data: (stompClient) {
-        return _StoreScreenBody(storeCode: loginResponse!.storeCode);
+        return _StoreScreenBody(loginData: loginResponse);
       },
       loading: () {
         // 로딩 중이면 로딩 스피너를 표시합니다.
@@ -34,15 +33,17 @@ class StoreScreenWidget extends ConsumerWidget {
 }
 
 class _StoreScreenBody extends ConsumerWidget {
-  final int storeCode;
+  final LoginData loginData;
+  late int storeCode;
   int minutesToAdd = 6;
   WaitingData? currentWaitingData;
   bool isSubscribed = false;
 
-  _StoreScreenBody({required this.storeCode});
+  _StoreScreenBody({required this.loginData});
 
   void subscribeProcess(WidgetRef ref, BuildContext context){
     if (currentWaitingData == null && !isSubscribed) {
+      storeCode = loginData!.storeCode;
       final waitingNotifier = ref.read(waitingProvider.notifier);
       waitingNotifier.subscribeToWaitingData(storeCode);
       waitingNotifier.subscribeToCallGuest(context, storeCode);
@@ -77,7 +78,7 @@ class _StoreScreenBody extends ConsumerWidget {
                 onPressed: () {
                   ref.read(waitingProvider.notifier).sendWaitingData(storeCode);
                 }, child: Text("웨이팅정보 수신하기"),
-              )
+              ),
             ],
           ),
         ),
@@ -94,10 +95,12 @@ class _StoreScreenBody extends ConsumerWidget {
           children: [
             Consumer(
                 builder: (context, ref, child) {
-                  print('rebuilded only this part');
-                  final int currentWaitingCount = ref.watch(waitingProvider.select((data) => data?.teamInfoList?.length ?? 0));
+                  print('waitingData에 변동점이 생겼으므로 리빌드합니다.');
+                  ref.watch(waitingProvider);
+                  final int currentWaitingCount = ref.watch(waitingProvider.select((data) => data?.teamInfoList.length ?? 0));
                   return Text(
                     '현재 대기 팀수 : $currentWaitingCount',
+                    // ignore: prefer_const_constructors
                     style: TextStyle(fontSize: 24),
                   );
                 },
@@ -108,30 +111,129 @@ class _StoreScreenBody extends ConsumerWidget {
                 itemCount: currentWaitingData!.teamInfoList.length,
                 itemBuilder: (context, index) {
                   WaitingTeam? team = currentWaitingData!.teamInfoList[index];
+                  Color textColor;
+                  String? guestStatus;
+                  switch (team.status) {
+                    case 1:
+                      textColor = Colors.blue;
+                      guestStatus = '대기중';
+                      break;
+                    case 2:
+                      textColor = Colors.green;
+                      guestStatus = '착석 완료';
+                      break;
+                    case 3:
+                      textColor = Colors.red;
+                      guestStatus = '삭제 완료';
+                      break;
+                    default:
+                      textColor = Colors.black; // 기본값, 필요에 따라 변경 가능
+                  }
+
+                  // 마감까지 남은 시간 계산
+                  Duration? timeRemaining;
+                  String? remainingTimeString;
+
+                  if (team.entryTime != null) {
+                    timeRemaining = team.entryTime!.difference(DateTime.now());
+                    remainingTimeString = '${timeRemaining.inHours.toString().padLeft(2, '0')}:${(timeRemaining.inMinutes % 60).toString().padLeft(2, '0')}';
+                  } else {
+                    remainingTimeString = 'Unknown';
+                  }
+
                   return ListTile(
-                    title: Text('Reservation Number: ${team?.waitingTeam}'),
+                    title: Text('Reservation Number: ${team.waitingNumber}'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Name: ${team?.enteringTeam}'),
-                        Text('Contact: ${team?.phoneNumber}'),
+                        Text(
+                          '상태 : $guestStatus',
+                          style: TextStyle(
+                            color: textColor,
+                          ),
+                        ),
+                        Text('연락처 : ${team.phoneNumber}'),
+                        if(remainingTimeString != 'Unknown') Text('마감까지 남은 시간: $remainingTimeString'), 
+                      ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            ref.read(waitingProvider.notifier).sendCallRequest(
+                              context,
+                              team.waitingNumber,
+                              storeCode,
+                              minutesToAdd,
+                            );
+                          },
+                          child: const Text('Call Guest'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            ref.read(waitingProvider.notifier).sendNoShowMessage(
+                              storeCode,
+                              team.waitingNumber
+                            );
+                          },
+                          child: const Text('Delete Waiting'),
+                        ),
                       ],
                     ),
                   );
                 },
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                ref.read(waitingProvider.notifier).sendCallRequest(
-                  context, 
-                  currentWaitingData!.teamInfoList[0].waitingTeam, 
-                  storeCode, 
-                  minutesToAdd
-                );
-              },
-              child: Text('손님 호출하기'),
-            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    ref.read(waitingProvider.notifier).sendCallRequest(
+                      context, 
+                      currentWaitingData!.teamInfoList[0].waitingNumber, 
+                      storeCode, 
+                      minutesToAdd
+                    );
+                  },
+                  child: Text('손님 호출하기'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (BuildContext context) => TableManagementScreen(loginResponse: loginData)
+                      )
+                    );
+                  },
+                  child: Text('좌석 관리페이지 오픈하기'),
+                ),
+              ],
+              ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     ref.read(waitingProvider.notifier).sendCallRequest(
+            //       context, 
+            //       currentWaitingData!.teamInfoList[0].waitingTeam, 
+            //       storeCode, 
+            //       minutesToAdd
+            //     );
+            //   },
+            //   child: Text('손님 호출하기'),
+            // ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Navigator.of(context).push(
+            //       MaterialPageRoute(
+            //         builder: (BuildContext context) => TableManagementScreen(loginResponse: loginData)
+            //       )
+            //     );
+            //   },
+            //   child: Text('좌석 관리페이지 오픈하기');
+            // )
           ],
         ),
       ),
@@ -146,7 +248,7 @@ class _LoadingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login Screen'),
+        title: Text('Store Page'),
       ),
       body: Center(
         child: CircularProgressIndicator(),
@@ -164,7 +266,7 @@ class _ErrorScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login Screen'),
+        title: Text('Store Page'),
       ),
       body: Center(
         child: Text('Error: $error'),
@@ -173,119 +275,5 @@ class _ErrorScreen extends StatelessWidget {
   }
 }
 
-void _showReservationList(BuildContext context, WidgetRef ref) {
-  List<WaitingTeam?> teamList = ref.watch(waitingProvider.select((value) => value!.teamInfoList));
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Waiting Team List'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: teamList.map((team) {
-              return ListTile(
-                title: Text('Reservation Number: ${team?.waitingTeam}'),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Name: ${team?.enteringTeam}'),
-                    Text('Contact: ${team?.phoneNumber}'),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Close'),
-          ),
-        ],
-      );
-    },
-  );
-}
 
-// class WaitingUserListWidget extends ConsumerWidget {
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final AsyncValue<WaitingData?> userList = ref.watch(waitingProvider);
-//     return SingleChildScrollView(
-//       child: userList.when(
-//         data: (waitingData) {
-//           if (waitingData == null || waitingData.teamInfoList.isEmpty) {
-//             return Center(
-//               child: Text('현재 웨이팅이 존재하지 않습니다.'),
-//             );
-//           } else {
-//             return ListBody(
-//               children: waitingData.teamInfoList.map((team) {
-//                 return ListTile(
-//                   title: Text('Reservation Number: ${team.waitingTeam}'),
-//                   subtitle: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Text('Name: ${team.enteringTeam}'),
-//                       Text('Contact: ${team.phoneNumber}'),
-//                     ],
-//                   ),
-//                 );
-//               }).toList(),
-//             );
-//           }
-//         },
-//         loading: () => Center(
-//           child: CircularProgressIndicator(),
-//         ),
-//         error: (error, stackTrace) => Center(
-//           child: Text('Error: $error'),
-//         ),
-//       ),
-//     );
-//   }
-// }
 
-  // void _showReservationList(BuildContext context, WidgetRef ref) {
-  //   final waitingData = ref.read(waitingProvider);
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text('Reservation List'),
-  //         content: SingleChildScrollView(
-  //           child: context.waitingData!.when(
-  //             data: (data) {
-  //               return ListBody(
-  //                 children: List.generate(data.teamInfoList.length, (index) {
-  //                   return ListTile(
-  //                     title: Text('Reservation Number: ${data.teamInfoList[index].waitingTeam}'),
-  //                     subtitle: Column(
-  //                       crossAxisAlignment: CrossAxisAlignment.start,
-  //                       children: [
-  //                         Text('Name: ${data.teamInfoList[index].enteringTeam}'),
-  //                         Text('Contact: ${data.teamInfoList[index].phoneNumber}'),
-  //                       ],
-  //                     ),
-  //                   );
-  //                 }),
-  //               );
-  //             },
-  //             loading: () => CircularProgressIndicator(),
-  //             error: (error, stackTrace) => Text('Error: $error'),
-  //           ),
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: Text('Close'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }

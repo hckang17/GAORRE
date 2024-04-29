@@ -24,22 +24,24 @@ class WaitingData {
 }
 
 class WaitingTeam {
-  final int waitingTeam;  // 대기번호
-  final int enteringTeam; 
-  final String phoneNumber;
+  final int waitingNumber;  // 대기번호
+  final int status;         // 대기상태
+  final String phoneNumber; 
   final int personNumber;
+  DateTime? entryTime;        // nullable
 
   WaitingTeam({
-    required this.waitingTeam,
-    required this.enteringTeam,
+    required this.waitingNumber,  // 
+    required this.status,   
     required this.phoneNumber,
     required this.personNumber,
+    this.entryTime,
   });
 
   factory WaitingTeam.fromJson(Map<String, dynamic> json) {
     return WaitingTeam(
-      waitingTeam: json['waitingTeam'],
-      enteringTeam: json['enteringTeam'],
+      waitingNumber: json['waitingTeam'],
+      status: json['status'],
       phoneNumber: json['phoneNumber'],
       personNumber: json['personNumber'],
     );
