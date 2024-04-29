@@ -17,7 +17,7 @@ class MyApp extends ConsumerWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginScreenWidget(),
-        '/store': (context) => StoreScreenWidget(), // StorePage에 StompClient 전달
+        // '/store': (context) => StoreScreenWidget(), // StorePage에 StompClient 전달
       },
     );
   }
