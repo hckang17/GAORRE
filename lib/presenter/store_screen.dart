@@ -46,7 +46,7 @@ class _StoreScreenBody extends ConsumerWidget {
       storeCode = loginData!.storeCode;
       final waitingNotifier = ref.read(waitingProvider.notifier);
       waitingNotifier.subscribeToWaitingData(storeCode);
-      waitingNotifier.subscribeToCallGuest(context, storeCode);
+      // waitingNotifier.subscribeToCallGuest(context, storeCode);
       isSubscribed = true; // sendWaitingData가 한 번만 호출되도록 설정
     }
   }
@@ -83,6 +83,20 @@ class _StoreScreenBody extends ConsumerWidget {
           ),
         ),
       );
+    }
+    
+    // 각 WaitingTeam의 카운트다운을 확인하고 0이 되면 sendNoShowMessage를 호출합니다.
+    for (WaitingTeam team in currentWaitingData!.teamInfoList) {
+      if (team.entryTime != null) {
+        Duration timeRemaining = team.entryTime!.difference(DateTime.now());
+        if (timeRemaining <= Duration.zero) {
+          ref.read(waitingProvider.notifier).requestUserDelete(
+            context,
+            storeCode,
+            team.waitingNumber,
+          );
+        }
+      }
     }
 
     return Scaffold(
@@ -136,7 +150,7 @@ class _StoreScreenBody extends ConsumerWidget {
 
                   if (team.entryTime != null) {
                     timeRemaining = team.entryTime!.difference(DateTime.now());
-                    remainingTimeString = '${timeRemaining.inHours.toString().padLeft(2, '0')}:${(timeRemaining.inMinutes % 60).toString().padLeft(2, '0')}';
+                    remainingTimeString = '${timeRemaining.inMinutes.remainder(60).toString().padLeft(2, '0')}:${timeRemaining.inSeconds.remainder(60).toString().padLeft(2, '0')}';
                   } else {
                     remainingTimeString = 'Unknown';
                   }
@@ -153,7 +167,19 @@ class _StoreScreenBody extends ConsumerWidget {
                           ),
                         ),
                         Text('연락처 : ${team.phoneNumber}'),
-                        if(remainingTimeString != 'Unknown') Text('마감까지 남은 시간: $remainingTimeString'), 
+                        if(team.entryTime != null)StreamBuilder<Duration>(
+                          stream: startCountdown(team.entryTime),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Text('Calculating...');
+                            } else if (snapshot.hasData) {
+                              final remainingTimeString = '${snapshot.data!.inMinutes.remainder(60).toString().padLeft(2, '0')}:${snapshot.data!.inSeconds.remainder(60).toString().padLeft(2, '0')}';
+                              return Text('입장마감까지 남은 시간 : $remainingTimeString');
+                            } else {
+                              return Text('Unknown');
+                            }
+                          },
+                        ),
                       ],
                     ),
                     trailing: Row(
@@ -161,19 +187,20 @@ class _StoreScreenBody extends ConsumerWidget {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            ref.read(waitingProvider.notifier).sendCallRequest(
+                            ref.read(waitingProvider.notifier).requestUserCall(
                               context,
                               team.waitingNumber,
                               storeCode,
                               minutesToAdd,
                             );
                           },
-                          child: const Text('Call Guest'),
+                          child: const Text('호출하기'),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: () {
-                            ref.read(waitingProvider.notifier).sendNoShowMessage(
+                            ref.read(waitingProvider.notifier).requestUserDelete(
+                              context,
                               storeCode,
                               team.waitingNumber
                             );
@@ -192,14 +219,14 @@ class _StoreScreenBody extends ConsumerWidget {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    ref.read(waitingProvider.notifier).sendCallRequest(
+                    ref.read(waitingProvider.notifier).requestUserCall(
                       context, 
                       currentWaitingData!.teamInfoList[0].waitingNumber, 
                       storeCode, 
                       minutesToAdd
                     );
                   },
-                  child: Text('손님 호출하기'),
+                  child: Text('다음손님 호출하기'),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -212,32 +239,24 @@ class _StoreScreenBody extends ConsumerWidget {
                   child: Text('좌석 관리페이지 오픈하기'),
                 ),
               ],
-              ),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     ref.read(waitingProvider.notifier).sendCallRequest(
-            //       context, 
-            //       currentWaitingData!.teamInfoList[0].waitingTeam, 
-            //       storeCode, 
-            //       minutesToAdd
-            //     );
-            //   },
-            //   child: Text('손님 호출하기'),
-            // ),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.of(context).push(
-            //       MaterialPageRoute(
-            //         builder: (BuildContext context) => TableManagementScreen(loginResponse: loginData)
-            //       )
-            //     );
-            //   },
-            //   child: Text('좌석 관리페이지 오픈하기');
-            // )
+            ),
           ],
         ),
       ),
     );
+  }
+
+  // 카운트다운을 시작하는 메서드
+  Stream<Duration> startCountdown(DateTime? startTime) {
+    if (startTime != null) {
+      final countdownStream = Stream<Duration>.periodic(
+        Duration(seconds: 1),
+        (count) => startTime.difference(DateTime.now()),
+      );
+      return countdownStream.map((duration) => Duration(seconds: duration.inSeconds.abs()));
+    } else {
+      return Stream<Duration>.value(Duration(seconds: 0));
+    }
   }
 }
 

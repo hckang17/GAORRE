@@ -21,7 +21,6 @@ final stompClientProvider = FutureProvider<StompClient>((ref) async {
       onConnect: (StompFrame frame) {
         print("connected");
         // 필요한 초기화 수행, 여기서 client는 이미 정의되어 있으므로 사용 가능합니다.
-       
         ref.read(loginProvider.notifier).setClient(client);
         ref.read(waitingProvider.notifier).setClient(client);
         ref.read(tableProvider.notifier).setClient(client);

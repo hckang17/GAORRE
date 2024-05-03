@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/guest_data_model.dart';
 import 'package:orre_manager/Model/restaurant_table_model.dart';
+import 'package:http/http.dart' as http;
+import 'package:orre_manager/services/http_service.dart';
 
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
@@ -64,6 +66,7 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
         }
       } else {
         //테이블이 추가되었을 때
+        print("신규테이블 추가");
         for(int i=0; i < newState.table.length; i++) {
           var existingSeatIndex = currentTableList.indexWhere((seat) => seat.tableNumber == newState.table[i].tableNumber);
           if(existingSeatIndex == -1){
@@ -139,24 +142,86 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     currentSeats[seatIndex].tableStatus = 1;
     RestaurantTable target = RestaurantTable(table: currentSeats);
     updateState(target);
-
-    // if (seatIndex != -1) {
-    //   // Create a copy of the seat at the found index
-    //   Seat updatedSeat = state!.table[seatIndex];
-    //   // Update guestInfo
-    //   updatedSeat.guestInfo = guest;
-    //   // Replace the original seat with the updated seat
-    //   state!.table[seatIndex] = updatedSeat;
-    //   // Notify listeners about the state change
-    //   updateState(RestaurantTable(table: state!.table));
-    // } else {
-    //   print('Seat with table number ${guest.tableNumber} not found.');
-    // }
-
-    
   }
 
 
+//https://orre.store/api/admin/StoreAdmin/available
+
+  Future<void> requestAddNewTable(int storeCode, int tableNumber, int personNumber, String jwtToken) async {
+    var existingTableNumberIndex = state!.table.indexWhere((seat) => seat.tableNumber == tableNumber);
+    // tableNumber가 existing하면 아무런 일도 일어나지 않음.
+    if(existingTableNumberIndex != -1) {
+      print('테이블이 이미 존재합니다');
+      // 즉시 종료
+      return;
+    } else {
+      print('Adding new table');
+      final jsonBody = json.encode({
+        'storeCode' : storeCode,
+        'storeAddTableNumber' : tableNumber,
+        'personNumber': personNumber,
+        'jwtAdmin': jwtToken,
+      });
+      // var headers = { 'Content-Type': 'application/json; charset=UTF-8' };
+      // // final response = await http.post(Uri.parse('https://orre.store/api/admin/StoreAdmin/table/add'), 
+      // //   headers: headers, body: jsonBody);
+      final response = await HttpsService.postRequest('/table/add', jsonBody);
+      if(response.statusCode == 200) {
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        bool result = responseBody['success'];
+        if(result == true){
+          Seat newSeat = Seat(
+            tableNumber: tableNumber,
+            tableStatus: 0,
+            maxPersonPerTable: personNumber
+          );
+          RestaurantTable? currentState = state;
+          currentState!.table.add(newSeat);
+          updateState(currentState);
+        } else {
+          print('테이블 생성에 오류가 발생했습니다');
+        }
+      } else {
+        print('error occured.');
+        print('다음은 response body');
+        print(response.body);
+      }
+    }
+  }
+
+  Future<void> requestDeleteTable(int storeCode, int tableNumber, String jwtToken) async {
+    var existingTableNumberIndex = state!.table.indexWhere((seat) => seat.tableNumber == tableNumber);
+    // tableNumber가 existing하면 아무런 일도 일어나지 않음.
+    if(existingTableNumberIndex == -1) {
+      // 즉시 종료
+      print('테이블번호가 존재하지 않습니다');
+      return;
+    } else {
+      print('Delete table');
+      final jsonBody = json.encode({
+        'storeCode' : storeCode,
+        'storeRemoveTableNumber' : tableNumber,
+        'jwtAdmin': jwtToken,
+      });
+      // final response = await http.post()
+      final response = await HttpsService.postRequest('/table/remove', jsonBody);
+      if(response.statusCode == 200) {
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        bool result = responseBody['success'];
+        if(result == true){
+          RestaurantTable? currentTable = state;
+          currentTable!.table.removeAt(existingTableNumberIndex);
+          updateState(currentTable);
+        } else {
+          print('error occured.');
+        }
+      } else {
+        print('에러발생');
+        print(response.body.toString());
+        print('HTTP response를 받지 못했습니다.');
+      }
+    }
+  }
 
 
   void subscribeToLockTableData(int storeCode) {
@@ -169,7 +234,7 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
         destination: '/topic/admin/table/lock/$storeCode',
         callback: (StompFrame frame) {
           print('<LockTableData> 메세지 수신.');
-          print(frame!.body.toString());
+          print(frame.body.toString());
           Map<String, dynamic> responseData = json.decode(frame.body!);
           if(responseData['success'] == true){
             int tableNumber = responseData['tableNumber'];

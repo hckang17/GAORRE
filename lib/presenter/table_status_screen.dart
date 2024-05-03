@@ -72,12 +72,14 @@ class _TableManagementBody extends ConsumerWidget {
                 children: [
                   ElevatedButton(
                     onPressed: () {
+                      _addNewTable(ref, context, loginData);
                       // '테이블 추가하기' 버튼 동작 정의
                     },
                     child: Text('테이블 추가하기'),
                   ),
                   ElevatedButton(
                     onPressed: () {
+                      _deleteTable(ref, context, loginData);
                       // '테이블 삭제하기' 버튼 동작 정의
                     },
                     child: Text('테이블 삭제하기'),
@@ -191,7 +193,93 @@ class _TableManagementBody extends ConsumerWidget {
       },
     );
   }
+  
+  void _addNewTable(WidgetRef ref, BuildContext context, LoginData loginData) {
+    TextEditingController _tableNumberController = TextEditingController();
+    TextEditingController _personNumberController = TextEditingController();
 
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('새로운 테이블 추가'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: _tableNumberController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: '추가할 테이블 번호'),
+              ),
+              TextField(
+                controller: _personNumberController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: '최대 착석가능 인원 수'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                int tableNumber = int.tryParse(_tableNumberController.text) ?? -1;
+                int personNumber = int.tryParse(_personNumberController.text) ?? -1;
+                ref.read(tableProvider.notifier).requestAddNewTable(
+                  loginData.storeCode, tableNumber, personNumber, loginData.loginToken!);
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+              child: Text('추가'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+              child: Text('취소'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteTable(WidgetRef ref, BuildContext context, LoginData loginData) {
+    TextEditingController _tableNumberController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('테이블 제거'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: _tableNumberController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: '제거할 테이블 번호'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                int tableNumber = int.tryParse(_tableNumberController.text) ?? -1;
+                ref.read(tableProvider.notifier).requestDeleteTable(
+                  loginData.storeCode, tableNumber, loginData.loginToken!);
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+              child: Text('제거'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+              child: Text('취소'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 

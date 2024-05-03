@@ -11,7 +11,7 @@ class LoginScreenWidget extends ConsumerWidget {
     return stompClientAsyncValue.when(
       data: (stompClient) {
         // stompClient가 준비되면 위젯을 반환합니다.
-        return _LoginScreenBody(); // 별도의 위젯으로 분리
+        return _LoginScreenBody(context: context, ref: ref); // 별도의 위젯으로 분리
       },
       loading: () {
         // 로딩 중이면 로딩 스피너를 표시합니다.
@@ -26,12 +26,16 @@ class LoginScreenWidget extends ConsumerWidget {
 }
 
 class _LoginScreenBody extends ConsumerWidget {
+  final BuildContext context;
+  final WidgetRef ref;
   TextEditingController _idController = TextEditingController();
   TextEditingController _pwController = TextEditingController();
+  _LoginScreenBody({required this.context, required this.ref});
   
   void loginProcess(WidgetRef ref) {
-    ref.read(loginProvider.notifier).subscribeToLoginData(ref.context, _idController.text);
-    ref.read(loginProvider.notifier).sendLoginData(ref.context, _idController.text, _pwController.text);
+    ref.read(loginProvider.notifier).requestLoginData(context, _idController.text, _pwController.text);
+    // ref.read(loginProvider.notifier).subscribeToLoginData(ref.context, _idController.text);
+    // ref.read(loginProvider.notifier).sendLoginData(ref.context, _idController.text, _pwController.text);
     // ref.read(loginProvider.notifier).unSubscribeLoginData();
   }
 

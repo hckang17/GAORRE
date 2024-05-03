@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/waiting_data_model.dart';
+import 'package:orre_manager/presenter/alertDialog.dart';
+import 'package:orre_manager/services/http_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
@@ -106,6 +108,62 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
+  Future<void> requestUserCall(BuildContext context, int waitingNumber, int storeCode, int minutesToAdd) async {
+    print('고객 호출 - waitingNumber $waitingNumber');
+    final jsonBody = json.encode({
+        "storeCode": storeCode,
+        "waitingTeam": waitingNumber,
+        "minutesToAdd": minutesToAdd,
+    });
+    final response = await HttpsService.postRequest('/userCall', jsonBody);
+    if(response.statusCode == 200) {
+      final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
+      CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseBody);
+      if(callGuestResponse.storeCode == storeCode){
+        //고객호출 성공
+        String formattedTime = extractEntryTime(callGuestResponse.entryTime);
+        WaitingData? currentState = state;
+        // WaitingTeam의 entryTime을 업데이트
+        currentState!.teamInfoList.forEach((waitingTeam) {
+          if (waitingTeam.waitingNumber == callGuestResponse.waitingTeam) {
+            waitingTeam.entryTime = DateTime.parse(callGuestResponse.entryTime);
+          }
+        });
+        updateState(currentState);
+        showAlertDialog(context, '$waitingNumber번 고객 호출', '입장 마감 시간 : $formattedTime', null);
+      } else {
+        // 고객호출 실패
+        print('고객호출 실패');
+        showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+      }
+    } else {
+      // 에러발생.
+
+    }
+  }
+
+  Future<void> requestUserDelete(BuildContext context, int storeCode, int noShowWaitingNumber) async {
+    print('웨이팅유저 삭제 요청');
+    final jsonBody = json.encode({
+      "storeCode": storeCode,
+      "noShowUserCode": noShowWaitingNumber,      
+    });
+    final response = await HttpsService.postRequest('/noShow', jsonBody);
+    if(response.statusCode == 200){
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
+      if(responseBody['success'] == true){
+        print('성공적으로 $noShowWaitingNumber번 손님을 웨이팅취소했습니다');
+        showAlertDialog(context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 완료', null);
+      } else {
+        print('$noShowWaitingNumber번 손님 웨이팅취소를 실패했습니다.');
+        showAlertDialog(context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 실패', null);
+      }
+    } else {
+      //에러발생
+      print('에러발생');
+    }
+  }
+
 
   void waitingData_CallBack(StompFrame? frame) {
     print('<WaitingData> 메세지 수신. 다음은 수신된 메세지입니다.');
@@ -143,116 +201,6 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     );
   }
 
-  void subscribeToCallGuest(BuildContext context, int storeCode) {
-    print('<subscribeToCallGuest> 구독 요청 수신');
-    if (subscriptionInfo[1] != null) {
-      // unSubscribeToCallGuest();
-      // 중복구독을 막기위한 장치임.
-      print('이미 <CallGuest>를 구독중입니다.');
-    } else {
-      print('<subscribeToCallGuest>의 구독을 시작했습니다.');
-      subscriptionInfo[1] = _client?.subscribe(
-          destination: '/topic/admin/StoreAdmin/userCall/$storeCode',
-          callback: (StompFrame frame) {
-            callGuestCallBack(frame, context);
-          });
-    }
-  }
-
-  void callGuestCallBack(StompFrame frame, BuildContext context) {
-    print('<CallGuest> 데이터 수신');
-    print(frame.body.toString());
-    Map<String, dynamic> responseData = json.decode(frame.body!);
-    CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseData);
-    // {"storeCode":1,"waitingTeam":1,"entryTime":"2024-03-28T23:04:18.3394633"}
-    String formattedTime = extractEntryTime(callGuestResponse.entryTime);
-
-    WaitingData? newState = state;
-
-    // WaitingTeam의 entryTime을 업데이트
-    newState!.teamInfoList.forEach((waitingTeam) {
-      if (waitingTeam.waitingNumber == callGuestResponse.waitingTeam) {
-        waitingTeam.entryTime = DateTime.parse(callGuestResponse.entryTime);
-      }
-    });
-
-    updateState(newState);
-
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-              title: Text('손님 호출'),
-              content: (Text(
-                  '호출한 손님번호 : ${callGuestResponse.waitingTeam}\n입장마감시간 : $formattedTime')),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('OK'),
-                ),
-              ]);
-        });
-  }
-
-  void sendCallRequest(BuildContext context, int waitingNumber, int storeCode,
-      int minutesToAdd) {
-    print("<CallGuest> 손님 호출 - WaitingNumber $waitingNumber");
-    _client?.send(
-        destination: '/app/admin/StoreAdmin/userCall/$storeCode',
-        body: json.encode({
-          "storeCode": storeCode,
-          "waitingTeam": waitingNumber,
-          "minutesToAdd": minutesToAdd,
-        }));
-  }
-
-  void subscribeToNoshowData(BuildContext context, int storeCode) {
-    print('<NoShow> 구독요청 수신.');
-    if (subscriptionInfo[0] != null) {
-      // Do nothing
-      print('이미 <NoShow>를 구독중입니다.');
-    } else {
-      subscriptionInfo[2] = _client?.subscribe(
-          destination: '/topic/admin/StoreAdmin/noShow/$storeCode',
-          callback: (StompFrame frame) {
-            print('<NoShow> 메세지 수신. 다음은 수신된 메세지입니다.');
-            print(frame.body!.toString());
-            Map<bool, dynamic> responseData = json.decode(frame.body!);
-            bool status = responseData['success'];
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text('손님 호출'),
-                  content: Text(
-                    status ? '성공적으로 노쇼처리하였습니다.' : '오류가 발생하였습니다.',
-                  ),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text('확인'),
-                    ),
-                  ],
-                );
-              },
-            );
-          });
-    }
-  }
-
-  void sendNoShowMessage(int storeCode, int noShowUserWaitingNumber) {
-    print('노쇼유저 정보 송신 : $noShowUserWaitingNumber');
-    _client?.send(
-        destination: '/app/admin/StoreAdmin/noShow/$storeCode',
-        body: json.encode({
-          "storeCode": storeCode,
-          "noShowUserCode": noShowUserWaitingNumber,
-        }));
-  }
 
   void unSubscribe(int index) {
     // index는 어떤것을 구독해제 할 지 결정하기 위한 변수임.
@@ -274,4 +222,119 @@ String extractEntryTime(String message) {
   String formattedTime =
       '${parsedTime.hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')}:${parsedTime.second.toString().padLeft(2, '0')}';
   return formattedTime;
+}
+
+
+class WaitingProviderLegacy {
+    // void subscribeToCallGuest(BuildContext context, int storeCode) {
+  //   print('<subscribeToCallGuest> 구독 요청 수신');
+  //   if (subscriptionInfo[1] != null) {
+  //     // unSubscribeToCallGuest();
+  //     // 중복구독을 막기위한 장치임.
+  //     print('이미 <CallGuest>를 구독중입니다.');
+  //   } else {
+  //     print('<subscribeToCallGuest>의 구독을 시작했습니다.');
+  //     subscriptionInfo[1] = _client?.subscribe(
+  //         destination: '/topic/admin/StoreAdmin/userCall/$storeCode',
+  //         callback: (StompFrame frame) {
+  //           callGuestCallBack(frame, context);
+  //         });
+  //   }
+  // }
+
+  // void callGuestCallBack(StompFrame frame, BuildContext context) {
+  //   print('<CallGuest> 데이터 수신');
+  //   print(frame.body.toString());
+  //   Map<String, dynamic> responseData = json.decode(frame.body!);
+  //   CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseData);
+  //   // {"storeCode":1,"waitingTeam":1,"entryTime":"2024-03-28T23:04:18.3394633"}
+  //   String formattedTime = extractEntryTime(callGuestResponse.entryTime);
+
+  //   WaitingData? newState = state;
+
+  //   // WaitingTeam의 entryTime을 업데이트
+  //   newState!.teamInfoList.forEach((waitingTeam) {
+  //     if (waitingTeam.waitingNumber == callGuestResponse.waitingTeam) {
+  //       waitingTeam.entryTime = DateTime.parse(callGuestResponse.entryTime);
+  //     }
+  //   });
+
+  //   updateState(newState);
+
+  //   showDialog(
+  //       context: context,
+  //       builder: (context) {
+  //         return AlertDialog(
+  //             title: Text('손님 호출'),
+  //             content: (Text(
+  //                 '호출한 손님번호 : ${callGuestResponse.waitingTeam}\n입장마감시간 : $formattedTime')),
+  //             actions: <Widget>[
+  //               TextButton(
+  //                 onPressed: () {
+  //                   Navigator.of(context).pop();
+  //                 },
+  //                 child: Text('OK'),
+  //               ),
+  //             ]);
+  //       });
+  // }
+
+  // void sendCallRequest(BuildContext context, int waitingNumber, int storeCode,
+  //     int minutesToAdd) {
+  //   print("<CallGuest> 손님 호출 - WaitingNumber $waitingNumber");
+  //   _client?.send(
+  //       destination: '/app/admin/StoreAdmin/userCall/$storeCode',
+  //       body: json.encode({
+  //         "storeCode": storeCode,
+  //         "waitingTeam": waitingNumber,
+  //         "minutesToAdd": minutesToAdd,
+  //       }));
+  // }
+
+  // void subscribeToNoshowData(BuildContext context, int storeCode) {
+  //   print('<NoShow> 구독요청 수신.');
+  //   if (subscriptionInfo[0] != null) {
+  //     // Do nothing
+  //     print('이미 <NoShow>를 구독중입니다.');
+  //   } else {
+  //     subscriptionInfo[2] = _client?.subscribe(
+  //         destination: '/topic/admin/StoreAdmin/noShow/$storeCode',
+  //         callback: (StompFrame frame) {
+  //           print('<NoShow> 메세지 수신. 다음은 수신된 메세지입니다.');
+  //           print(frame.body!.toString());
+  //           Map<bool, dynamic> responseData = json.decode(frame.body!);
+  //           bool status = responseData['success'];
+  //           showDialog(
+  //             context: context,
+  //             builder: (context) {
+  //               return AlertDialog(
+  //                 title: Text('손님 호출'),
+  //                 content: Text(
+  //                   status ? '성공적으로 노쇼처리하였습니다.' : '오류가 발생하였습니다.',
+  //                 ),
+  //                 actions: <Widget>[
+  //                   TextButton(
+  //                     onPressed: () {
+  //                       Navigator.of(context).pop();
+  //                     },
+  //                     child: Text('확인'),
+  //                   ),
+  //                 ],
+  //               );
+  //             },
+  //           );
+  //         });
+  //   }
+  // }
+
+  // void sendNoShowMessage(int storeCode, int noShowUserWaitingNumber) {
+  //   print('노쇼유저 정보 송신 : $noShowUserWaitingNumber');
+  //   _client?.send(
+  //       destination: '/app/admin/StoreAdmin/noShow/$storeCode',
+  //       body: json.encode({
+  //         "storeCode": storeCode,
+  //         "noShowUserCode": noShowUserWaitingNumber,
+  //       }));
+  // }
+
 }
