@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:orre_manager/Coding_references/login.dart';
-import 'package:orre_manager/presenter/store_screen.dart';
+import 'package:orre_manager/presenter/waiting_screen.dart';
 import 'package:orre_manager/services/http_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';

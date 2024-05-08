@@ -1,4 +1,5 @@
 import 'package:orre_manager/Model/guest_data_model.dart';
+import 'package:orre_manager/Model/orderList_data.dart';
 
 class RestaurantTable {
   final List<Seat> table;
@@ -23,6 +24,7 @@ class Seat {
   int tableStatus; /** tableStatus = 0 : 1 / now lock : now unlock */
   // 0 = 락 , 1 = 착석중
   Guest? guestInfo;
+  OrderList? orderInfo;
   // 메뉴도 여기다가 추가해야지..
 
 
@@ -31,7 +33,16 @@ class Seat {
     required this.maxPersonPerTable,
     required this.tableStatus,
     this.guestInfo,
+    this.orderInfo,
   });
+
+  void setSeatsGuest(Guest guestInfo){
+    this.guestInfo = guestInfo;
+  }
+
+  void setOrderInfo(OrderList orderInfo){
+    this.orderInfo = orderInfo;
+  }
 
   factory Seat.fromJson(Map<String, dynamic> json) {
     if(json['tableAvailable'] == 1){

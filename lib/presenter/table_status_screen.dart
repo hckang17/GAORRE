@@ -31,7 +31,7 @@ class TableManagementScreen extends ConsumerWidget {
 
 class _TableManagementBody extends ConsumerWidget {
   final LoginData loginData;
-  late int storeCode;
+  // late int storeCode;
   RestaurantTable? restaurantTable;
   bool isSubscribed = false;  
 
@@ -39,12 +39,12 @@ class _TableManagementBody extends ConsumerWidget {
 
   void subscribeProcess(WidgetRef ref, BuildContext context){
     if (restaurantTable == null && !isSubscribed) {
-      storeCode = loginData.storeCode;
+      // storeCode = loginData.storeCode;
       final restaurantTableNotifier = ref.read(tableProvider.notifier);
-      restaurantTableNotifier.subscribeToLockTableData(storeCode);
-      restaurantTableNotifier.subscribeToUnlockTableData(storeCode);
-      restaurantTableNotifier.subscribeToTableData(storeCode);
-      restaurantTableNotifier.sendStoreCode(storeCode);
+      restaurantTableNotifier.subscribeToLockTableData(loginData!.storeCode);
+      restaurantTableNotifier.subscribeToUnlockTableData(loginData!.storeCode);
+      restaurantTableNotifier.subscribeToTableData(loginData!.storeCode);
+      restaurantTableNotifier.sendStoreCode(loginData!.storeCode);
       isSubscribed = true; // sendWaitingData가 한 번만 호출되도록 설정
     }
   }
@@ -107,7 +107,10 @@ class _TableManagementBody extends ConsumerWidget {
                       itemCount: currentSeats.length,
                       itemBuilder: (BuildContext context, int index) {
                         return GestureDetector(
-                          onTap: () {
+                          onTap: () async {
+                            // 메뉴리스트를 받아올 때 까지 기다림. 만약, 
+                            await ref.read(tableProvider.notifier).requestTableOrderList(loginData!.storeCode, currentSeats[index].tableNumber);
+                            // requestTableOrderList가 완료된 후에 _showTableInfoPopup 함수를 호출합니다.
                             _showTableInfoPopup(ref, context, currentSeats[index]);
                           },
                           child: Container(
@@ -131,68 +134,158 @@ class _TableManagementBody extends ConsumerWidget {
       ),
     );
   }
-
+  
   void _showTableInfoPopup(WidgetRef ref, BuildContext context, Seat table) {
     TextEditingController _temp_waitingNumber = TextEditingController();
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Table Information'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Table Number: ${table.tableNumber}'),
-              Text('Max Persons Per Table: ${table.maxPersonPerTable}'),
-              Text('Table Status: ${table.tableStatus == 0 ? '착석불가능' : '착석가능'}'),
-              if (table.guestInfo != null) // 만약 guestInfo가 있다면 추가 정보 표시
-                Text('Guest Info: ${table.guestInfo.toString()}'),
-              SizedBox(height: 10),
-              // 숫자를 입력받는 TextField 추가
-              if (table.tableStatus == 0) 
-                TextField(
-                  controller: _temp_waitingNumber,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Waiting Number', // 입력 필드의 라벨 텍스트
-                  ),
-                ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      if (table.tableStatus == 0) {
-                        //Unlock Process
-                        int waitingNumber =
-                            int.tryParse(_temp_waitingNumber.text) ?? 0; // 입력된 값을 정수로 변환
-                        ref.read(tableProvider.notifier).sendUnlockRequest(
-                            loginData.storeCode, table.tableNumber, waitingNumber, loginData.loginToken!);
-                      } else {
-                        ref.read(tableProvider.notifier).sendLockRequest(
-                            loginData.storeCode, table.tableNumber, loginData.loginToken!);
-                      }
-                    },
-                    child: Text(table.tableStatus == 0 ? '테이블 언락' : '테이블 락'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // 팝업 닫기
-                      // ref.read(tableProvider.notifier).sendStoreCode(loginData.storeCode);
-                    },
-                    child: Text('닫기'),
+                  Text('테이블 정보', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10),
+                  Text('테이블 번호: ${table.tableNumber}'),
+                  Text('테이블 최대 착석 인원: ${table.maxPersonPerTable}'),
+                  Text('테이블 상태: ${table.tableStatus == 0 ? '미사용중' : '사용중'}'),
+                  if (table.guestInfo != null)
+                    Text('손님 정보(디버깅용): ${table.guestInfo.toString()}'),
+                  SizedBox(height: 10),
+                  if (table.orderInfo != null && table.tableStatus == 1) ...[
+                    Text('주문 내역', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('총 주문 금액: ${table.orderInfo!.totalPrice}원'),
+                    SizedBox(height: 10),
+                    Container(
+                      height: 200, // 예시로 높이를 제한했습니다.
+                      child: ListView.builder(
+                        itemCount: table.orderInfo!.orderedItemList?.length,
+                        itemBuilder: (context, index) {
+                          var item = table.orderInfo!.orderedItemList?[index];
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('상품명: ${item!.menuName}'),
+                              Text('수량: ${item.amount}'),
+                              Text('가격: ${item.price}원'),
+                              Divider(),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                  if (table.tableStatus == 0) 
+                    TextField(
+                      controller: _temp_waitingNumber,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: '대기번호 입력',
+                      ),
+                    ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          if (table.tableStatus == 0) {
+                            int waitingNumber =
+                                int.tryParse(_temp_waitingNumber.text) ?? 0;
+                            ref.read(tableProvider.notifier).sendUnlockRequest(
+                                loginData.storeCode, table.tableNumber, waitingNumber, loginData.loginToken!);
+                          } else {
+                            ref.read(tableProvider.notifier).sendLockRequest(
+                                loginData.storeCode, table.tableNumber, loginData.loginToken!);
+                          }
+                        },
+                        child: Text(table.tableStatus == 0 ? '테이블 잠금 해제' : '테이블 잠금'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('닫기'),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
+
+
+
+  // void _showTableInfoPopup(WidgetRef ref, BuildContext context, Seat table) {
+  //   TextEditingController _temp_waitingNumber = TextEditingController();
+
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('Table Information'),
+  //         content: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text('테이블 번호: ${table.tableNumber}'),
+  //             Text('테이블 최대 착석 인원: ${table.maxPersonPerTable}'),
+  //             Text('테이블 상태: ${table.tableStatus == 0 ? '착석불가능' : '착석가능'}'),
+  //             if (table.guestInfo != null) // 만약 guestInfo가 있다면 추가 정보 표시
+  //               Text('Guest Info: ${table.guestInfo.toString()}'),
+  //             SizedBox(height: 10),
+  //             // 숫자를 입력받는 TextField 추가
+  //             if (table.tableStatus == 0) 
+  //               TextField(
+  //                 controller: _temp_waitingNumber,
+  //                 keyboardType: TextInputType.number,
+  //                 decoration: InputDecoration(
+  //                   labelText: 'Waiting Number', // 입력 필드의 라벨 텍스트
+  //                 ),
+  //               ),
+  //             SizedBox(height: 10),
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //               children: [
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     if (table.tableStatus == 0) {
+                  //       //Unlock Process
+                  //       int waitingNumber =
+                  //           int.tryParse(_temp_waitingNumber.text) ?? 0; // 입력된 값을 정수로 변환
+                  //       ref.read(tableProvider.notifier).sendUnlockRequest(
+                  //           loginData.storeCode, table.tableNumber, waitingNumber, loginData.loginToken!);
+                  //     } else {
+                  //       ref.read(tableProvider.notifier).sendLockRequest(
+                  //           loginData.storeCode, table.tableNumber, loginData.loginToken!);
+                  //     }
+                  //   },
+                  //   child: Text(table.tableStatus == 0 ? '테이블 언락' : '테이블 락'),
+                  // ),
+  //                 TextButton(
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop(); // 팝업 닫기
+  //                     // ref.read(tableProvider.notifier).sendStoreCode(loginData.storeCode);
+  //                   },
+  //                   child: Text('닫기'),
+  //                 ),
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
   
   void _addNewTable(WidgetRef ref, BuildContext context, LoginData loginData) {
     TextEditingController _tableNumberController = TextEditingController();

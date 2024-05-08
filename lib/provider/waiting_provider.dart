@@ -202,7 +202,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
   }
 
 
-  void unSubscribe(int index) {
+  void unSubscribe(int index) { 
     // index는 어떤것을 구독해제 할 지 결정하기 위한 변수임.
     // print("<callGuest> is now unsubscribed");
     subscriptionInfo[index](unsubscribeHeaders: null);

@@ -2,12 +2,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/guest_data_model.dart';
+import 'package:orre_manager/Model/orderList_data.dart';
 import 'package:orre_manager/Model/restaurant_table_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:orre_manager/services/http_service.dart';
 
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
+
+
 
 final tableProvider = StateNotifierProvider<RestaurantTableNotifier, RestaurantTable?>((ref) {
   return RestaurantTableNotifier(); // 초기상태 null.
@@ -45,7 +48,8 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
               tableNumber: newSeat.tableNumber,
               maxPersonPerTable: newSeat.maxPersonPerTable,
               tableStatus: newSeat.tableStatus,
-              guestInfo: currentTableList[existingSeatIndex].guestInfo ?? newSeat.guestInfo
+              guestInfo: currentTableList[existingSeatIndex].guestInfo ?? newSeat.guestInfo,
+              orderInfo: currentTableList[existingSeatIndex].orderInfo ?? newSeat.orderInfo,
             );
           } else {
             currentTableList.add(newSeat);
@@ -76,8 +80,28 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
       }
       state = RestaurantTable(table:currentTableList);
     }
-
     // state = newState;
+  }
+
+  Future<void> requestTableOrderList(int storeCode, int tableNumber) async {
+    try {
+      final jsonBody = json.encode({
+        "storeCode": storeCode,
+        "tableNumber": tableNumber
+      });
+      final response = await HttpsService.postRequest('/menu/order/check', jsonBody);
+      if(response.statusCode == 200) {
+        final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
+        print('수시내역 : ${responseBody.toString()}');
+        OrderList orderList = OrderList.fromJson(responseBody);
+        updateSeatWithOrderList(orderList);
+        print('주문정보 업데이트를 진행합니다');
+      } else {
+        print('주문정보 수신 실패');
+      }
+    } catch (error) {
+      print('error : $error');
+    }
   }
 
   /* subscribe 관련 코드 */
@@ -140,6 +164,16 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     List<Seat> currentSeats = currentTable!.table;
     currentSeats[seatIndex].guestInfo = guest;
     currentSeats[seatIndex].tableStatus = 1;
+    RestaurantTable target = RestaurantTable(table: currentSeats);
+    updateState(target);
+  }
+
+  void updateSeatWithOrderList(OrderList orderList) {
+    // Find the index of the seat with matching tableNumber
+    int seatIndex = state?.table.indexWhere((seat) => seat.tableNumber == orderList.tableNumber) ?? -1;
+    RestaurantTable? currentTable = state;
+    List<Seat> currentSeats = currentTable!.table;
+    currentSeats[seatIndex].orderInfo = orderList;
     RestaurantTable target = RestaurantTable(table: currentSeats);
     updateState(target);
   }
@@ -257,21 +291,6 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     }
   }
 
-  /*
-  {
-  "success": true,
-  "jwtUser": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwMTA4NjAyMjM0MSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzEyNDE2MzY4LCJleHAiOjE3MTI1MDI3Njh9.c9xCpO-2nXA1n4BIDy1yx-C0FjmWGhdtTlGhtMEhlckkYMDU1yrG6ZIUBCxBALl9zStLHV7VymrKHjXhBYqYPw",
-  "storeCode": 1,
-  "tableNumber": 1,
-  "waitingNumber": 3
-  } 
-
-  {
-  "success": true,
-  "storeCode": 1,
-  "tableNumber": 1
-  } 
-  */
   void sendUnlockRequest(int storeCode, int tableNumber, int waitingNumber, String jwtAdmin) {
     print('<Unlock Request> 송신 ');
     _client?.send(
