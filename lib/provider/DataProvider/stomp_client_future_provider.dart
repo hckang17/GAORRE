@@ -2,14 +2,14 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/provider/admin_login_provider.dart';
-import 'package:orre_manager/provider/waiting_provider.dart';
-import 'package:orre_manager/provider/table_provider.dart';
+import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
+import 'package:orre_manager/provider/DataProvider/waiting_provider.dart';
+import 'package:orre_manager/provider/DataProvider/table_provider.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
-import '../services/websocket_services.dart';
+import '../../services/websocket_services.dart';
 
 final stompClientProvider = FutureProvider<StompClient>((ref) async {
   final completer = Completer<StompClient>();

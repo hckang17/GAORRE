@@ -16,4 +16,15 @@ class Menu {
     this.recommend = 0,
     this.isAvailable = 1,
   });
+
+  factory Menu.fromJson(Map<String, dynamic> json) {
+    return Menu(
+      menuName: json['menu'],
+      menuCode: json['menuCode'],
+      menuInfo: json['introduce'],
+      menuImageURL: json['img'],
+      price: json['price'],
+      recommend: json['recommend'],
+    );
+  }
 }

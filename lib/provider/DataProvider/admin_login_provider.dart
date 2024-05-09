@@ -7,7 +7,7 @@ import 'package:orre_manager/presenter/waiting_screen.dart';
 import 'package:orre_manager/services/http_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
-import '../Model/login_data_model.dart';
+import '../../Model/login_data_model.dart';
 
 // LoginInfo 객체를 관리하는 프로바이더를 정의합니다.
 final loginProvider =
@@ -28,20 +28,24 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     _client = client; // 내부 변수에 StompClient 인스턴스 저장
   }
 
+  void updateState(LoginData newLoginData){
+    state = newLoginData;
+  }
+
   Future<void> requestLoginData(BuildContext context, String adminPhoneNumber, String password) async {
     print('[로그인 데이터 요청]');
     final jsonBody = json.encode({
         "adminPhoneNumber": adminPhoneNumber,
         "adminPassword": password,
     });
-    final response = await HttpsService.postRequest('/login', jsonBody);
+    final response = await HttpsService.postRequest('/StoreAdmin/login', jsonBody);
     if(response.statusCode == 200){
       final responseBody = json.decode(utf8.decode(response.bodyBytes));
       if(responseBody['status'] == "success"){
         print('로그인 성공');
         print(responseBody.toString());
         LoginData? loginResponse = LoginData.fromJson(responseBody);
-        state = loginResponse;
+        updateState(loginResponse);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

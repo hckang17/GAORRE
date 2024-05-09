@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../provider/admin_login_provider.dart';
-import '../provider/stomp_client_future_provider.dart';
+import '../provider/DataProvider/admin_login_provider.dart';
+import '../provider/DataProvider/stomp_client_future_provider.dart';
 
 class LoginScreenWidget extends ConsumerWidget {
   @override

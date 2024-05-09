@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/waiting_data_model.dart';
-import 'package:orre_manager/presenter/alertDialog.dart';
+import 'package:orre_manager/presenter/Widget/alertDialog.dart';
 import 'package:orre_manager/services/http_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
@@ -115,7 +115,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
         "waitingTeam": waitingNumber,
         "minutesToAdd": minutesToAdd,
     });
-    final response = await HttpsService.postRequest('/userCall', jsonBody);
+    final response = await HttpsService.postRequest('/StoreAdmin/userCall', jsonBody);
     if(response.statusCode == 200) {
       final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
       CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseBody);
@@ -146,21 +146,28 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     print('웨이팅유저 삭제 요청');
     final jsonBody = json.encode({
       "storeCode": storeCode,
-      "noShowUserCode": noShowWaitingNumber,      
+      "noShowUserCode": noShowWaitingNumber,
     });
-    final response = await HttpsService.postRequest('/noShow', jsonBody);
-    if(response.statusCode == 200){
-      final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if(responseBody['success'] == true){
-        print('성공적으로 $noShowWaitingNumber번 손님을 웨이팅취소했습니다');
-        showAlertDialog(context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 완료', null);
+    try {
+      final response = await HttpsService.postRequest('/StoreAdmin/noShow', jsonBody);
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        if (responseBody['success'] == true) {
+          print('성공적으로 $noShowWaitingNumber번 손님을 웨이팅취소했습니다.');
+          showAlertDialog(context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 완료', null);
+          print('...웨이팅 리스트 정보를 새로 요청합니다.');
+          sendWaitingData(storeCode);
+        } else {
+          print('$noShowWaitingNumber번 손님 웨이팅취소를 실패했습니다.');
+          showAlertDialog(context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 실패', null);
+        }
       } else {
-        print('$noShowWaitingNumber번 손님 웨이팅취소를 실패했습니다.');
-        showAlertDialog(context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 실패', null);
+        throw Exception('Server responded with status code: ${response.statusCode}');
       }
-    } else {
-      //에러발생
-      print('에러발생');
+    } catch (e) {
+      print('오류 발생, 재시도합니다: $e');
+      await Future.delayed(Duration(seconds: 3)); // 잠시 대기 후 재시도
+      await requestUserDelete(context, storeCode, noShowWaitingNumber); // 재귀적으로 함수 호출
     }
   }
 
@@ -213,6 +220,8 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     _client?.deactivate();
     super.dispose();
   }
+
+  void sendCallRequest(BuildContext context, int waitingNumber, int storeCode, int minutesToAdd) {}
 }
 
 // extractTime method

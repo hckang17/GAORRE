@@ -1,29 +1,60 @@
 import 'dart:convert';
-import 'package:orre_manager/Model/menu_data_model.dart';
+import 'package:orre_manager/Model/menu_data_model.dart'; // 이 경로는 실제 프로젝트의 구조에 따라 조정하세요.
 
 class StoreData {
   final int storeCode;
   final String storeName;
-  int storeInfoVersion; // 얜 뭐임?
-  String storeIntroduce;
+  final int storeInfoVersion;
+  final String storeIntroduce;
   final String storeCategory;
-  String storeImageMain;
-  String openingTime = "11:00:00";
-  String closingTime = "24:00:00";
-  String lastOrderTime = "23:00:00";
+  final String storeImageMain;
+  final String openingTime;
+  final String closingTime;
+  final String lastOrderTime;
+  final String startBreakTime;
+  final String endBreakTime;
+  final Map<String, dynamic> menuCategories;  // String 대신 String? 사용
   List<Menu>? menuInfo;
 
   StoreData({
     required this.storeCode,
     required this.storeName,
-    required this.storeInfoVersion,
-    required this.storeIntroduce,
+    this.storeInfoVersion = 0,
+    this.storeIntroduce = "우리 가게",
     required this.storeCategory,
-    required this.storeImageMain,
-    required this.openingTime,
-    required this.closingTime,
-    required this.lastOrderTime,
+    this.storeImageMain = "",
+    this.openingTime = "09:00:00",
+    this.closingTime = "23:00:00",
+    this.lastOrderTime = "21:00:00",
+    this.startBreakTime = "15:00:00",
+    this.endBreakTime = "16:00:00",
+    required this.menuCategories,
     this.menuInfo,
   });
-}
 
+  factory StoreData.fromJson(Map<String, dynamic> json) {
+    List<Menu> menuList = (json['menuInfo'] as List)
+      .map((menuJson) => Menu.fromJson(menuJson))
+      .toList();
+    Map<String, dynamic> categoriesMap = {};
+    json['menuCategories'].forEach((key, value) {
+      if(value is String) { categoriesMap[key] = value; }
+    });
+
+    return StoreData(
+      storeCode: json['storeCode'],
+      storeName: json['storeName'],
+      storeInfoVersion: json['storeInfoVersion'],
+      storeIntroduce: json['storeIntroduce'],
+      storeCategory: json['storeCategory'],
+      storeImageMain: json['storeImageMain'],
+      openingTime: json['openingTime'],
+      closingTime: json['closingTime'],
+      lastOrderTime: json['lastOrderTime'],
+      startBreakTime: json['startBreakTime'],
+      endBreakTime: json['endBreakTime'],
+      menuCategories: categoriesMap,
+      menuInfo: menuList,
+    );
+  }
+}

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/waiting_data_model.dart';
-import 'package:orre_manager/provider/waiting_provider.dart';
+import 'package:orre_manager/provider/DataProvider/waiting_provider.dart';
 
 void _showReservationList(BuildContext context, WidgetRef ref) {
   List<WaitingTeam?> teamList = ref.watch(waitingProvider.select((value) => value!.teamInfoList));

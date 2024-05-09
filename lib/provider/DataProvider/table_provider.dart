@@ -89,10 +89,10 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
         "storeCode": storeCode,
         "tableNumber": tableNumber
       });
-      final response = await HttpsService.postRequest('/menu/order/check', jsonBody);
+      final response = await HttpsService.postRequest('/StoreAdmin/menu/order/check', jsonBody);
       if(response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
-        print('수시내역 : ${responseBody.toString()}');
+        print('수내역 : ${responseBody.toString()}');
         OrderList orderList = OrderList.fromJson(responseBody);
         updateSeatWithOrderList(orderList);
         print('주문정보 업데이트를 진행합니다');
@@ -199,7 +199,7 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
       // var headers = { 'Content-Type': 'application/json; charset=UTF-8' };
       // // final response = await http.post(Uri.parse('https://orre.store/api/admin/StoreAdmin/table/add'), 
       // //   headers: headers, body: jsonBody);
-      final response = await HttpsService.postRequest('/table/add', jsonBody);
+      final response = await HttpsService.postRequest('/StoreAdmin/table/add', jsonBody);
       if(response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         bool result = responseBody['success'];
@@ -238,7 +238,7 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
         'jwtAdmin': jwtToken,
       });
       // final response = await http.post()
-      final response = await HttpsService.postRequest('/table/remove', jsonBody);
+      final response = await HttpsService.postRequest('/StoreAdmin/table/remove', jsonBody);
       if(response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         bool result = responseBody['success'];

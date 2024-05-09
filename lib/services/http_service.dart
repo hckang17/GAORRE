@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 
 class HttpsService {
-  static const String _defaultUrl = 'https://orre.store/api/admin/StoreAdmin';
+  static const String _defaultUrl = 'https://orre.store/api/admin';
 
   static Uri getUri(String url) {
     return Uri.parse(_defaultUrl + url);
