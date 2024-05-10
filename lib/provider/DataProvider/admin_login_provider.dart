@@ -32,6 +32,10 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     state = newLoginData;
   }
 
+  LoginData getLoginData() {
+    return state!;
+  }
+
   Future<void> requestLoginData(BuildContext context, String adminPhoneNumber, String password) async {
     print('[로그인 데이터 요청]');
     final jsonBody = json.encode({

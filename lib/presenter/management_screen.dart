@@ -134,12 +134,16 @@ class _ManagementScreenBody extends ConsumerWidget {
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (BuildContext context) => MenuListWidget(
                           loginResponse: loginData, 
-                          menuList: currentStoreData!.menuInfo, 
-                          menuCategory: currentStoreData!.menuCategories,
                         )
                       ));
                     },
                     child: Text('메뉴 관리하기'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      ref.read(storeDataProvider.notifier).requestStoreData(loginData!.storeCode);
+                    },
+                    child: Text('새로고침'),
                   ),
                 ],
               ),

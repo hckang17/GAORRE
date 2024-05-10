@@ -6,10 +6,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/menu_data_model.dart';
 import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
+import 'package:orre_manager/provider/DataProvider/menu_image_provider.dart';
 import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
 
 // 이미지 데이터의 상태를 관리하는 Provider
-final imageBytesProvider = StateProvider<Uint8List?>((ref) => null);
+// final imageBytesProvider = StateProvider<Uint8List?>((ref) => null);
+
 
 void showAddMenuModal(BuildContext context, Map<String, dynamic>? currentMenuCategory, List<Menu>? currentMenuList) {
   showModalBottomSheet(
@@ -21,6 +23,7 @@ void showAddMenuModal(BuildContext context, Map<String, dynamic>? currentMenuCat
   );
 }
 
+// ignore: must_be_immutable
 class AddMenuModal extends ConsumerWidget {
   final Map<String, dynamic>? currentMenuCategory;
   final List<Menu>? currentMenuList;
@@ -140,7 +143,7 @@ class AddMenuModal extends ConsumerWidget {
                   ),
                   SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         String menuCode = _generateMenuCode(selectedCategoryKey, currentMenuList);
                         print('메뉴 코드: $menuCode');
@@ -158,7 +161,10 @@ class AddMenuModal extends ConsumerWidget {
                         int price = int.parse(priceController.text);
                         
                         // addMenu 함수 호출
-                        ref.read(storeDataProvider.notifier).addMenu(context, imageBytes, menuCode, name, selectedCategoryKey!, description, price, loginData!);
+                        if(true == await ref.read(storeDataProvider.notifier).addMenu(context, imageBytes, menuCode, name, selectedCategoryKey!, description, price, loginData!)){
+                          ref.read(imageBytesProvider.notifier).resetState();
+                          Navigator.pop(context);
+                        }
                       }
                     },
                     child: Text('메뉴 추가하기'),

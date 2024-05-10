@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,7 +84,7 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     // state = newState;
   }
 
-  Future<void> requestTableOrderList(int storeCode, int tableNumber) async {
+  FutureOr<bool> requestTableOrderList(int storeCode, int tableNumber) async {
     try {
       final jsonBody = json.encode({
         "storeCode": storeCode,
@@ -92,17 +93,21 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
       final response = await HttpsService.postRequest('/StoreAdmin/menu/order/check', jsonBody);
       if(response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
-        print('수내역 : ${responseBody.toString()}');
+        print('수신내역 : ${responseBody.toString()}');
         OrderList orderList = OrderList.fromJson(responseBody);
         updateSeatWithOrderList(orderList);
         print('주문정보 업데이트를 진행합니다');
+        return true;
       } else {
         print('주문정보 수신 실패');
+        return false;
       }
     } catch (error) {
       print('error : $error');
+      return false;
     }
   }
+
 
   /* subscribe 관련 코드 */
   void subscribeToTableData(int storeCode) {
