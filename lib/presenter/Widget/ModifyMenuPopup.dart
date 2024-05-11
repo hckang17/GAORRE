@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/menu_data_model.dart';
 import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
-import 'package:orre_manager/provider/DataProvider/menu_image_provider.dart';
+import 'package:orre_manager/provider/DataProvider/image_provider.dart';
 import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
 
 

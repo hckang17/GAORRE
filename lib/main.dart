@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:orre_manager/references/reference2.dart';
 import 'presenter/login_screen.dart';
-import 'presenter/waiting_screen.dart';
 
 
 void main() {

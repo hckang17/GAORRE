@@ -6,12 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/menu_data_model.dart';
 import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
-import 'package:orre_manager/provider/DataProvider/menu_image_provider.dart';
+import 'package:orre_manager/provider/DataProvider/image_provider.dart';
 import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
-
-// 이미지 데이터의 상태를 관리하는 Provider
-// final imageBytesProvider = StateProvider<Uint8List?>((ref) => null);
-
 
 void showAddMenuModal(BuildContext context, Map<String, dynamic>? currentMenuCategory, List<Menu>? currentMenuList) {
   showModalBottomSheet(
@@ -23,23 +19,44 @@ void showAddMenuModal(BuildContext context, Map<String, dynamic>? currentMenuCat
   );
 }
 
-// ignore: must_be_immutable
-class AddMenuModal extends ConsumerWidget {
+class AddMenuModal extends ConsumerStatefulWidget {
   final Map<String, dynamic>? currentMenuCategory;
   final List<Menu>? currentMenuList;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  LoginData? loginData;
 
   AddMenuModal({this.currentMenuCategory, this.currentMenuList});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final ImagePicker picker = ImagePicker();
-    TextEditingController nameController = TextEditingController();
-    TextEditingController descriptionController = TextEditingController();
-    TextEditingController priceController = TextEditingController();
-    String? selectedCategoryKey;
+  _AddMenuModalState createState() => _AddMenuModalState();
+}
+
+class _AddMenuModalState extends ConsumerState<AddMenuModal> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late TextEditingController nameController;
+  late TextEditingController descriptionController;
+  late TextEditingController priceController;
+  String? selectedCategoryKey;
+  LoginData? loginData;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController();
+    descriptionController = TextEditingController();
+    priceController = TextEditingController();
     loginData = ref.read(loginProvider);
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    descriptionController.dispose();
+    priceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ImagePicker picker = ImagePicker();
 
     return Padding(
       padding: MediaQuery.of(context).viewInsets,
@@ -67,7 +84,7 @@ class AddMenuModal extends ConsumerWidget {
                       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
                       if (pickedFile != null) {
                         Uint8List fileBytes = await pickedFile.readAsBytes();
-                        ref.read(imageBytesProvider.notifier).state = fileBytes;
+                        ref.read(imageBytesProvider.notifier).setState(fileBytes);
                       }
                     },
                   ),
@@ -93,14 +110,18 @@ class AddMenuModal extends ConsumerWidget {
                       labelText: '메뉴 카테고리',
                       border: OutlineInputBorder(),
                     ),
-                    items: currentMenuCategory?.entries.map((entry) {
-                      return DropdownMenuItem<String>(
-                        value: entry.key,
-                        child: Text(entry.value.toString()),
-                      );
-                    }).toList(),
+                    items: widget.currentMenuCategory?.entries
+                      .where((entry) => entry.value != null)
+                      .map((entry) {
+                        return DropdownMenuItem<String>(
+                          value: entry.key,
+                          child: Text(entry.value!),
+                        );
+                      }).toList(),
                     onChanged: (newValue) {
-                      selectedCategoryKey = newValue;
+                      setState(() {
+                        selectedCategoryKey = newValue;
+                      });
                     },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -127,13 +148,13 @@ class AddMenuModal extends ConsumerWidget {
                   SizedBox(height: 16),
                   TextFormField(
                     controller: priceController,
-                    keyboardType: TextInputType.number,  // Ensure the keyboard is numeric
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: '가격',
                       hintText: '가격을 입력하세요',
                       border: OutlineInputBorder(),
                     ),
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],  // Allow digits only
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return '가격을 입력해주세요.';
@@ -145,23 +166,24 @@ class AddMenuModal extends ConsumerWidget {
                   ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        String menuCode = _generateMenuCode(selectedCategoryKey, currentMenuList);
+                        String menuCode = _generateMenuCode(selectedCategoryKey, widget.currentMenuList);
                         print('메뉴 코드: $menuCode');
                         
                         // 이미지 데이터
-                        Uint8List imageBytes = ref.watch(imageBytesProvider.notifier).state!;
+                        Uint8List? imageBytes = ref.read(imageBytesProvider.notifier).getState();
+                        if (imageBytes == null) {
+                          print('입력된 이미지가 없어 기본 이미지로 대체합니다.');
+                          ByteData bytes = await rootBundle.load('lib/Assets/Image/Duck_with_bell.png');
+                          imageBytes = bytes.buffer.asUint8List();
+                        }
                         
                         // 메뉴 이름
                         String name = nameController.text;
-                        
-                        // 메뉴 설명
                         String description = descriptionController.text;
-                        
-                        // 가격
                         int price = int.parse(priceController.text);
                         
                         // addMenu 함수 호출
-                        if(true == await ref.read(storeDataProvider.notifier).addMenu(context, imageBytes, menuCode, name, selectedCategoryKey!, description, price, loginData!)){
+                        if(true == await ref.read(storeDataProvider.notifier).addMenu(context, imageBytes, menuCode, name, selectedCategoryKey!, description, price, loginData)){
                           ref.read(imageBytesProvider.notifier).resetState();
                           Navigator.pop(context);
                         }
@@ -181,8 +203,8 @@ class AddMenuModal extends ConsumerWidget {
   String _generateMenuCode(String? categoryKey, List<Menu>? menuList) {
     if (categoryKey == null || menuList == null) return '';
     int highestNumber = 0;
-    String categoryPrefix = categoryKey.toUpperCase();
-    menuList.forEach((menu) {
+    String categoryPrefix = categoryKey?.toUpperCase() ?? '';
+    menuList?.forEach((menu) {
       if (menu.menuCode.startsWith(categoryPrefix) && menu.menuCode.length > categoryPrefix.length) {
         int currentNumber = int.tryParse(menu.menuCode.substring(categoryPrefix.length)) ?? 0;
         if (currentNumber > highestNumber) {
@@ -190,6 +212,6 @@ class AddMenuModal extends ConsumerWidget {
         }
       }
     });
-    return '$categoryPrefix${(highestNumber + 1).toString().padLeft(3, '0')}';  // 예: "APP004"
+    return '$categoryPrefix${(highestNumber + 1).toString().padLeft(3, '0')}';
   }
 }
