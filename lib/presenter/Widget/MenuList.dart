@@ -63,7 +63,7 @@ class MenuListWidget extends ConsumerWidget {
               icon: Icon(Icons.edit),
               onPressed: () {
                 // 카테고리 수정 모달 표시 함수 호출
-                showEditCategoryModal(context, key, storeData.menuCategories[key], storeData.menuCategories);
+                showEditCategoryModal(context, key, storeData.menuCategories[key], storeData.menuCategories, menus);
               },
             ),
             children: menus.isNotEmpty ? menus.map((menu) => Card(
@@ -78,7 +78,7 @@ class MenuListWidget extends ConsumerWidget {
                 subtitle: Text(menu.menuInfo),
                 trailing: Text('${menu.price}￦', style: TextStyle(fontSize: 14)),
                 onTap: () {
-                  showModifyMenuModal(context, menu, storeData.menuCategories);
+                  showModifyMenuModal(context, menu);
                 },
               ),
             )).toList() : [ListTile(title: Text("이 카테고리에는 현재 메뉴가 없습니다. 필요시 추가해주세요!"))], // 메뉴가 없는 경우 처리
@@ -93,7 +93,7 @@ class MenuListWidget extends ConsumerWidget {
             child: FloatingActionButton(
               onPressed: () {
                 // 새 기능 추가 예정
-                showEditCategoryModal(context, null, null, storeData.menuCategories);
+                showEditCategoryModal(context, null, null, storeData.menuCategories, []);
               },
               child: Icon(Icons.edit),
               tooltip: '카테고리 추가하기',

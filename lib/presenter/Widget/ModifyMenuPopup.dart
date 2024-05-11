@@ -11,7 +11,7 @@ import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
 
 
 
-void showModifyMenuModal(BuildContext context, Menu menu, Map<String, String?> menuCategory) {
+void showModifyMenuModal(BuildContext context, Menu menu) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
