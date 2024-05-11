@@ -21,7 +21,7 @@ class ManagementScreenWidget extends ConsumerWidget {
 
     return stompClientAsyncValue.when(
       data: (stompClient) {
-        return _ManagementScreenBody(loginData: loginResponse);
+        return ManagementScreenBody(loginData: loginResponse);
       },
       loading: () {
         // 로딩 중이면 로딩 스피너를 표시합니다.
@@ -35,15 +35,28 @@ class ManagementScreenWidget extends ConsumerWidget {
   }
 }
 
-class _ManagementScreenBody extends ConsumerWidget {
+class ManagementScreenBody extends ConsumerStatefulWidget {
   final LoginData loginData;
-  bool isSubscribed = false;
-  StoreData? currentStoreData;
 
-  _ManagementScreenBody({required this.loginData});
+  ManagementScreenBody({required this.loginData});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _ManagementScreenBodyState createState() => _ManagementScreenBodyState();
+}
+
+class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
+  StoreData? currentStoreData;
+  bool isSubscribed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 데이터 요청 로직을 initState로 이동하여 최초 1회만 실행
+    ref.read(storeDataProvider.notifier).requestStoreData(widget.loginData.storeCode);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     currentStoreData = ref.watch(storeDataProvider);
 
     if (currentStoreData == null) {
@@ -53,9 +66,9 @@ class _ManagementScreenBody extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('매장 코드 : ${loginData.storeCode}', style: TextStyle(fontSize: 20)),
+              Text('매장 코드 : ${widget.loginData.storeCode}', style: TextStyle(fontSize: 20)),
               ElevatedButton(
-                onPressed: () => ref.read(storeDataProvider.notifier).requestStoreData(loginData.storeCode),
+                onPressed: () {}, // 데이터는 이미 요청됨
                 child: Text("가게 정보 수신하기"),
               ),
             ],
@@ -64,11 +77,8 @@ class _ManagementScreenBody extends ConsumerWidget {
       );
     }
 
-    // StoreData가 null이 아닐 때 화면
     return Scaffold(
-      appBar: AppBar(
-        title: Text('가게 정보 관리 화면'),
-      ),
+      appBar: AppBar(title: Text('가게 정보 관리 화면')),
       body: Column(
         children: [
           Expanded(
@@ -93,55 +103,26 @@ class _ManagementScreenBody extends ConsumerWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(currentStoreData!.storeName, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('영업시간: ${currentStoreData!.openingTime} ~ ${currentStoreData!.closingTime}', style: TextStyle(fontSize: 18)),
-                      TextButton(
-                        onPressed: () {
-                          // 영업시간 수정 로직
-                        },
-                        child: Text('영업시간 수정하기'),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('라스트오더: ${currentStoreData!.lastOrderTime}', style: TextStyle(fontSize: 18)),
-                      TextButton(
-                        onPressed: () {
-                          // 라스트오더 수정 로직
-                        },
-                        child: Text('라스트오더 수정하기'),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('브레이크타임: ${currentStoreData!.startBreakTime} ~ ${currentStoreData!.endBreakTime}', style: TextStyle(fontSize: 18)),
-                      TextButton(
-                        onPressed: () {
-                          // 브레이크타임 수정 로직
-                        },
-                        child: Text('브레이크타임 수정하기'),
-                      ),
-                    ],
-                  ),
+                  buildTimeRow('영업시간', currentStoreData!.openingTime, currentStoreData!.closingTime, () {
+                    // 영업시간 수정 로직
+                  }),
+                  buildTimeRow('라스트오더', currentStoreData!.lastOrderTime, '', () {
+                    // 라스트오더 수정 로직
+                  }),
+                  buildTimeRow('브레이크타임', currentStoreData!.startBreakTime, currentStoreData!.endBreakTime, () {
+                    // 브레이크타임 수정 로직
+                  }),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) => MenuListWidget(
-                          loginResponse: loginData, 
-                        )
+                        builder: (BuildContext context) => MenuListWidget(loginResponse: widget.loginData)
                       ));
                     },
                     child: Text('메뉴 관리하기'),
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      ref.read(storeDataProvider.notifier).requestStoreData(loginData!.storeCode);
+                      ref.read(storeDataProvider.notifier).requestStoreData(widget.loginData.storeCode);
                     },
                     child: Text('새로고침'),
                   ),
@@ -153,8 +134,20 @@ class _ManagementScreenBody extends ConsumerWidget {
       ),
     );
   }
-}
 
+  Widget buildTimeRow(String label, String time1, String time2, VoidCallback onPressed) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('$label: $time1 ${time2.isNotEmpty ? '~ $time2' : ''}', style: TextStyle(fontSize: 18)),
+        TextButton(
+          onPressed: onPressed,
+          child: Text('$label 수정하기'),
+        ),
+      ],
+    );
+  }
+}
 
 class _LoadingScreen extends StatelessWidget {
   @override
