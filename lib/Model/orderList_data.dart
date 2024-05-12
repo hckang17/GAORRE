@@ -21,6 +21,24 @@ class OrderList {
       orderedItemList : itemList,
     );
   }
+
+  @override
+  String toString() {
+    String returnValue = '주문내역 : ';
+
+    if (orderedItemList != null) {
+      for (var item in orderedItemList!) {
+        returnValue += '품목 : ${item.menuName} 의 수량 : ${item.amount}, ';
+      }
+    }
+
+    // 마지막 쉼표와 공백 제거
+    if (returnValue.endsWith(', ')) {
+      returnValue = returnValue.substring(0, returnValue.length - 2);
+    }
+
+    return returnValue;
+  }
 }
 
 class OrderedMenu {
@@ -42,31 +60,3 @@ class OrderedMenu {
     );
   }
 }
-// {
-//     "status": "200",
-//     "storeCode": 1,
-//     "tableNumber": 1,
-//     "totalPrice": 134800,
-//     "orderItems": [
-//         {
-//             "menuName": "김초밥(후토마끼)",
-//             "price": 18000,
-//             "amount": 5
-//         },
-//         {
-//             "menuName": "명란크림파스타",
-//             "price": 9900,
-//             "amount": 2
-//         },
-//         {
-//             "menuName": "스키야키",
-//             "price": 20000,
-//             "amount": 1
-//         },
-//         {
-//             "menuName": "참이슬",
-//             "price": 5000,
-//             "amount": 1
-//         }
-//     ]
-// }
