@@ -27,7 +27,7 @@ class _OrderInfoWidgetState extends ConsumerState<OrderInfoWidget> {
 
   void updateSeatInfo() {
     final Seat updatedSeat = ref.read(tableProvider.notifier).getSeatByNumberSeat(widget.table.tableNumber);
-    if (updatedSeat != null && updatedSeat != currentSeat) {
+    if (updatedSeat != currentSeat) {
       print('current싯 갱신할거야!');
       print('갱신할 시트 정보..... 제발 되라 ${updatedSeat.orderInfo.toString()}');
       setState(() {
