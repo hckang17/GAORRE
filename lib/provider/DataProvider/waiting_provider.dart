@@ -6,6 +6,7 @@ import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/waiting_data_model.dart';
 import 'package:orre_manager/presenter/Widget/alertDialog.dart';
 import 'package:orre_manager/services/http_service.dart';
+import 'package:orre_manager/services/send_SMS_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
@@ -110,38 +111,45 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
-  Future<void> requestUserCall(BuildContext context, int waitingNumber, int storeCode, int minutesToAdd) async {
+  Future<void> requestUserCall(BuildContext context, String phoneNumber, int waitingNumber, int storeCode, int minutesToAdd) async {
     print('고객 호출 - waitingNumber $waitingNumber');
     final jsonBody = json.encode({
         "storeCode": storeCode,
         "waitingTeam": waitingNumber,
         "minutesToAdd": minutesToAdd,
     });
-    final response = await HttpsService.postRequest('/StoreAdmin/userCall', jsonBody);
-    if(response.statusCode == 200) {
-      final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
-      CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseBody);
-      if(callGuestResponse.storeCode == storeCode){
-        //고객호출 성공
-        String formattedTime = extractEntryTime(callGuestResponse.entryTime);
-        WaitingData? currentState = state;
-        // WaitingTeam의 entryTime을 업데이트
-        currentState!.teamInfoList.forEach((waitingTeam) {
-          if (waitingTeam.waitingNumber == callGuestResponse.waitingTeam) {
-            waitingTeam.entryTime = DateTime.parse(callGuestResponse.entryTime);
-          }
-        });
-        updateState(currentState);
-        showAlertDialog(context, '$waitingNumber번 고객 호출', '입장 마감 시간 : $formattedTime', null);
-      } else {
-        // 고객호출 실패
-        print('고객호출 실패');
-        showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
-      }
-    } else {
-      // 에러발생.
-
-    }
+    // final response = await HttpsService.postRequest('/StoreAdmin/userCall', jsonBody);
+    bool result = await SendSMSService.requestSendSMS(phoneNumber, "낭만단대", "웨이팅호출");
+    if(result) await showAlertDialog(context, "웨이팅 호출 SMS 전송", "성공!!", null);
+    
+    // if(response.statusCode == 200) {
+    //   final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
+    //   try {
+    //     CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseBody);
+    //     if(callGuestResponse.storeCode == storeCode){
+    //       //고객호출 성공
+    //       String formattedTime = extractEntryTime(callGuestResponse.entryTime);
+    //       WaitingData? currentState = state;
+    //       // WaitingTeam의 entryTime을 업데이트
+    //       currentState!.teamInfoList.forEach((waitingTeam) {
+    //         if (waitingTeam.waitingNumber == callGuestResponse.waitingTeam) {
+    //           waitingTeam.entryTime = DateTime.parse(callGuestResponse.entryTime);
+    //         }
+    //       });
+    //       updateState(currentState);
+    //       showAlertDialog(context, '$waitingNumber번 고객 호출', '입장 마감 시간 : $formattedTime', null);
+    //     } else {
+    //       // 고객호출 실패
+    //       print('고객호출 실패');
+    //       showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+    //     }
+    //   }catch(error){
+    //     print('고객 호출 실패. 에러 : $error');
+    //     showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+    //   }
+    // } else {
+    //   print('HTTP 에러. 에러코드 : ${response.statusCode}');
+    // }
   }
 
   Future<void> requestUserDelete(BuildContext context, int storeCode, int noShowWaitingNumber) async {

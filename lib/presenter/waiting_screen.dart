@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:js';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/presenter/Widget/WaitingPage/AddWaitingPopup.dart';
@@ -146,6 +145,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
       mainAxisSize: MainAxisSize.min,
       children: [
         CallIconButton(
+          phoneNumber: team.phoneNumber,
           waitingNumber: team.waitingNumber,
           storeCode: storeCode,
           minutesToAdd: minutesToAdd,
@@ -168,6 +168,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
           onPressed: () {
             ref.read(waitingProvider.notifier).requestUserCall(
               ref.context,
+              currentWaitingData!.teamInfoList[0].phoneNumber,
               currentWaitingData!.teamInfoList[0].waitingNumber,
               storeCode,
               minutesToAdd);
