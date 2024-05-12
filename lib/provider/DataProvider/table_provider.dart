@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/guest_data_model.dart';
+import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/orderList_data.dart';
 import 'package:orre_manager/Model/restaurant_table_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:orre_manager/presenter/Widget/alertDialog.dart';
 import 'package:orre_manager/services/http_service.dart';
 
 import 'package:stomp_dart_client/stomp.dart';
@@ -37,7 +39,8 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     if(state == null) {
       print('TableData가 null이므로, 그대로 newState적용');
       state = newState;
-    } else {
+      return;
+    } 
       RestaurantTable currentState = state!;
       List<Seat> currentTableList = currentState.table;
       if(currentTableList.length == newState.table.length){
@@ -50,7 +53,7 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
               maxPersonPerTable: newSeat.maxPersonPerTable,
               tableStatus: newSeat.tableStatus,
               guestInfo: currentTableList[existingSeatIndex].guestInfo ?? newSeat.guestInfo,
-              orderInfo: currentTableList[existingSeatIndex].orderInfo ?? newSeat.orderInfo,
+              orderInfo: newSeat.orderInfo,
             );
           } else {
             currentTableList.add(newSeat);
@@ -79,9 +82,18 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
           }
         }
       }
-      state = RestaurantTable(table:currentTableList);
-    }
+      RestaurantTable finalState = RestaurantTable(table: currentTableList);
+      state = finalState;
+    
     // state = newState;
+  }
+
+  Seat getSeatByNumberSeat(int tableNumber) {
+    // state.table에서 tableNumber가 일치하는 Seat를 찾아 반환, 없다면 기본 Seat 객체 반환
+    return state!.table.firstWhere(
+      (seat) => seat.tableNumber == tableNumber,
+      orElse: () => Seat(tableNumber: -1, maxPersonPerTable: 0, tableStatus: -1)
+    );
   }
 
   FutureOr<bool> requestTableOrderList(int storeCode, int tableNumber) async {
@@ -95,8 +107,8 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
         final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
         print('수신내역 : ${responseBody.toString()}');
         OrderList orderList = OrderList.fromJson(responseBody);
+        print('좌석 주문정보를 수정합니다');
         updateSeatWithOrderList(orderList);
-        print('주문정보 업데이트를 진행합니다');
         return true;
       } else {
         print('주문정보 수신 실패');
@@ -108,12 +120,40 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     }
   }
 
-  FutureOr<bool> editOrderedList() async {
-    
-    
-    return false;
-  }
-  /* subscribe 관련 코드 */
+  FutureOr<bool> editOrderedList(BuildContext context, LoginData loginData, String menuCode, int amount, int tableNumber) async {
+    print('테이블 메뉴 수정 요청');
+    final jsonBody = json.encode({
+      "storeCode" : loginData.storeCode,
+      "jwt" : loginData.loginToken,
+      "tableNumber" : tableNumber,
+      "menuCode" : menuCode,
+      "amount" : amount,
+    });
+    try {
+      final response = await HttpsService.postRequest('/StoreAdmin/menu/order/amount', jsonBody);
+      if(response.statusCode == 200) {
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        if(responseBody['success'] == true){
+          print('주문내역 수정 완료! 메뉴코드 : $menuCode');
+          await showAlertDialog(context, "주문내역 수정", "성공!", null);
+          return true;
+        } else {
+          print('주문내역 수정 실패! 메뉴코드 : $menuCode');
+          await showAlertDialog(context, "주문내역 수정", "실패..", null);
+          return false;
+        }
+      } else {
+        print('HTTP 에러 발생');
+        await showAlertDialog(context, "HTTP 에러", "HTTP 요청 실패", null);
+        return false;
+      }
+    } catch (error) {
+      print('에러 발생 : $error');
+      await showAlertDialog(context, "에러 발생", error.toString(), null);
+      return false;
+    }
+  }  /* subscribe 관련 코드 */
+  
   void subscribeToTableData(int storeCode) {
     print('<TableData> 구독 요청 수신.');
     if(subscriptionInfo[0] != null){
@@ -178,17 +218,22 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
   }
 
   void updateSeatWithOrderList(OrderList orderList) {
-    // Find the index of the seat with matching tableNumber
     int seatIndex = state?.table.indexWhere((seat) => seat.tableNumber == orderList.tableNumber) ?? -1;
-    RestaurantTable? currentTable = state;
-    List<Seat> currentSeats = currentTable!.table;
-    currentSeats[seatIndex].orderInfo = orderList;
-    RestaurantTable target = RestaurantTable(table: currentSeats);
-    updateState(target);
+    if (seatIndex != -1) {
+      RestaurantTable? currentTable = state;
+      List<Seat> currentSeats = List<Seat>.from(currentTable!.table);
+      currentSeats[seatIndex] = Seat(
+        tableNumber: currentSeats[seatIndex].tableNumber,
+        maxPersonPerTable: currentSeats[seatIndex].maxPersonPerTable,
+        tableStatus: currentSeats[seatIndex].tableStatus,
+        guestInfo: currentSeats[seatIndex].guestInfo,
+        orderInfo: orderList,  // 직접 업데이트된 OrderList 객체를 할당
+      );
+      RestaurantTable newState = RestaurantTable(table : currentSeats);
+      updateState(newState);  // 새로운 객체 생성하여 상태 업데이트
+    }
   }
 
-
-//https://orre.store/api/admin/StoreAdmin/available
 
   Future<void> requestAddNewTable(int storeCode, int tableNumber, int personNumber, String jwtToken) async {
     var existingTableNumberIndex = state!.table.indexWhere((seat) => seat.tableNumber == tableNumber);

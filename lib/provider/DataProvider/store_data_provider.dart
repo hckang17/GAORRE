@@ -20,24 +20,52 @@ final storeDataProvider = StateNotifierProvider<StoreDataNotifier, StoreData?>((
 class StoreDataNotifier extends StateNotifier<StoreData?> {
   StoreDataNotifier() : super(null);
   
+  // 점포정보 반환
   StoreData? getStoreData() {
     return state;
   }
 
+  // 메뉴코드 찾는 메서드
+  String getMenuCode(String menuName) {
+    try {
+      // state 또는 state의 menuInfo가 null일 경우 예외를 발생시킵니다.
+      if (state == null || state!.menuInfo == null) {
+        throw Exception('가게 데이터가 없거나 메뉴 정보가 없습니다.');
+      }
+      
+      // 메뉴 리스트를 순회하며 메뉴 이름과 일치하는 메뉴 코드를 찾습니다.
+      for (Menu menu in state!.menuInfo!) {
+        if (menu.menuName == menuName) {
+          return menu.menuCode;
+        }
+      }
+
+      // 일치하는 메뉴가 없을 경우 예외를 발생시킵니다.
+      throw Exception('해당 이름의 메뉴를 찾을 수 없습니다: $menuName');
+    } catch (e) {
+      // 예외 발생 시 예외 메시지를 출력하고 빈 문자열을 반환합니다.
+      print('오류 발생: $e');
+      throw Exception('해당 이름의 메뉴를 찾을 수 없습니다: $menuName');
+    }
+  }
+
+  // 점포정보 갱신
   void updateState(StoreData? newState){
     print('가게정보를 업데이트합니다.');
     state = newState;
   }
 
+  // 메뉴카테고리 반환 메서드
   Map<String, String?> getMenuCategory(){
     return state!.menuCategories;
   }
 
+  // 메뉴리스트 반환 메서드
   List<Menu>? getMenuList() {
     return state!.menuInfo;
   }
 
-  Future<void> requestStoreData(int storeCode) async {
+  FutureOr<bool> requestStoreData(int storeCode) async {
     int tableNumber = 1;  // 딱히 중요하지 않은 변수라 일단 1 처리.
     final jsonBody = json.encode({
       "storeCode" : storeCode,
@@ -51,9 +79,13 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
         print('수신내역 : ${responseBody.toString()}');
         StoreData storeData = StoreData.fromJson(responseBody);
         updateState(storeData);
+        return true;
+      }else{
+        return false;
       }
     } catch (error) {
       print('에러 발생 : $error');
+      throw Exception('가게정보 요청 실패');
     }
   }
 

@@ -23,6 +23,8 @@ class _TableInfoWidgetState extends ConsumerState<TableInfoWidget> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(tableProvider);
+
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.all(16),

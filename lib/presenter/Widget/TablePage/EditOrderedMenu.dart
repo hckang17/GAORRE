@@ -1,108 +1,93 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:orre_manager/Model/menu_data_model.dart';
-// import 'package:orre_manager/presenter/Widget/alertDialog.dart';
-// import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
-// import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
+import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
+import 'package:orre_manager/provider/DataProvider/table_provider.dart';
 
-// void showEditOrderedMenuPopup(BuildContext context, String? menuCategoryKey,
-//     String? menuCategoryValue, Map<String, String?> currentMenuCategory, List<Menu>? menus) {
-//   showModalBottomSheet(
-//     context: context,
-//     isScrollControlled: true,
-//     builder: (BuildContext context) {
-//       return EditCategoryModal(
-//         menuCategoryKey: menuCategoryKey,
-//         menuCategoryValue: menuCategoryValue,
-//         currentMenuCategory: currentMenuCategory,
-//         menuInCategory: menus,
-//       );
-//     },
-//   );
-// }
+void showEditOrderedMenu(BuildContext context, String menuName, int amount, int tableNumber) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        child: EditOrderedMenuForm(menuName: menuName, initialAmount: amount, tableNumber : tableNumber),
+      );
+    },
+  );
+}
 
-// class EditCategoryModal extends ConsumerWidget {
-//   String? menuCategoryKey;
-//   String? menuCategoryValue;
-//   List<Menu>? menuInCategory;
-//   final Map<String, String?> currentMenuCategory;
-//   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-//   final TextEditingController _controller;
+class EditOrderedMenuForm extends ConsumerWidget {
+  final String menuName;
+  final int initialAmount;
+  final int tableNumber;
 
-//   EditCategoryModal({this.menuCategoryKey, this.menuCategoryValue, required this.currentMenuCategory, this.menuInCategory})
-//       : _controller = TextEditingController(text: menuCategoryValue);
+  EditOrderedMenuForm({Key? key, required this.menuName, required this.initialAmount, required this.tableNumber})
+      : super(key: key);
 
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     String? currentMenuCategoryKey = menuCategoryKey; // 현재 menuCategoryKey
-//       print('menuCategory한번 출력해보자');
-//       print('${currentMenuCategory.toString()}');
-//       print('menuInCategory한번 출력해보자');
-//       print('${menuInCategory.toString()}');
-//     // menuCategoryKey가 null이면, 값이 null인 첫 번째 key를 찾습니다.
-//     if (menuCategoryKey == null) {
-//       for (var key in currentMenuCategory.keys) {
-//         if (currentMenuCategory[key] == null) { // 값이 null인 경우
-//           menuCategoryKey = key;
-//           break;
-//         }
-//       }
-//     }
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final amountProvider = StateProvider<int>((ref) => initialAmount);
 
-//     return Padding(
-//       padding: MediaQuery.of(context).viewInsets,
-//       child: Form(
-//         key: _formKey,
-//         child: Column(
-//           mainAxisSize: MainAxisSize.min,
-//           children: <Widget>[
-//             Padding(
-//               padding: const EdgeInsets.all(8.0),
-//               child: TextFormField(
-//                 controller: _controller,
-//                 decoration: InputDecoration(
-//                   hintText: '카테고리명을 입력해주세요.',
-//                   labelText: '카테고리 이름'
-//                 ),
-//                 validator: (value) {
-//                   if (value == null || value.trim().isEmpty) {
-//                     return '카테고리명은 필수입니다.';
-//                   }
-//                   return null;
-//                 },
-//               ),
-//             ),
-//             ElevatedButton(
-//               onPressed: () async {
-//                 if (_formKey.currentState!.validate()) {
-//                   print('메뉴 카테고리: ${menuCategoryKey}, 카테고리명: ${_controller.text}');
-//                   // 등록 또는 수정 작업을 여기서 처리
-//                   if(true == await ref.read(storeDataProvider.notifier).editCategory(
-//                     context, ref.read(loginProvider.notifier).getLoginData(), menuInCategory,
-//                     menuCategoryKey!, _controller.text
-//                   )){ Navigator.of(context).pop(); } // 모달까지 닫아줌.
-//                 }
-//               },
-//               child: Text('등록/수정하기'),
-//             ),
-//             ElevatedButton(
-//             onPressed: (currentMenuCategoryKey != null) ? () async {
-//               // 카테고리 삭제 로직 -> 현재 카테고리 키가 null이 아니고 해당 카테고리에 배정된 메뉴가 없을때 
-//               print('카테고리 삭제: ${currentMenuCategoryKey}');
-//               if(true == await ref.read(storeDataProvider.notifier).editCategory(context,
-//                ref.read(loginProvider.notifier).getLoginData(), menuInCategory,
-//                currentMenuCategoryKey, null)){ Navigator.of(context).pop(); }
-//             } : null, // menuCategoryKey가 null이면 버튼 비활성화
-//             child: Text('카테고리 삭제하기'),
-//             style: ElevatedButton.styleFrom(
-//               disabledForegroundColor: Colors.grey.withOpacity(0.38), disabledBackgroundColor: Colors.grey.withOpacity(0.12), // 비활성화 상태에서의 색상
-//             ),
-//           )
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Text(menuName, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Amount:', style: TextStyle(fontSize: 18)),
+              Consumer(
+                builder: (context, ref, child) {
+                  final amount = ref.watch(amountProvider);
+                  return Text('$amount', style: TextStyle(fontSize: 18));
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.add),
+                onPressed: () => ref.read(amountProvider.notifier).update((state) => state + 1),
+              ),
+              IconButton(
+                icon: Icon(Icons.remove),
+                onPressed: () => ref.read(amountProvider.notifier).update((state) => state != 0 ? state - 1 : 0),
+              ),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            TextButton(
+              onPressed: () async {
+                // 이 부분에 '반영하기' 버튼의 로직을 구현합니다.
+                // 예를 들어, 변경된 amount를 서버에 저장하는 코드 등을 포함할 수 있습니다.
+                final int payload = ref.read(amountProvider.notifier).state - initialAmount;
+                final String menuCode = ref.read(storeDataProvider.notifier).getMenuCode(menuName);
+                if(true == await ref.read(tableProvider.notifier).editOrderedList(
+                  ref.context, ref.read(loginProvider.notifier).getLoginData(), 
+                  menuCode, payload, tableNumber)
+                  ) {
+                  await ref.read(tableProvider.notifier).requestTableOrderList(
+                     ref.read(loginProvider.notifier).getLoginData().storeCode, tableNumber);
+                  Navigator.of(context).pop(); // 다이얼로그를 닫습니다.
+                }
+              },
+              child: Text('반영하기'),
+            ),
+            TextButton(
+              onPressed: () {
+                // '취소하기' 버튼은 다이얼로그를 닫습니다.
+                Navigator.of(context).pop();
+              },
+              child: Text('취소하기'),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+}
