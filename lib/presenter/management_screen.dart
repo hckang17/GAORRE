@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/store_data_model.dart';
-import 'package:orre_manager/presenter/Widget/menuList.dart';
+import 'package:orre_manager/presenter/Widget/ManagerPage/MenuList.dart';
 import 'package:orre_manager/presenter/table_status_screen.dart';
 import 'package:orre_manager/provider/DataProvider/stomp_client_future_provider.dart';
 import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';

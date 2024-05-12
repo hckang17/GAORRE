@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/waiting_data_model.dart';
 import 'package:orre_manager/presenter/Widget/alertDialog.dart';
 import 'package:orre_manager/services/http_service.dart';
@@ -171,6 +173,36 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
+  FutureOr<bool> addWaitingTeam (BuildContext context, LoginData loginData, String phoneNumber, int personCount) async {
+    print('수동 웨이팅 팀 추가 요청 발생');
+    final jsonBody = json.encode({
+      "storeCode" : loginData.storeCode,
+      "jwtAdmin" : loginData.loginToken,
+      "phoneNumber" : phoneNumber,
+      "personCount" : personCount,
+    });
+    try {
+      final response = await HttpsService.postRequest('엔드포인트', jsonBody);
+      if(response.statusCode == 200){
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        if(responseBody['statusCode'] == "200") {
+          print('웨이팅 팀 추가 정상 완료');
+          await showAlertDialog(context, "웨이팅 수동추가", "추가 성공!", null);
+          return true;
+        }else{
+          print('웨이팅 팀 추가 실패');
+          await showAlertDialog(context, "웨이팅 수동추가", "추가 실패", null);
+          return false;
+        }
+      }else{
+        print('HTTP 에러발생');
+        return false;
+      }
+    } catch (error) {
+      print('에러발생 : $error');
+      return false;
+    }
+  }
 
   void waitingData_CallBack(StompFrame? frame) {
     print('<WaitingData> 메세지 수신. 다음은 수신된 메세지입니다.');
@@ -207,7 +239,6 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       }),
     );
   }
-
 
   void unSubscribe(int index) { 
     // index는 어떤것을 구독해제 할 지 결정하기 위한 변수임.

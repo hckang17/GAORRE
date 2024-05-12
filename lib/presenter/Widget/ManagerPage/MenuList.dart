@@ -3,14 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/menu_data_model.dart';
 import 'package:orre_manager/Model/store_data_model.dart';
-import 'package:orre_manager/presenter/Widget/AddMenuPopup.dart';
-import 'package:orre_manager/presenter/Widget/EditCategoryPopup.dart';
-import 'package:orre_manager/presenter/table_status_screen.dart';
-import 'package:orre_manager/provider/DataProvider/stomp_client_future_provider.dart';
+import 'package:orre_manager/presenter/Widget/ManagerPage/AddMenuPopup.dart';
+import 'package:orre_manager/presenter/Widget/ManagerPage/EditCategoryPopup.dart';
 import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
-import 'package:orre_manager/presenter/Widget/ModifyMenuPopup.dart';
+import 'package:orre_manager/presenter/Widget/ManagerPage/ModifyMenuPopup.dart';
 
 class MenuListWidget extends ConsumerWidget {
   final LoginData loginResponse;

@@ -2,8 +2,8 @@ import 'dart:ui';
 // CallIconButton.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../provider/WidgetProvider/call_button_provider.dart';
-import '../../provider/DataProvider/waiting_provider.dart';
+import '../../../provider/WidgetProvider/call_button_provider.dart';
+import '../../../provider/DataProvider/waiting_provider.dart';
 
 class CallIconButton extends ConsumerWidget {
   final int waitingNumber;

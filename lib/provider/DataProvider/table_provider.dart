@@ -108,7 +108,11 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     }
   }
 
-
+  FutureOr<bool> editOrderedList() async {
+    
+    
+    return false;
+  }
   /* subscribe 관련 코드 */
   void subscribeToTableData(int storeCode) {
     print('<TableData> 구독 요청 수신.');

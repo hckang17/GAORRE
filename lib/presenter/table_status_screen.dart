@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/restaurant_table_model.dart';
+import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
 import 'package:orre_manager/provider/DataProvider/stomp_client_future_provider.dart';
 import 'package:orre_manager/provider/DataProvider/table_provider.dart';
-import 'Widget/ShowTableInfo.dart' as my_widget;
+import 'Widget/TablePage/ShowTableInfo.dart' as my_widget;
 
 class TableManagementScreen extends ConsumerWidget {
   final LoginData loginResponse;
@@ -16,7 +17,7 @@ class TableManagementScreen extends ConsumerWidget {
 
     return stompClientAsyncValue.when(
       data: (stompClient) {
-        return _TableManagementBody(loginData: loginResponse);
+        return TableManagementBody(loginData: loginResponse);
       },
       loading: () {
         // 로딩 중이면 로딩 스피너를 표시합니다.
@@ -29,39 +30,52 @@ class TableManagementScreen extends ConsumerWidget {
     );
   }
 }
-
-class _TableManagementBody extends ConsumerWidget {
+  
+class TableManagementBody extends ConsumerStatefulWidget {
   final LoginData loginData;
-  // late int storeCode;
+
+  TableManagementBody({required this.loginData});
+
+  @override
+  _TableManagementBodyState createState() => _TableManagementBodyState();
+}
+
+class _TableManagementBodyState extends ConsumerState<TableManagementBody> with AutomaticKeepAliveClientMixin {
   RestaurantTable? restaurantTable;
-  bool isSubscribed = false;  
+  bool isSubscribed = false;
 
-  _TableManagementBody({required this.loginData});
+  @override
+  bool get wantKeepAlive => true; // 위젯이 pop 되어도 상태 유지
 
-  void subscribeProcess(WidgetRef ref, BuildContext context){
+  @override
+  void initState() {
+    super.initState();
+    subscribeProcess();
+  }
+
+  void subscribeProcess() {
     if (restaurantTable == null && !isSubscribed) {
-      // storeCode = loginData.storeCode;
       final restaurantTableNotifier = ref.read(tableProvider.notifier);
-      restaurantTableNotifier.subscribeToLockTableData(loginData!.storeCode);
-      restaurantTableNotifier.subscribeToUnlockTableData(loginData!.storeCode);
-      restaurantTableNotifier.subscribeToTableData(loginData!.storeCode);
-      restaurantTableNotifier.sendStoreCode(loginData!.storeCode);
-      isSubscribed = true; // sendWaitingData가 한 번만 호출되도록 설정
+      restaurantTableNotifier.subscribeToLockTableData(widget.loginData.storeCode);
+      restaurantTableNotifier.subscribeToUnlockTableData(widget.loginData.storeCode);
+      restaurantTableNotifier.subscribeToTableData(widget.loginData.storeCode);
+      restaurantTableNotifier.sendStoreCode(widget.loginData.storeCode);
+      isSubscribed = true;
     }
   }
-  
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    restaurantTable = ref.watch(tableProvider);
-    subscribeProcess(ref, context);
 
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    restaurantTable = ref.watch(tableProvider);
+    
     if (restaurantTable == null) {
       return _LoadingScreen();
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('TableManagement Screen'),
+        title: Text('Table Management Screen'),
       ),
       body: Center(
         child: Column(
@@ -72,50 +86,41 @@ class _TableManagementBody extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
-                      _addNewTable(ref, context, loginData);
-                      // '테이블 추가하기' 버튼 동작 정의
-                    },
+                    onPressed: () => _addNewTable(ref, context, widget.loginData),
                     child: Text('테이블 추가하기'),
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      _deleteTable(ref, context, loginData);
-                      // '테이블 삭제하기' 버튼 동작 정의
-                    },
+                    onPressed: () => _deleteTable(ref, context, widget.loginData),
                     child: Text('테이블 삭제하기'),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 20), // 버튼과 GridView 사이 간격 조절
-
+            SizedBox(height: 20),
             Consumer(builder: (context, ref, child) {
               List<Seat> currentSeats = ref.watch(tableProvider)!.table;
               
               return LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
                   return SizedBox(
-                    width: constraints.maxWidth * 0.8, // 전체 너비의 80%
-                    height: constraints.maxWidth * 0.8, // 전체 너비의 80%
+                    width: constraints.maxWidth * 0.8,
+                    height: constraints.maxWidth * 0.8,
                     child: GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         mainAxisSpacing: 10.0,
                         crossAxisSpacing: 10.0,
-                        childAspectRatio: 3 / 2, // 각 항목의 가로:세로 비율 설정
+                        childAspectRatio: 3 / 2,
                       ),
                       itemCount: currentSeats.length,
                       itemBuilder: (BuildContext context, int index) {
                         return GestureDetector(
                           onTap: () async {
-                            // 메뉴리스트를 받아올 때 까지 기다림. 만약, 
-                            await ref.read(tableProvider.notifier).requestTableOrderList(loginData!.storeCode, currentSeats[index].tableNumber);
-                            // requestTableOrderList가 완료된 후에 _showTableInfoPopup 함수를 호출합니다.
-                            my_widget.showTableInfoPopup(ref, context, currentSeats[index], loginData);
+                            await ref.read(tableProvider.notifier).requestTableOrderList(widget.loginData.storeCode, currentSeats[index].tableNumber);
+                            my_widget.showTableInfoPopup(ref, context, currentSeats[index], widget.loginData);
                           },
                           child: Container(
-                            color: currentSeats[index].tableStatus == 0 ? Colors.red : Colors.green, // 사용 가능 여부에 따라 색상 변경
+                            color: currentSeats[index].tableStatus == 0 ? Colors.red : Colors.green,
                             child: Center(
                               child: Text(
                                 currentSeats[index].tableNumber.toString(),
@@ -135,7 +140,7 @@ class _TableManagementBody extends ConsumerWidget {
       ),
     );
   }
-  
+
   void _addNewTable(WidgetRef ref, BuildContext context, LoginData loginData) {
     TextEditingController _tableNumberController = TextEditingController();
     TextEditingController _personNumberController = TextEditingController();
@@ -166,14 +171,14 @@ class _TableManagementBody extends ConsumerWidget {
                 int tableNumber = int.tryParse(_tableNumberController.text) ?? -1;
                 int personNumber = int.tryParse(_personNumberController.text) ?? -1;
                 ref.read(tableProvider.notifier).requestAddNewTable(
-                  loginData.storeCode, tableNumber, personNumber, loginData.loginToken!);
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+                  loginData.storeCode, tableNumber, personNumber, ref.read(loginProvider.notifier).getLoginData().loginToken!);
+                Navigator.of(context).pop();
               },
               child: Text('추가'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+                Navigator.of(context).pop();
               },
               child: Text('취소'),
             ),
@@ -206,14 +211,14 @@ class _TableManagementBody extends ConsumerWidget {
               onPressed: () {
                 int tableNumber = int.tryParse(_tableNumberController.text) ?? -1;
                 ref.read(tableProvider.notifier).requestDeleteTable(
-                  loginData.storeCode, tableNumber, loginData.loginToken!);
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+                  loginData.storeCode, tableNumber, ref.read(loginProvider.notifier).getLoginData().loginToken!);
+                Navigator.of(context).pop();
               },
               child: Text('제거'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+                Navigator.of(context). pop();
               },
               child: Text('취소'),
             ),
@@ -223,7 +228,6 @@ class _TableManagementBody extends ConsumerWidget {
     );
   }
 }
-
 
 class _LoadingScreen extends StatelessWidget {
   @override

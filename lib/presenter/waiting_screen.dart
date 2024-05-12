@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:js';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/Widget/CallButton.dart';
+import 'package:orre_manager/presenter/Widget/WaitingPage/AddWaitingPopup.dart';
+import 'package:orre_manager/presenter/Widget/WaitingPage/CallButton.dart';
 import 'package:orre_manager/presenter/management_screen.dart';
 import 'package:orre_manager/presenter/table_status_screen.dart';
 import 'package:orre_manager/provider/DataProvider/stomp_client_future_provider.dart';
@@ -64,6 +65,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
       body: currentWaitingData == null
           ? buildInitialScreen()
           : buildWaitingScreen(),
+      floatingActionButton: buildAddingWaitingTeam(),
     );
   }
 
@@ -190,6 +192,13 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
         ),
       ],
     );
+  }
+
+  Widget buildAddingWaitingTeam() {
+    return FloatingActionButton(
+      onPressed: () => showAddWaitingDialog(ref.context),
+      child: Icon(Icons.person_add),
+      tooltip: '웨이팅팀 수동 추가하기',);
   }
 
   String _getGuestStatus(int status) {
