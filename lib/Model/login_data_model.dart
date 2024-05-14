@@ -1,13 +1,11 @@
+import 'dart:convert';
+
 class LoginData {
-  final String status;
+  String? status;
   final int storeCode;
   final String? loginToken;
 
-  LoginData({
-    required this.status,
-    required this.storeCode,
-    required this.loginToken,
-  });
+  LoginData({this.status, required this.storeCode, required this.loginToken});
 
   factory LoginData.fromJson(Map<String, dynamic> json) {
     return LoginData(
@@ -15,5 +13,13 @@ class LoginData {
       storeCode: json['storeCode'],
       loginToken: json['token'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'storeCode': storeCode,
+      'token': loginToken,
+    };
   }
 }

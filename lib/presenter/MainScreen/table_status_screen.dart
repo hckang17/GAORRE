@@ -2,39 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/restaurant_table_model.dart';
-import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
-import 'package:orre_manager/provider/DataProvider/stomp_client_future_provider.dart';
-import 'package:orre_manager/provider/DataProvider/table_provider.dart';
-import 'Widget/TablePage/ShowTableInfo.dart' as my_widget;
+import 'package:orre_manager/provider/Data/loginDataProvider.dart';
+import 'package:orre_manager/Coding_references/stompClientFutureProvider.dart';
+import 'package:orre_manager/provider/Data/tableDataProvider.dart';
+import '../Widget/TablePage/ShowTableInfo.dart' as my_widget;
 
 class TableManagementScreen extends ConsumerWidget {
-  final LoginData loginResponse;
-  TableManagementScreen({required this.loginResponse});
+
+  TableManagementScreen();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stompClientAsyncValue = ref.watch(stompClientProvider);
+    // final stompClientAsyncValue = ref.watch(stompClientProvider);
 
-    return stompClientAsyncValue.when(
-      data: (stompClient) {
-        return TableManagementBody(loginData: loginResponse);
-      },
-      loading: () {
-        // 로딩 중이면 로딩 스피너를 표시합니다.
-        return _LoadingScreen();
-      },
-      error: (error, stackTrace) {
-        // 에러가 발생하면 에러 메시지를 표시합니다.
-        return _ErrorScreen(error);
-      },
-    );
+    // return stompClientAsyncValue.when(
+    //   data: (stompClient) {
+    //     return TableManagementBody(loginData: loginResponse);
+    //   },
+    //   loading: () {
+    //     // 로딩 중이면 로딩 스피너를 표시합니다.
+    //     return _LoadingScreen();
+    //   },
+    //   error: (error, stackTrace) {
+    //     // 에러가 발생하면 에러 메시지를 표시합니다.
+    //     return _ErrorScreen(error);
+    //   },
+    // );
+    ref.watch(tableProvider);
+    return TableManagementBody();
   }
 }
   
 class TableManagementBody extends ConsumerStatefulWidget {
-  final LoginData loginData;
-
-  TableManagementBody({required this.loginData});
+  TableManagementBody();
 
   @override
   _TableManagementBodyState createState() => _TableManagementBodyState();
@@ -42,6 +42,7 @@ class TableManagementBody extends ConsumerStatefulWidget {
 
 class _TableManagementBodyState extends ConsumerState<TableManagementBody> with AutomaticKeepAliveClientMixin {
   RestaurantTable? restaurantTable;
+  late LoginData? loginData;
   bool isSubscribed = false;
 
   @override
@@ -50,16 +51,17 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
   @override
   void initState() {
     super.initState();
+    loginData = ref.read(loginProvider.notifier).getLoginData();
     subscribeProcess();
   }
 
   void subscribeProcess() {
     if (restaurantTable == null && !isSubscribed) {
       final restaurantTableNotifier = ref.read(tableProvider.notifier);
-      restaurantTableNotifier.subscribeToLockTableData(widget.loginData.storeCode);
-      restaurantTableNotifier.subscribeToUnlockTableData(widget.loginData.storeCode);
-      restaurantTableNotifier.subscribeToTableData(widget.loginData.storeCode);
-      restaurantTableNotifier.sendStoreCode(widget.loginData.storeCode);
+      restaurantTableNotifier.subscribeToLockTableData(loginData!.storeCode);
+      restaurantTableNotifier.subscribeToUnlockTableData(loginData!.storeCode);
+      restaurantTableNotifier.subscribeToTableData(loginData!.storeCode);
+      restaurantTableNotifier.sendStoreCode(loginData!.storeCode);
       isSubscribed = true;
     }
   }
@@ -86,11 +88,11 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                    onPressed: () => _addNewTable(ref, context, widget.loginData),
+                    onPressed: () => _addNewTable(ref, context, loginData!),
                     child: Text('테이블 추가하기'),
                   ),
                   ElevatedButton(
-                    onPressed: () => _deleteTable(ref, context, widget.loginData),
+                    onPressed: () => _deleteTable(ref, context, loginData!),
                     child: Text('테이블 삭제하기'),
                   ),
                 ],
@@ -116,8 +118,8 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
                       itemBuilder: (BuildContext context, int index) {
                         return GestureDetector(
                           onTap: () async {
-                            await ref.read(tableProvider.notifier).requestTableOrderList(widget.loginData.storeCode, currentSeats[index].tableNumber);
-                            my_widget.showTableInfoPopup(ref, context, currentSeats[index], widget.loginData);
+                            await ref.read(tableProvider.notifier).requestTableOrderList(loginData!.storeCode, currentSeats[index].tableNumber);
+                            my_widget.showTableInfoPopup(ref, context, currentSeats[index], loginData!);
                           },
                           child: Container(
                             color: currentSeats[index].tableStatus == 0 ? Colors.red : Colors.green,

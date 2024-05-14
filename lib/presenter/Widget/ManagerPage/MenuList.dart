@@ -4,7 +4,7 @@ import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/menu_data_model.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/AddMenuPopup.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/EditCategoryPopup.dart';
-import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
+import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/ModifyMenuPopup.dart';
 
 class MenuListWidget extends ConsumerWidget {

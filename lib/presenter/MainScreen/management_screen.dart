@@ -2,49 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/store_data_model.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/MenuList.dart';
-import 'package:orre_manager/presenter/table_status_screen.dart';
-import 'package:orre_manager/provider/DataProvider/stomp_client_future_provider.dart';
-import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
-import 'package:stomp_dart_client/stomp.dart';
-import 'package:stomp_dart_client/stomp_frame.dart';
-import '../Model/login_data_model.dart';
-import '../Model/waiting_data_model.dart';
-import '../provider/DataProvider/waiting_provider.dart';
+import 'package:orre_manager/provider/Data/loginDataProvider.dart';
+import 'package:orre_manager/provider/Data/storeDataProvider.dart';
+import '../../Model/login_data_model.dart';
 
 class ManagementScreenWidget extends ConsumerWidget {
-  final LoginData loginResponse;
-  ManagementScreenWidget({required this.loginResponse});
+
+  ManagementScreenWidget();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stompClientAsyncValue = ref.watch(stompClientProvider);
 
-    return stompClientAsyncValue.when(
-      data: (stompClient) {
-        return ManagementScreenBody(loginData: loginResponse);
-      },
-      loading: () {
-        // 로딩 중이면 로딩 스피너를 표시합니다.
-        return _LoadingScreen();
-      },
-      error: (error, stackTrace) {
-        // 에러가 발생하면 에러 메시지를 표시합니다.
-        return _ErrorScreen(error);
-      },
-    );
+    ref.watch(storeDataProvider);
+    return ManagementScreenBody();
   }
 }
 
 class ManagementScreenBody extends ConsumerStatefulWidget {
-  final LoginData loginData;
 
-  ManagementScreenBody({required this.loginData});
+  ManagementScreenBody();
 
   @override
   _ManagementScreenBodyState createState() => _ManagementScreenBodyState();
 }
 
 class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
+  late LoginData? loginData;
   StoreData? currentStoreData;
   bool isSubscribed = false;
 
@@ -52,7 +35,8 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
   void initState() {
     super.initState();
     // 데이터 요청 로직을 initState로 이동하여 최초 1회만 실행
-    ref.read(storeDataProvider.notifier).requestStoreData(widget.loginData.storeCode);
+    loginData = ref.read(loginProvider.notifier).getLoginData();
+    ref.read(storeDataProvider.notifier).requestStoreData(loginData!.storeCode);
   }
 
   @override
@@ -66,7 +50,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('매장 코드 : ${widget.loginData.storeCode}', style: TextStyle(fontSize: 20)),
+              Text('매장 코드 : ${loginData!.storeCode}', style: TextStyle(fontSize: 20)),
               ElevatedButton(
                 onPressed: () {}, // 데이터는 이미 요청됨
                 child: Text("가게 정보 수신하기"),
@@ -115,14 +99,14 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) => MenuListWidget(loginResponse: widget.loginData)
+                        builder: (BuildContext context) => MenuListWidget(loginResponse: loginData!)
                       ));
                     },
                     child: Text('메뉴 관리하기'),
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      ref.read(storeDataProvider.notifier).requestStoreData(widget.loginData.storeCode);
+                      ref.read(storeDataProvider.notifier).requestStoreData(loginData!.storeCode);
                     },
                     child: Text('새로고침'),
                   ),

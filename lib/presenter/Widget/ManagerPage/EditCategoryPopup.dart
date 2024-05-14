@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/menu_data_model.dart';
-import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
-import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
+import 'package:orre_manager/provider/Data/loginDataProvider.dart';
+import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 
 void showEditCategoryModal(BuildContext context, String? menuCategoryKey,
     String? menuCategoryValue, Map<String, String?> currentMenuCategory, List<Menu>? menus) {
