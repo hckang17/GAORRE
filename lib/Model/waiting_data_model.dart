@@ -21,6 +21,14 @@ class WaitingData {
       estimatedWaitingTimePerTeam: json['estimatedWaitingTimePerTeam'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'storeCode': storeCode,
+      'teamInfoList': teamInfoList.map((team) => team.toJson()).toList(),
+      'estimatedWaitingTimePerTeam': estimatedWaitingTimePerTeam,
+    };
+  }
 }
 
 class WaitingTeam {
@@ -45,6 +53,16 @@ class WaitingTeam {
       phoneNumber: json['phoneNumber'],
       personNumber: json['personNumber'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'waitingNumber': waitingNumber,
+      'status': status,
+      'phoneNumber': phoneNumber,
+      'personNumber': personNumber,
+      'entryTime': entryTime?.toIso8601String(),
+    };
   }
 }
 

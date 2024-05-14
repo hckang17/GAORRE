@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/provider/DataProvider/admin_login_provider.dart';
-import 'package:orre_manager/provider/DataProvider/store_data_provider.dart';
-import 'package:orre_manager/provider/DataProvider/table_provider.dart';
+import 'package:orre_manager/provider/Data/loginDataProvider.dart';
+import 'package:orre_manager/provider/Data/storeDataProvider.dart';
+import 'package:orre_manager/provider/Data/tableDataProvider.dart';
 
 void showEditOrderedMenu(BuildContext context, String menuName, int amount, int tableNumber) {
   showDialog(

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/waiting_data_model.dart';
 import 'package:orre_manager/presenter/Widget/alertDialog.dart';
+import 'package:orre_manager/services/hive_service.dart';
 import 'package:orre_manager/services/http_service.dart';
 import 'package:orre_manager/services/send_SMS_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
@@ -32,6 +33,28 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
   void setClient(StompClient client) {
     print("<WaitingProvider> 스텀프 연결 설정");
     _client = client; // 내부 변수에 StompClient 인스턴스 저장
+    print('클라이언트 상태 : ${_client}');
+  }
+
+  void saveWaitingState() async {
+    try {
+      await HiveService.saveData('waitingData', state!.toJson());
+      print('[saveWaitingData] 성공! ');
+    } catch (error) {
+      print('웨이팅데이터 저장 실패... 에러 : $error');
+    }
+  }
+
+  loadWaitingData() async {
+    print('[WatingData] 데이터 로딩');
+    String? waitingDataRaw = await HiveService.retrieveData('waitingData');
+    if(waitingDataRaw == null){
+      state = null;
+    } else {
+      Map<String, dynamic> waitingDataJson = jsonDecode(waitingDataRaw);
+      WaitingData newWaitingData = WaitingData.fromJson(waitingDataJson);
+      updateState(newWaitingData);
+    }
   }
 
   WaitingData? getWaitingData() {
@@ -118,38 +141,38 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
         "waitingTeam": waitingNumber,
         "minutesToAdd": minutesToAdd,
     });
-    // final response = await HttpsService.postRequest('/StoreAdmin/userCall', jsonBody);
+    final response = await HttpsService.postRequest('/StoreAdmin/userCall', jsonBody);
     bool result = await SendSMSService.requestSendSMS(phoneNumber, "낭만단대", "웨이팅호출");
     if(result) await showAlertDialog(context, "웨이팅 호출 SMS 전송", "성공!!", null);
-    
-    // if(response.statusCode == 200) {
-    //   final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
-    //   try {
-    //     CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseBody);
-    //     if(callGuestResponse.storeCode == storeCode){
-    //       //고객호출 성공
-    //       String formattedTime = extractEntryTime(callGuestResponse.entryTime);
-    //       WaitingData? currentState = state;
-    //       // WaitingTeam의 entryTime을 업데이트
-    //       currentState!.teamInfoList.forEach((waitingTeam) {
-    //         if (waitingTeam.waitingNumber == callGuestResponse.waitingTeam) {
-    //           waitingTeam.entryTime = DateTime.parse(callGuestResponse.entryTime);
-    //         }
-    //       });
-    //       updateState(currentState);
-    //       showAlertDialog(context, '$waitingNumber번 고객 호출', '입장 마감 시간 : $formattedTime', null);
-    //     } else {
-    //       // 고객호출 실패
-    //       print('고객호출 실패');
-    //       showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
-    //     }
-    //   }catch(error){
-    //     print('고객 호출 실패. 에러 : $error');
-    //     showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
-    //   }
-    // } else {
-    //   print('HTTP 에러. 에러코드 : ${response.statusCode}');
-    // }
+    if(response.statusCode == 200) {
+      final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
+      try {
+        CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseBody);
+        if(callGuestResponse.storeCode == storeCode)
+        {
+          //고객호출 성공
+          String formattedTime = extractEntryTime(callGuestResponse.entryTime);
+          WaitingData? currentState = state;
+          // WaitingTeam의 entryTime을 업데이트
+          currentState!.teamInfoList.forEach((waitingTeam) {
+            if (waitingTeam.waitingNumber == callGuestResponse.waitingTeam) {
+              waitingTeam.entryTime = DateTime.parse(callGuestResponse.entryTime);
+            }
+          });
+          updateState(currentState);
+          showAlertDialog(context, '$waitingNumber번 고객 호출', '입장 마감 시간 : $formattedTime', null);
+        } else {
+          // 고객호출 실패
+          print('고객호출 실패');
+          showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+        }
+      }catch(error){
+        print('고객 호출 실패. 에러 : $error');
+        showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+      }
+    } else {
+      print('HTTP 에러. 에러코드 : ${response.statusCode}');
+    }
   }
 
   Future<void> requestUserDelete(BuildContext context, int storeCode, int noShowWaitingNumber) async {
@@ -225,6 +248,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
 
   void subscribeToWaitingData(int storeCode) {
     print('<WaitingData> 구독요청 수신.');
+    print('Stomp Client 상태: ${_client?.connected}');
     if (subscriptionInfo[0] != null) {
       // Do nothing
       print('이미 <WaitingData>를 구독중입니다.');
@@ -236,6 +260,14 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
         },
       );
     }
+    print('Subscription 객체: ${subscriptionInfo[0].toString()}');
+  }
+
+  void reconnect(int storeCode) {
+    _client?.activate();
+    loadWaitingData();
+    subscribeToWaitingData(storeCode);
+    sendWaitingData(storeCode);
   }
 
   void sendWaitingData(int storeCode) {
@@ -254,13 +286,19 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     subscriptionInfo[index](unsubscribeHeaders: null);
   }
 
+  
+
   @override
   void dispose() {
+    for(int i=0; i<subscriptionInfo.length; i++){
+      if(subscriptionInfo[i] != null){
+        unSubscribe(i);
+      }
+    }
     _client?.deactivate();
     super.dispose();
   }
 
-  void sendCallRequest(BuildContext context, int waitingNumber, int storeCode, int minutesToAdd) {}
 }
 
 // extractTime method

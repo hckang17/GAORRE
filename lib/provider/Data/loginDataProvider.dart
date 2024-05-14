@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:orre_manager/Coding_references/login.dart';
-import 'package:orre_manager/presenter/waiting_screen.dart';
+import 'package:orre_manager/presenter/MainScreen/waiting_screen.dart';
+import 'package:orre_manager/services/hive_service.dart';
 import 'package:orre_manager/services/http_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
@@ -18,74 +21,100 @@ final loginProvider =
 // StateNotifier를 확장하여 LoginInfo 객체를 관리하는 클래스를 정의합니다.
 class LoginDataNotifier extends StateNotifier<LoginData?> {
   StompClient? _client; // StompClient 인스턴스를 저장할 내부 변수 추가
-  dynamic nowSubscribe;
+  final _storage = FlutterSecureStorage();
+
 
   LoginDataNotifier(LoginData? initialState) : super(initialState);
 
-  // StompClient 인스턴스를 설정하는 메소드
-  void setClient(StompClient client) {
-    print("<LoginProvider> 스텀프 연결 설정");
-    _client = client; // 내부 변수에 StompClient 인스턴스 저장
+  void saveLoginData() async {
+    // _storage.write(key: 'userID', value: adminPhoneNumber);
+    try {
+      await HiveService.saveData('loginData', state!.toJson());
+    } catch (error) {
+      print('[saveLoginData] 실패. 에러 : $error');
+    }
   }
 
-  void updateState(LoginData newLoginData){
+  void logout() async {
+    print('로그아웃 요청');
+    HiveService.clearAllData().then(
+      (value) => {
+        if(value) {
+          state = null
+        }
+      }
+    );
+  }
+
+  Future<bool> loadLoginData() async {
+    String? loginDataRaw = await HiveService.retrieveData('loginData');
+    if(loginDataRaw == null){
+      updateState(null);
+      return false;
+    } else {
+      Map<String, dynamic> loginDataJson = jsonDecode(loginDataRaw);
+      LoginData newloginData = LoginData.fromJson(loginDataJson);
+      updateState(newloginData);
+      return true;
+    }
+  }
+
+  void updateState(LoginData? newLoginData){
     state = newLoginData;
+    saveLoginData();
   }
 
   LoginData getLoginData() {
     return state!;
   }
 
-  Future<void> requestLoginData(BuildContext context, String adminPhoneNumber, String password) async {
-    print('[로그인 데이터 요청]');
-    final jsonBody = json.encode({
+  Future<bool> requestLoginData(String? adminPhoneNumber, String? password) async {
+    print('[로그인 요청...]');
+    if(true == await loadLoginData()){
+      // 저장되어있는 로그인데이터가 존재할 때
+      print('이미 로그인 데이터가 존재합니다!');
+      return true;
+    }
+    try {
+      final jsonBody = json.encode({
         "adminPhoneNumber": adminPhoneNumber,
         "adminPassword": password,
-    });
-    final response = await HttpsService.postRequest('/StoreAdmin/login', jsonBody);
-    if(response.statusCode == 200){
-      final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if(responseBody['status'] == "success"){
-        print('로그인 성공');
-        print(responseBody.toString());
-        LoginData? loginResponse = LoginData.fromJson(responseBody);
-        updateState(loginResponse);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder : (context) => StoreScreenWidget(loginResponse: loginResponse),
-          )
-        );
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('로그인 성공'),
-              content: Text('환영합니다.'),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('OK'),
-                ),
-              ]
-            );
-          },
-        );
+      });
+      final response = await HttpsService.postRequest('/StoreAdmin/login', jsonBody);
+      if(response.statusCode == 200){
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        if(responseBody['status'] == "success"){
+          print('로그인 성공');
+          print(responseBody.toString());
+          LoginData? loginResponse = LoginData.fromJson(responseBody);
+          updateState(loginResponse);
+          return true;
+        } else {
+          print('로그인에 실패하였습니다.');
+          return false;
+        }
       } else {
-        print('로그인에 실패하였습니다.');
-        return;
+        print('에러발생. 다음은 에러내용');
+        print(response.body);
+        return false;
       }
-    } else {
-      print('에러발생. 다음은 에러내용');
-      print(response.body);
+    } catch(error) {
+      print('에러 발생 $error');
+      return false;
     }
   }
+  
 }
 
 // Legacy
 class LoginProviderLegacy {
+  // StompClient 인스턴스를 설정하는 메소드
+  // void setClient(StompClient client) {
+  //   print("<LoginProvider> 스텀프 연결 설정");
+  //   _client = client; // 내부 변수에 StompClient 인스턴스 저장
+  // }
+
+
   //   void subscribeToLoginData(BuildContext context, String adminPhoneNumber) {
   //   if (nowSubscribe != null) {
   //     unSubscribeLoginData();

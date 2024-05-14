@@ -4,7 +4,6 @@ import 'package:orre_manager/Model/login_data_model.dart';
 import 'package:orre_manager/Model/restaurant_table_model.dart';
 import 'package:orre_manager/presenter/Widget/TablePage/TableOrderList.dart';
 import 'package:orre_manager/presenter/Widget/TablePage/TableStatus.dart';
-import 'package:orre_manager/provider/DataProvider/table_provider.dart';
 
 
 void showTableInfoPopup(WidgetRef ref, BuildContext context, Seat table, LoginData loginData) {

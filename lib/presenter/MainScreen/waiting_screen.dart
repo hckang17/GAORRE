@@ -3,35 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/presenter/Widget/WaitingPage/AddWaitingPopup.dart';
 import 'package:orre_manager/presenter/Widget/WaitingPage/CallButton.dart';
-import 'package:orre_manager/presenter/management_screen.dart';
-import 'package:orre_manager/presenter/table_status_screen.dart';
-import 'package:orre_manager/provider/DataProvider/stomp_client_future_provider.dart';
+import 'package:orre_manager/presenter/MainScreen/management_screen.dart';
+import 'package:orre_manager/presenter/MainScreen/table_status_screen.dart';
+import 'package:orre_manager/provider/Data/loginDataProvider.dart';
+import 'package:orre_manager/Coding_references/stompClientFutureProvider.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
-import '../Model/login_data_model.dart';
-import '../Model/waiting_data_model.dart';
-import '../provider/DataProvider/waiting_provider.dart';
+import '../../Model/login_data_model.dart';
+import '../../Model/waiting_data_model.dart';
+import '../../provider/Data/waitingDataProvider.dart';
 
 class StoreScreenWidget extends ConsumerWidget {
-  final LoginData loginResponse;
-  StoreScreenWidget({required this.loginResponse});
+  StoreScreenWidget();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stompClientAsyncValue = ref.watch(stompClientProvider);
+    // final stompClientAsyncValue = ref.watch(stompClientProvider);
 
-    return stompClientAsyncValue.when(
-      data: (stompClient) => StoreScreenBody(loginData: loginResponse),
-      loading: () => _LoadingScreen(),
-      error: (error, stackTrace) => _ErrorScreen(error),
-    );
+    // return stompClientAsyncValue.when(
+    //   data: (stompClient) => StoreScreenBody(loginData: loginResponse),
+    //   loading: () => _LoadingScreen(),
+    //   error: (error, stackTrace) => _ErrorScreen(error),
+    // );
+    return StoreScreenBody();
   }
 }
 
 class StoreScreenBody extends ConsumerStatefulWidget {
-  final LoginData loginData;
-
-  StoreScreenBody({required this.loginData});
+  StoreScreenBody();
 
   @override
   StoreScreenBodyState createState() => StoreScreenBodyState();
@@ -39,6 +38,7 @@ class StoreScreenBody extends ConsumerStatefulWidget {
 
 class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   late int storeCode;
+  late LoginData? loginData;
   int minutesToAdd = 1;
   WaitingData? currentWaitingData;
   bool isSubscribed = false;
@@ -47,7 +47,8 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   @override
   void initState() {
     super.initState();
-    storeCode = widget.loginData.storeCode;
+    loginData = ref.read(loginProvider.notifier).getLoginData();
+    storeCode = loginData!.storeCode;
     final waitingNotifier = ref.read(waitingProvider.notifier);
     if (!isSubscribed) {
       waitingNotifier.subscribeToWaitingData(storeCode);
@@ -62,7 +63,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
     return Scaffold(
       appBar: AppBar(title: Text('Store Page')),
       body: currentWaitingData == null
-          ? buildInitialScreen()
+          ? _LoadingScreen()
           : buildWaitingScreen(),
       floatingActionButton: buildAddingWaitingTeam(),
     );
@@ -75,7 +76,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
         children: [
           Text('매장코드 : $storeCode', style: TextStyle(fontSize: 20)),
           ElevatedButton(
-            onPressed: () {}, // No action needed, already subscribed and data sent
+            onPressed: () {ref.read(waitingProvider.notifier).sendWaitingData(loginData!.storeCode);}, // No action needed, already subscribed and data sent
             child: Text("웨이팅정보 수신하기"),
           ),
         ],
@@ -96,6 +97,10 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
               return Text('현재 대기 팀수 : $currentWaitingCount', style: TextStyle(fontSize: 24));
             },
           ),
+          ElevatedButton(onPressed: () {
+            ref.read(loginProvider.notifier).logout();
+            Navigator.pop(context);
+            }, child: Text('로그아웃')),
           Expanded(
             child: ListView.builder(
               itemCount: currentWaitingData!.teamInfoList.length,
@@ -179,7 +184,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
           onPressed: () {
             Navigator.of(ref.context).push(MaterialPageRoute(
               builder: (BuildContext context) =>
-                ManagementScreenWidget(loginResponse: widget.loginData)));
+                ManagementScreenWidget()));
           },
           child: Text('가게 정보 수정하기'),
         ),
@@ -187,7 +192,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
           onPressed: () {
             Navigator.of(ref.context).push(MaterialPageRoute(
               builder: (BuildContext context) =>
-                TableManagementScreen(loginResponse: widget.loginData)));
+                TableManagementScreen()));
           },
           child: Text('테이블 관리하기'),
         ),
@@ -241,16 +246,16 @@ class _LoadingScreen extends StatelessWidget {
   }
 }
 
-class _ErrorScreen extends StatelessWidget {
-  final dynamic error;
+// class _ErrorScreen extends StatelessWidget {
+//   final dynamic error;
   
-  _ErrorScreen(this.error);
+//   _ErrorScreen(this.error);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Manager screen')),
-      body: Center(child: Text('Error: $error')),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text('Manager screen')),
+//       body: Center(child: Text('Error: $error')),
+//     );
+//   }
+// }
