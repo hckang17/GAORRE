@@ -22,6 +22,15 @@ class OrderList {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'storeCode': storeCode,
+      'tableNumber': tableNumber,
+      'totalPrice': totalPrice,
+      'orderedItemList': orderedItemList?.map((item) => item.toJson()).toList(),
+    };
+  }
+
   @override
   String toString() {
     String returnValue = '주문내역 : ';
@@ -58,5 +67,13 @@ class OrderedMenu {
       price: json['price'],
       amount: json['amount'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'menuName': menuName,
+      'price': price,
+      'amount': amount,
+    };
   }
 }

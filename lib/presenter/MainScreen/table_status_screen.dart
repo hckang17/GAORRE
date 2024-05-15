@@ -173,7 +173,7 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
                 int tableNumber = int.tryParse(_tableNumberController.text) ?? -1;
                 int personNumber = int.tryParse(_personNumberController.text) ?? -1;
                 ref.read(tableProvider.notifier).requestAddNewTable(
-                  loginData.storeCode, tableNumber, personNumber, ref.read(loginProvider.notifier).getLoginData().loginToken!);
+                  loginData.storeCode, tableNumber, personNumber, ref.read(loginProvider.notifier).getLoginData()!.loginToken!);
                 Navigator.of(context).pop();
               },
               child: Text('추가'),
@@ -213,7 +213,7 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
               onPressed: () {
                 int tableNumber = int.tryParse(_tableNumberController.text) ?? -1;
                 ref.read(tableProvider.notifier).requestDeleteTable(
-                  loginData.storeCode, tableNumber, ref.read(loginProvider.notifier).getLoginData().loginToken!);
+                  loginData.storeCode, tableNumber, ref.read(loginProvider.notifier).getLoginData()!.loginToken!);
                 Navigator.of(context).pop();
               },
               child: Text('제거'),

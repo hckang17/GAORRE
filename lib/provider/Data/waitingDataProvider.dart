@@ -36,7 +36,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     print('클라이언트 상태 : ${_client}');
   }
 
-  void saveWaitingState() async {
+  void saveWaitingData() async {
     try {
       await HiveService.saveData('waitingData', state!.toJson());
       print('[saveWaitingData] 성공! ');
@@ -45,7 +45,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
-  loadWaitingData() async {
+  void loadWaitingData() async {
     print('[WatingData] 데이터 로딩');
     String? waitingDataRaw = await HiveService.retrieveData('waitingData');
     if(waitingDataRaw == null){
@@ -199,8 +199,8 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       }
     } catch (e) {
       print('오류 발생, 재시도합니다: $e');
-      await Future.delayed(Duration(seconds: 3)); // 잠시 대기 후 재시도
-      await requestUserDelete(context, storeCode, noShowWaitingNumber); // 재귀적으로 함수 호출
+      // await Future.delayed(Duration(seconds: 3)); // 잠시 대기 후 재시도
+      // await requestUserDelete(context, storeCode, noShowWaitingNumber); // 재귀적으로 함수 호출
     }
   }
 
@@ -264,6 +264,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
   }
 
   void reconnect(int storeCode) {
+    print('[waitingData] 스텀프 재연결시도...');
     _client?.activate();
     loadWaitingData();
     subscribeToWaitingData(storeCode);
@@ -285,8 +286,6 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     // print("<callGuest> is now unsubscribed");
     subscriptionInfo[index](unsubscribeHeaders: null);
   }
-
-  
 
   @override
   void dispose() {

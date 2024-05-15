@@ -3,13 +3,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:orre_manager/Coding_references/login.dart';
-import 'package:orre_manager/presenter/MainScreen/waiting_screen.dart';
 import 'package:orre_manager/services/hive_service.dart';
 import 'package:orre_manager/services/http_service.dart';
-import 'package:stomp_dart_client/stomp.dart';
-import 'package:stomp_dart_client/stomp_frame.dart';
 import '../../Model/login_data_model.dart';
 
 // LoginInfo 객체를 관리하는 프로바이더를 정의합니다.
@@ -20,23 +16,27 @@ final loginProvider =
 
 // StateNotifier를 확장하여 LoginInfo 객체를 관리하는 클래스를 정의합니다.
 class LoginDataNotifier extends StateNotifier<LoginData?> {
-  StompClient? _client; // StompClient 인스턴스를 저장할 내부 변수 추가
-  final _storage = FlutterSecureStorage();
-
 
   LoginDataNotifier(LoginData? initialState) : super(initialState);
 
   void saveLoginData() async {
     // _storage.write(key: 'userID', value: adminPhoneNumber);
     try {
-      await HiveService.saveData('loginData', state!.toJson());
+      LoginData? currentState = state;
+      if(currentState != null){
+        await HiveService.saveData('loginData', currentState.toJson());
+        print('[saveLoginData] 성공! [loginProvider]');
+      }else{
+        print('[saveLoginData] null값은 저장하지 않습니다. [loginProvider]');
+        return;
+      }
     } catch (error) {
-      print('[saveLoginData] 실패. 에러 : $error');
+      print('[saveLoginData] 실패. 에러 : $error [loginProvider]');
     }
   }
 
   void logout() async {
-    print('로그아웃 요청');
+    print('로그아웃 요청 [loginProvider]');
     HiveService.clearAllData().then(
       (value) => {
         if(value) {
@@ -55,6 +55,7 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
       Map<String, dynamic> loginDataJson = jsonDecode(loginDataRaw);
       LoginData newloginData = LoginData.fromJson(loginDataJson);
       updateState(newloginData);
+      
       return true;
     }
   }
@@ -64,16 +65,27 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     saveLoginData();
   }
 
-  LoginData getLoginData() {
-    return state!;
+  LoginData? getLoginData() {
+    return state;
+  }
+
+  Future<bool> requestAutoLogin() async {
+    print('[자동 로그인 요청...] [loginProvider]');
+    if(true == await loadLoginData()){
+      // 저장되어있는 로그인데이터가 존재할 때
+      print('자동 로그인 데이터가 존재합니다! [loginProvider]');
+      return true;
+    }else{
+      print('자동 로그인을 실패하였습니다. [loginProvider]');
+      return false;
+    }
   }
 
   Future<bool> requestLoginData(String? adminPhoneNumber, String? password) async {
-    print('[로그인 요청...]');
-    if(true == await loadLoginData()){
-      // 저장되어있는 로그인데이터가 존재할 때
-      print('이미 로그인 데이터가 존재합니다!');
-      return true;
+    print('[로그인 요청...] [loginProvider]');
+    if(adminPhoneNumber == null || password == null){
+      print('아이디 혹은 비밀번호가 공백입니다. 자동로그인을 실패했습니다. 로그인 화면으로 이동합니다. [loginProvider]');
+      return false;
     }
     try {
       final jsonBody = json.encode({
@@ -84,26 +96,26 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
       if(response.statusCode == 200){
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         if(responseBody['status'] == "success"){
-          print('로그인 성공');
+          print('로그인 성공 [loginProvider]');
           print(responseBody.toString());
           LoginData? loginResponse = LoginData.fromJson(responseBody);
           updateState(loginResponse);
           return true;
         } else {
-          print('로그인에 실패하였습니다.');
+          print('로그인에 실패하였습니다. [loginProvider]');
           return false;
         }
       } else {
-        print('에러발생. 다음은 에러내용');
+        print('에러발생. 다음은 에러내용 [loginProvider]');
         print(response.body);
         return false;
       }
     } catch(error) {
-      print('에러 발생 $error');
+      print('에러 발생 $error [loginProvider]');
       return false;
     }
   }
-  
+
 }
 
 // Legacy

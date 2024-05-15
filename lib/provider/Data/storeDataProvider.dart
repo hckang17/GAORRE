@@ -11,6 +11,7 @@ import 'package:orre_manager/Model/store_data_model.dart';
 import 'package:orre_manager/presenter/Widget/alertDialog.dart';
 import 'package:orre_manager/services/http_service.dart';
 import 'package:http/http.dart' as http;
+// ignore: depend_on_referenced_packages
 import 'package:http_parser/http_parser.dart';
 
 final storeDataProvider = StateNotifierProvider<StoreDataNotifier, StoreData?>((ref) {
@@ -260,5 +261,4 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
     }
   }
 
-  
 }

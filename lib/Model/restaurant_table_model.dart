@@ -16,6 +16,11 @@ class RestaurantTable {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'table': table.map((seat) => seat.toJson()).toList(),
+    };
+  }
 }
 
 class Seat {
@@ -26,8 +31,7 @@ class Seat {
   Guest? guestInfo;
   OrderList? orderInfo;
   // 메뉴도 여기다가 추가해야지..
-
-
+  
   Seat({
     required this.tableNumber,
     required this.maxPersonPerTable,
@@ -58,8 +62,15 @@ class Seat {
         tableStatus: json['tableAvailable'],
     );
     }
-    
-
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'tableNumber': tableNumber,
+      'maxPersonPerTable': maxPersonPerTable,
+      'tableStatus': tableStatus,
+      'guestInfo': guestInfo?.toJson(), // Assuming Guest class has a toJson method
+      'orderInfo': orderInfo?.toJson(), // Assuming OrderList class has a toJson method
+    };
+  }
 }
