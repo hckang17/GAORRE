@@ -28,4 +28,14 @@ class Guest {
     return userToken;
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'waitingNumber': waitingNumber,
+      'contact': contact,
+      'userName': userName,
+      'userToken': userToken,
+      'tableNumber': tableNumber,
+      'storeCode': storeCode,
+    };
+  }
 }

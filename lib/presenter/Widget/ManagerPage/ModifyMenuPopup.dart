@@ -98,7 +98,7 @@ class ModifyMenuModal extends ConsumerWidget {
                             if (_formKey.currentState!.validate()) {
                               print('메뉴 수정: ${nameController.text}, ${descriptionController.text}, ${priceController.text}, 카테고리: ${originalMenuCode[0]}, 코드: $originalMenuCode');
                               if(true == await ref.read(storeDataProvider.notifier).modifyMenu(
-                                context, ref.read(loginProvider.notifier).getLoginData(),
+                                context, ref.read(loginProvider.notifier).getLoginData()!,
                                 nameController.text, originalMenuCode,
                                 int.parse(priceController.text),
                                 descriptionController.text)

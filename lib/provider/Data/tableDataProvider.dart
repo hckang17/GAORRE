@@ -8,6 +8,7 @@ import 'package:orre_manager/Model/orderList_data.dart';
 import 'package:orre_manager/Model/restaurant_table_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:orre_manager/presenter/Widget/alertDialog.dart';
+import 'package:orre_manager/services/hive_service.dart';
 import 'package:orre_manager/services/http_service.dart';
 
 import 'package:stomp_dart_client/stomp.dart';
@@ -34,6 +35,36 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     _client = client; // 내부변수에 stompClient추가.
   }
 
+  void reconnect(int storeCode){
+    print('[테이블] 관련 재접속..');
+    _client?.activate();
+    subscribeToTableData(storeCode);
+    subscribeToLockTableData(storeCode);
+    subscribeToUnlockTableData(storeCode);
+    // 데이터 로드 한번 더 해야함.
+  }
+
+  void loadTableData() async {
+    print('[TableData] 데이터 로딩');
+    String? tableDataRaw = await HiveService.retrieveData('tableData');
+    if(tableDataRaw == null) {
+      state = null;
+    } else {
+      Map<String, dynamic> tableDataJson = jsonDecode(tableDataRaw);
+      RestaurantTable newTableData = RestaurantTable.fromJson(tableDataJson as List);
+      updateState(newTableData);
+    }
+  } 
+
+  void saveTableData() async {
+    try {
+      await HiveService.saveData('tableData', state!.toJson());
+      print('[saveTableData] 성공!!');
+    } catch (error) {
+      print('테이블데이터 저장 에러 $error');
+    }
+  }
+
   void updateState(RestaurantTable newState) {
     print('update Table State 실행');
     if(state == null) {
@@ -41,50 +72,49 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
       state = newState;
       return;
     } 
-      RestaurantTable currentState = state!;
-      List<Seat> currentTableList = currentState.table;
-      if(currentTableList.length == newState.table.length){
-        print('Seat객체 하나하나 변경..');
-        for (var newSeat in newState.table) {
-          var existingSeatIndex = currentTableList.indexWhere((seat) => seat.tableNumber == newSeat.tableNumber);
-          if(existingSeatIndex != -1) {
-            currentTableList[existingSeatIndex] = Seat(
-              tableNumber: newSeat.tableNumber,
-              maxPersonPerTable: newSeat.maxPersonPerTable,
-              tableStatus: newSeat.tableStatus,
-              guestInfo: currentTableList[existingSeatIndex].guestInfo ?? newSeat.guestInfo,
-              orderInfo: newSeat.orderInfo,
-            );
-          } else {
-            currentTableList.add(newSeat);
-          }
-        }
-      } else if(currentTableList.length > newState.table.length) {
-        print('Seat객체 삭제..');
-        List<int> deletedSeatIndexes = [];
-        for(int i=0; i < currentTableList.length; i++) {
-          var existingSeatIndex = newState.table.indexWhere((seat) => seat.tableNumber == currentTableList[i].tableNumber);
-          if(existingSeatIndex == -1){
-            deletedSeatIndexes.add(i);
-          }
-        }
-        //삭제할 항목을 List에서 제거~
-        for(int i = deletedSeatIndexes.length-1; i>=0; i--){
-          currentTableList.removeAt(deletedSeatIndexes[i]);
-        }
-      } else {
-        //테이블이 추가되었을 때
-        print("신규테이블 추가");
-        for(int i=0; i < newState.table.length; i++) {
-          var existingSeatIndex = currentTableList.indexWhere((seat) => seat.tableNumber == newState.table[i].tableNumber);
-          if(existingSeatIndex == -1){
-            currentTableList.add(newState.table[i]);
-          }
+    RestaurantTable currentState = state!;
+    List<Seat> currentTableList = currentState.table;
+    if(currentTableList.length == newState.table.length){
+      print('Seat객체 하나하나 변경..');
+      for (var newSeat in newState.table) {
+        var existingSeatIndex = currentTableList.indexWhere((seat) => seat.tableNumber == newSeat.tableNumber);
+        if(existingSeatIndex != -1) {
+          currentTableList[existingSeatIndex] = Seat(
+            tableNumber: newSeat.tableNumber,
+            maxPersonPerTable: newSeat.maxPersonPerTable,              tableStatus: newSeat.tableStatus,
+            guestInfo: currentTableList[existingSeatIndex].guestInfo ?? newSeat.guestInfo,
+            orderInfo: newSeat.orderInfo,
+          );
+        } else {
+          currentTableList.add(newSeat);
         }
       }
-      RestaurantTable finalState = RestaurantTable(table: currentTableList);
-      state = finalState;
-    
+    } else if(currentTableList.length > newState.table.length) {
+      print('Seat객체 삭제..');
+      List<int> deletedSeatIndexes = [];
+      for(int i=0; i < currentTableList.length; i++) {
+        var existingSeatIndex = newState.table.indexWhere((seat) => seat.tableNumber == currentTableList[i].tableNumber);
+        if(existingSeatIndex == -1){
+          deletedSeatIndexes.add(i);
+        }
+      }
+      //삭제할 항목을 List에서 제거~
+      for(int i = deletedSeatIndexes.length-1; i>=0; i--){
+        currentTableList.removeAt(deletedSeatIndexes[i]);
+      }
+    } else {
+      //테이블이 추가되었을 때
+      print("신규테이블 추가");
+      for(int i=0; i < newState.table.length; i++) {
+        var existingSeatIndex = currentTableList.indexWhere((seat) => seat.tableNumber == newState.table[i].tableNumber);
+        if(existingSeatIndex == -1){
+          currentTableList.add(newState.table[i]);
+        }
+      }
+    }
+    RestaurantTable finalState = RestaurantTable(table: currentTableList);
+    state = finalState;
+    saveTableData();
     // state = newState;
   }
 
@@ -154,6 +184,7 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     }
   }  /* subscribe 관련 코드 */
   
+  /// 구독 관련 메서드들
   void subscribeToTableData(int storeCode) {
     print('<TableData> 구독 요청 수신.');
     if(subscriptionInfo[0] != null){
@@ -205,7 +236,42 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     }
   }
 
-  // Update guestInfo of the corresponding seat
+  void subscribeToLockTableData(int storeCode) {
+    print('<LockTableData> 구독 요청 수신.');
+    if(subscriptionInfo[2] != null){
+      // Do Nothing
+      print('이미 <LockTableData>를 구독중입니다.');
+    } else {
+      subscriptionInfo[2] = _client?.subscribe(
+        destination: '/topic/admin/table/lock/$storeCode',
+        callback: (StompFrame frame) {
+          print('<LockTableData> 메세지 수신.');
+          print(frame.body.toString());
+          Map<String, dynamic> responseData = json.decode(frame.body!);
+          if(responseData['success'] == true){
+            int tableNumber = responseData['tableNumber'];
+            print('$tableNumber번 테이블을 잠금처리하였습니다.');
+            print('테이블의 손님정보를 업데이트합니다.');
+            // Update the guestInfo of the corresponding seat
+            RestaurantTable? currentState = state;
+            List<Seat> currentSeats = currentState!.table;
+            int targetSeat = currentSeats.indexWhere((seat) => tableNumber == seat.tableNumber);
+            if(targetSeat != -1){
+              currentSeats[targetSeat].guestInfo = null;
+              currentSeats[targetSeat].tableStatus = 0;
+            }
+            updateState(
+              RestaurantTable(table: currentSeats)
+            );
+          }
+        }
+      );
+    }
+  }
+  
+
+
+  /// 테이블 및 좌석 업데이트 관련 메서드
   void updateSeatWithGuest(Guest guest) {
     // Find the index of the seat with matching tableNumber
     int seatIndex = state?.table.indexWhere((seat) => seat.tableNumber == guest.tableNumber) ?? -1;
@@ -233,6 +299,8 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
       updateState(newState);  // 새로운 객체 생성하여 상태 업데이트
     }
   }
+
+  
 
 
   Future<void> requestAddNewTable(int storeCode, int tableNumber, int personNumber, String jwtToken) async {
@@ -311,40 +379,6 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     }
   }
 
-
-  void subscribeToLockTableData(int storeCode) {
-    print('<LockTableData> 구독 요청 수신.');
-    if(subscriptionInfo[2] != null){
-      // Do Nothing
-      print('이미 <LockTableData>를 구독중입니다.');
-    } else {
-      subscriptionInfo[2] = _client?.subscribe(
-        destination: '/topic/admin/table/lock/$storeCode',
-        callback: (StompFrame frame) {
-          print('<LockTableData> 메세지 수신.');
-          print(frame.body.toString());
-          Map<String, dynamic> responseData = json.decode(frame.body!);
-          if(responseData['success'] == true){
-            int tableNumber = responseData['tableNumber'];
-            print('$tableNumber번 테이블을 잠금처리하였습니다.');
-            print('테이블의 손님정보를 업데이트합니다.');
-            // Update the guestInfo of the corresponding seat
-            RestaurantTable? currentState = state;
-            List<Seat> currentSeats = currentState!.table;
-            int targetSeat = currentSeats.indexWhere((seat) => tableNumber == seat.tableNumber);
-            if(targetSeat != -1){
-              currentSeats[targetSeat].guestInfo = null;
-              currentSeats[targetSeat].tableStatus = 0;
-            }
-            updateState(
-              RestaurantTable(table: currentSeats)
-            );
-          }
-        }
-      );
-    }
-  }
-
   void sendUnlockRequest(int storeCode, int tableNumber, int waitingNumber, String jwtAdmin) {
     print('<Unlock Request> 송신 ');
     _client?.send(
@@ -382,4 +416,22 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
     );
   }
 
+
+  /// unsubscribe 관련
+  void unSubscribe(int index) { 
+    // index는 어떤것을 구독해제 할 지 결정하기 위한 변수임.
+    // print("<callGuest> is now unsubscribed");
+    subscriptionInfo[index](unsubscribeHeaders: null);
+  }
+
+  @override
+  void dispose() {
+    for(int i=0; i<subscriptionInfo.length; i++){
+      if(subscriptionInfo[i] != null){
+        unSubscribe(i);
+      }
+    }
+    _client?.deactivate();
+    super.dispose();
+  }
 }

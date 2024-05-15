@@ -7,6 +7,7 @@ import 'package:orre_manager/presenter/MainScreen/management_screen.dart';
 import 'package:orre_manager/presenter/MainScreen/table_status_screen.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/Coding_references/stompClientFutureProvider.dart';
+import 'package:orre_manager/provider/Data/waitingAvailableStatusProvider.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 import '../../Model/login_data_model.dart';
@@ -39,6 +40,7 @@ class StoreScreenBody extends ConsumerStatefulWidget {
 class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   late int storeCode;
   late LoginData? loginData;
+  late int waitingAvailableState;
   int minutesToAdd = 1;
   WaitingData? currentWaitingData;
   bool isSubscribed = false;
@@ -49,6 +51,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
     super.initState();
     loginData = ref.read(loginProvider.notifier).getLoginData();
     storeCode = loginData!.storeCode;
+    // waitingAvailableState = ref.read(waitingAvailableStatusStateProvider.notifier).loadWaitingAvailableStatus();
     final waitingNotifier = ref.read(waitingProvider.notifier);
     if (!isSubscribed) {
       waitingNotifier.subscribeToWaitingData(storeCode);
@@ -59,6 +62,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
 
   @override
   Widget build(BuildContext context) {
+    waitingAvailableState = ref.watch(waitingAvailableStatusStateProvider);
     currentWaitingData = ref.watch(waitingProvider);
     return Scaffold(
       appBar: AppBar(title: Text('Store Page')),
@@ -101,6 +105,11 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
             ref.read(loginProvider.notifier).logout();
             Navigator.pop(context);
             }, child: Text('로그아웃')),
+          ElevatedButton(onPressed: () {
+            ref.read(waitingAvailableStatusStateProvider.notifier).changeAvailableStatus(loginData!);
+            }, 
+            child: Text('현재 웨이팅 가능 상태 : $waitingAvailableState. 0이면 웨이팅추가가능, 1이면 웨이팅추가불가')
+            ),
           Expanded(
             child: ListView.builder(
               itemCount: currentWaitingData!.teamInfoList.length,

@@ -68,11 +68,11 @@ class EditOrderedMenuForm extends ConsumerWidget {
                 final int payload = ref.read(amountProvider.notifier).state - initialAmount;
                 final String menuCode = ref.read(storeDataProvider.notifier).getMenuCode(menuName);
                 if(true == await ref.read(tableProvider.notifier).editOrderedList(
-                  ref.context, ref.read(loginProvider.notifier).getLoginData(), 
+                  ref.context, ref.read(loginProvider.notifier).getLoginData()!, 
                   menuCode, payload, tableNumber)
                   ) {
                   await ref.read(tableProvider.notifier).requestTableOrderList(
-                     ref.read(loginProvider.notifier).getLoginData().storeCode, tableNumber);
+                     ref.read(loginProvider.notifier).getLoginData()!.storeCode, tableNumber);
                   Navigator.of(context).pop(); // 다이얼로그를 닫습니다.
                 }
               },
