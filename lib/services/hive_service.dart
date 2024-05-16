@@ -34,6 +34,19 @@ class HiveService {
     }
   }
 
+  static Future<bool> saveStringData(String key, String value) async {
+    var box = Hive.box(_boxName);
+    try {
+      String intString = value;
+      await box.put(key, intString);
+      print('[하이브 데이터 저장]\nKey : $key, Value : $value');
+      return true;
+    } catch(error) {
+      print('[하이브 데이터 저장] 실패... 에러코드 : $error');
+      return false;
+    }
+  }
+
   // 데이터 저장 (JSON 형식)
   static Future<bool> saveData(String key, Map<String, dynamic> value) async {
     var box = Hive.box(_boxName);

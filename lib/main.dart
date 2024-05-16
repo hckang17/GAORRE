@@ -1,6 +1,7 @@
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:orre_manager/presenter/MainScreen/start_screen.dart';
 import 'package:orre_manager/presenter/MainScreen/waiting_screen.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Network/websocketRefreshServiceProvider.dart';
@@ -21,7 +22,7 @@ void main() {
 class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final loginData = ref.watch(loginProvider);
+    final loginData = ref.watch(loginProvider);
     print("MyApp build() called");
     return MaterialApp(
       home: FlutterSplashScreen.fadeIn(
@@ -48,10 +49,10 @@ class MyApp extends ConsumerWidget {
         childWidget: SizedBox(
           height: 200,
           width: 200,
-          child: Image.asset("Assets/Image/gaorre.png"),
+          child: Image.asset("assets/image/gaorre.png"),
         ),
         onAnimationEnd: () => debugPrint("On Fade In End [main.dart]"),
-        nextScreen: ref.read(loginProvider.notifier).getLoginData() == null ? LoginScreenWidget() : StoreScreenWidget(),
+        nextScreen: loginData == null ? StartScreen() : StoreScreenWidget(),
       ),
       title: 'Flutter Demo',
       theme: ThemeData(

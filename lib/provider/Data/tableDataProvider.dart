@@ -135,17 +135,17 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
       final response = await HttpsService.postRequest('/StoreAdmin/menu/order/check', jsonBody);
       if(response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
-        print('수신내역 : ${responseBody.toString()}');
+        print('수신내역 : ${responseBody.toString()} [tableProvider - requestTableOrderList]');
         OrderList orderList = OrderList.fromJson(responseBody);
-        print('좌석 주문정보를 수정합니다');
+        print('좌석 주문정보를 수정합니다 [tableProvider - requestTableOrderList]');
         updateSeatWithOrderList(orderList);
         return true;
       } else {
-        print('주문정보 수신 실패');
+        print('주문정보 수신 실패 [tableProvider - requestTableOrderList]');
         return false;
       }
     } catch (error) {
-      print('error : $error');
+      print('error : $error [tableProvider - requestTableOrderList]');
       return false;
     }
   }
@@ -164,22 +164,22 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
       if(response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         if(responseBody['success'] == true){
-          print('주문내역 수정 완료! 메뉴코드 : $menuCode');
+          print('주문내역 수정 완료! 메뉴코드 : $menuCode [tableDataProvider - editOrderList]');
           await showAlertDialog(context, "주문내역 수정", "성공!", null);
           return true;
         } else {
-          print('주문내역 수정 실패! 메뉴코드 : $menuCode');
+          print('주문내역 수정 실패! 메뉴코드 : $menuCode [tableDataProvider - editOrderList]');
           await showAlertDialog(context, "주문내역 수정", "실패..", null);
           return false;
         }
       } else {
-        print('HTTP 에러 발생');
-        await showAlertDialog(context, "HTTP 에러", "HTTP 요청 실패", null);
+        print('HTTP 에러 발생 [tableDataProvider - editOrderList]');
+        await showAlertDialog(context, "HTTP 에러", "HTTP 요청 실패.", null);
         return false;
       }
     } catch (error) {
-      print('에러 발생 : $error');
-      await showAlertDialog(context, "에러 발생", error.toString(), null);
+      print('에러 발생 : $error [tableDataProvider - editOrderList]');
+      await showAlertDialog(context, "에러 발생 [tableDataProvider - editOrderList]", error.toString(), null);
       return false;
     }
   }  /* subscribe 관련 코드 */

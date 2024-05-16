@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
 // import 'package:orre_manager/Coding_references/login.dart';
 import 'package:orre_manager/services/hive_service.dart';
 import 'package:orre_manager/services/http_service.dart';
@@ -71,14 +72,24 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
 
   Future<bool> requestAutoLogin() async {
     print('[자동 로그인 요청...] [loginProvider]');
-    if(true == await loadLoginData()){
-      // 저장되어있는 로그인데이터가 존재할 때
-      print('자동 로그인 데이터가 존재합니다! [loginProvider]');
+    String? adminPhoneNumber = await HiveService.retrieveData('phoneNumber');
+    String? password = await HiveService.retrieveData('password');
+    if(adminPhoneNumber != null && password != null){
+      await requestLoginData(adminPhoneNumber, password).then((value) => {
+        print('자동 로그인 성공!! [loginProvider]')
+      });
       return true;
     }else{
-      print('자동 로그인을 실패하였습니다. [loginProvider]');
       return false;
     }
+    // if(true == await loadLoginData()){
+    //   // 저장되어있는 로그인데이터가 존재할 때
+    //   print('자동 로그인 데이터가 존재합니다! [loginProvider]');
+    //   return true;
+    // }else{
+    //   print('자동 로그인을 실패하였습니다. [loginProvider]');
+    //   return false;
+    // }
   }
 
   Future<bool> requestLoginData(String? adminPhoneNumber, String? password) async {
@@ -98,6 +109,12 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
         if(responseBody['status'] == "success"){
           print('로그인 성공 [loginProvider]');
           print(responseBody.toString());
+            // 자동로그인을 위한 데이터 저장
+          await HiveService.saveStringData('phoneNumber', adminPhoneNumber).then((value) => {
+            HiveService.saveStringData('password', password).then((value) => {
+              print('[자동로그인을 위한 데이터 저장 성공]')
+            })
+          });
           LoginData? loginResponse = LoginData.fromJson(responseBody);
           updateState(loginResponse);
           return true;
@@ -117,7 +134,6 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
   }
 
 }
-
 // Legacy
 class LoginProviderLegacy {
   // StompClient 인스턴스를 설정하는 메소드
