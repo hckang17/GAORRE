@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:orre_manager/provider/Data/loginDataProvider.dart';
+import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
 
 void showAddWaitingDialog(BuildContext context) {
   showDialog(
@@ -103,6 +105,10 @@ class _AddWaitingFieldsState extends ConsumerState<AddWaitingFields> {
               if (_formKey.currentState!.validate()) {
                 // 폼 데이터를 검증하고 처리
                 int waitingCount = int.parse(waitingPersonCountController.text);
+                ref.read(waitingProvider.notifier).addWaitingTeam(
+                  ref.context, ref.read(loginProvider.notifier).getLoginData()!,
+                  phoneNumberController.text, waitingCount
+                );
                 print('연락처: ${phoneNumberController.text}, 대기 인원 수: $waitingCount');
                 // 여기에다가 이제~ 웨이팅 수동 등록 코드 작성하기. 
                 Navigator.pop(context);

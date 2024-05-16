@@ -204,35 +204,31 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
-  FutureOr<bool> addWaitingTeam (BuildContext context, LoginData loginData, String phoneNumber, int personCount) async {
-    print('수동 웨이팅 팀 추가 요청 발생');
-    final jsonBody = json.encode({
-      "storeCode" : loginData.storeCode,
-      "jwtAdmin" : loginData.loginToken,
-      "phoneNumber" : phoneNumber,
-      "personCount" : personCount,
-    });
-    try {
-      final response = await HttpsService.postRequest('엔드포인트', jsonBody);
-      if(response.statusCode == 200){
-        final responseBody = json.decode(utf8.decode(response.bodyBytes));
-        if(responseBody['statusCode'] == "200") {
-          print('웨이팅 팀 추가 정상 완료');
-          await showAlertDialog(context, "웨이팅 수동추가", "추가 성공!", null);
-          return true;
-        }else{
-          print('웨이팅 팀 추가 실패');
-          await showAlertDialog(context, "웨이팅 수동추가", "추가 실패", null);
-          return false;
-        }
-      }else{
-        print('HTTP 에러발생');
-        return false;
-      }
-    } catch (error) {
-      print('에러발생 : $error');
+  Future<bool> addWaitingTeam (BuildContext context, LoginData loginData, String phoneNumber, int personCount) async {
+    print('수동 웨이팅 팀 추가 요청 발생 [waitingProvider - addWaitingTeam]');
+    //자 여기에 기존 state에 동일한 phoneNumber의 웨이팅 유저가 있는지?
+    int existingTeamIndex = state!.teamInfoList.indexWhere((team) => team.phoneNumber == phoneNumber);
+    if(existingTeamIndex != -1){
+      print('이미 동일한 휴대폰 번호의 대기 고객이 존재합니다. [waitingProvider - addWaitingTeam]');
+      // showAlertDialog(context, "수동 웨이팅 추가", "이미 동일한 연락처의 대기 고객이 존재합니다!", null);
       return false;
     }
+    final jsonBody = json.encode({
+      "storeCode" : loginData.storeCode,
+      "userPhoneNumber" : phoneNumber,
+      "personNumber" : personCount,
+    });
+    try {
+      _client?.send(
+        destination: '/app/admin/waiting/make/${loginData.storeCode}/$phoneNumber',
+        body: jsonBody
+      );
+      print('수동 웨이팅 요청을 보냈습니다. [waitingProvider - addWaitingTeam]');
+      return true;
+    } catch (error) {
+      print('에러발생 : $error [waitingProvider - addWaitingTeam]');
+      return false;
+    } 
   }
 
   void waitingData_CallBack(StompFrame? frame) {
@@ -286,6 +282,41 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     // print("<callGuest> is now unsubscribed");
     subscriptionInfo[index](unsubscribeHeaders: null);
   }
+
+  Future<bool> confirmEnterance(BuildContext context, LoginData loginData, int waitingNumber) async {
+    print('고객 입장 확정 여부 전송... [waitingProvider - confirmEnterance]');
+    final jsonBody = json.encode({
+      "storeCode" : loginData.storeCode,
+      "waitingNumber" : waitingNumber,
+      "jwtAdmin" : loginData.loginToken,
+    });
+    try {
+      final response = await HttpsService.postRequest('/StoreAdmin/entering', jsonBody);
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        if (responseBody['status'] == "200") {
+          print('성공적으로 $waitingNumber번 손님을 입장시켰습니다.. [waitingProvider - confirmEnterance]');
+          showAlertDialog(context, '입장 확인', '$waitingNumber번 손님 입장처리 완료', null);
+          print('...웨이팅 리스트 정보를 새로 요청합니다. [waitingProvider - confirmEnterance]');
+          sendWaitingData(loginData.storeCode);
+          return true;
+        } else {
+          print('$waitingNumber번 손님 입장처리를 실패했습니다. [waitingProvider - confirmEnterance]');
+          showAlertDialog(context, '입장 확인', '$waitingNumber번 손님 입장처리 실패', null);
+          return false;
+        }
+      } else {
+        throw Exception('Server responded with status code: ${response.statusCode} [waitingProvider - confirmEnterance]');
+      }
+    } catch (e) {
+      print('오류 발생, 재시도합니다: $e [waitingProvider - confirmEnterance]');
+      return false;
+      // await Future.delayed(Duration(seconds: 3)); // 잠시 대기 후 재시도
+      // await requestUserDelete(context, storeCode, noShowWaitingNumber); // 재귀적으로 함수 호출
+    }
+
+  }
+
 
   @override
   void dispose() {

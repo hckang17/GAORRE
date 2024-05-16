@@ -1,8 +1,14 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../provider/WidgetProvider/call_button_provider.dart';
-import '../../../provider/Data/waitingDataProvider.dart';
+import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
+import 'package:orre_manager/provider/WidgetProvider/call_button_provider.dart';
+import 'package:orre_manager/provider/WidgetProvider/waitingTimerProvider.dart';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
+import 'package:orre_manager/provider/WidgetProvider/call_button_provider.dart';
+import 'package:orre_manager/provider/WidgetProvider/waitingTimerProvider.dart';
 
 class CallIconButton extends ConsumerWidget {
   final int waitingNumber;
@@ -12,31 +18,40 @@ class CallIconButton extends ConsumerWidget {
   final WidgetRef ref;
 
   CallIconButton({
-    required this.phoneNumber,
     required this.waitingNumber,
     required this.storeCode,
     required this.minutesToAdd,
-    Key? key, 
+    Key? key,
     required this.ref,
+    required this.phoneNumber,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPressed = ref.watch(callButtonProvider(waitingNumber));
 
-    return IconButton(
-      icon: Icon(isPressed ? Icons.call : Icons.call_outlined),
-      onPressed: () {
-        ref.read(callButtonProvider(waitingNumber).notifier).pressButton();  // 상태 변경
-        ref.read(waitingProvider.notifier).requestUserCall(
-              context,
-              phoneNumber,
-              waitingNumber,
-              storeCode,
-              minutesToAdd,
-            );
-      },
-      color: isPressed ? Colors.green : Colors.grey,
+    return Row(
+      children: [
+        isPressed
+            ? TimerWidget(minutesToAdd: minutesToAdd)
+            : IconButton(
+                icon: Icon(
+                  Icons.notifications,
+                  color: Color(0xFF72AAD8),
+                ),
+                iconSize: 30,
+                onPressed: () {
+                  ref.read(callButtonProvider(waitingNumber).notifier).pressButton(); // 상태 변경
+                  ref.read(waitingProvider.notifier).requestUserCall(
+                    context,
+                    phoneNumber,
+                    waitingNumber,
+                    storeCode,
+                    minutesToAdd,
+                  );
+                },
+              ),
+      ],
     );
   }
 }

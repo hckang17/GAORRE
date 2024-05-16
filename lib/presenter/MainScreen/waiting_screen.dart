@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lite_rolling_switch/lite_rolling_switch.dart';
 import 'package:orre_manager/presenter/Widget/WaitingPage/AddWaitingPopup.dart';
 import 'package:orre_manager/presenter/Widget/WaitingPage/CallButton.dart';
 import 'package:orre_manager/presenter/MainScreen/management_screen.dart';
 import 'package:orre_manager/presenter/MainScreen/table_status_screen.dart';
+import 'package:orre_manager/presenter/Widget/WaitingPage/waiting_adding_screen.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/Coding_references/stompClientFutureProvider.dart';
 import 'package:orre_manager/provider/Data/waitingAvailableStatusProvider.dart';
@@ -44,6 +46,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   int minutesToAdd = 1;
   WaitingData? currentWaitingData;
   bool isSubscribed = false;
+  late bool switchValue;
   Timer? _timer;
 
   @override
@@ -64,13 +67,312 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   Widget build(BuildContext context) {
     waitingAvailableState = ref.watch(waitingAvailableStatusStateProvider);
     currentWaitingData = ref.watch(waitingProvider);
+    switchValue = waitingAvailableState == 0 ? true : false;
+    
+    if(currentWaitingData == null){
+      return _LoadingScreen();
+    }
+    
     return Scaffold(
-      appBar: AppBar(title: Text('Store Page')),
-      body: currentWaitingData == null
-          ? _LoadingScreen()
-          : buildWaitingScreen(),
-      floatingActionButton: buildAddingWaitingTeam(),
+      body: Center(
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height * 0.23,
+              decoration: BoxDecoration(
+                color: Color(0xFF72AAD8),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: 50, right: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end, // 오른쪽으로 정렬
+                      children: [
+                        Text(
+                          '웨이팅 설정',
+                          style: TextStyle(
+                            fontFamily: 'Dovemayo_gothic',
+                            fontSize: 24,
+                            color: Color(0xFFE6F4FE),
+                          ),
+                        ),
+                        SizedBox(width: 10), // 간격 조절
+                        LiteRollingSwitch(
+                          //initial value
+                          value: switchValue,
+                          textOn: 'ON',
+                          textOff: 'OFF',
+                          colorOn: Color(0xFFE6F4FE),
+                          colorOff: Color(0xFFDFDFDF),
+                          textOnColor: Color(0xFF72AAD8),
+                          textOffColor: Colors.white,
+                          iconOn: Icons.done,
+                          iconOff: Icons.remove_circle_outline,
+                          textSize: 16.0,
+                          onTap: () {}, // null 값을 전달하여 콜백 함수를 사용하지 않음
+                          onDoubleTap: () {}, // null 값을 전달하여 콜백 함수를 사용하지 않음
+                          onSwipe: () {}, // null 값을 전달하여 콜백 함수를 사용하지 않음
+                          onChanged: (bool state) {
+                            //Use it to manage the different states
+                            print('Current State of SWITCH IS: $state');
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Consumer(
+                          builder: (context, ref, child) {
+                            print('waitingData에 변동점이 생겼으므로 리빌드합니다.');
+                            ref.watch(waitingProvider);
+                            final int currentWaitingCount = ref.watch(
+                              waitingProvider.select(
+                                  (data) => data?.teamInfoList.length ?? 0),
+                            );
+                            return Padding(
+                              padding: EdgeInsets.only(left: 20),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    '현재 대기 팀수',
+                                    style: TextStyle(
+                                      fontFamily: 'Dovemayo_gothic',
+                                      fontSize: 32,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    '  $currentWaitingCount',
+                                    style: TextStyle(
+                                      fontFamily: 'Dovemayo_gothic',
+                                      fontSize: 42,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' 팀',
+                                    style: TextStyle(
+                                      fontFamily: 'Dovemayo_gothic',
+                                      fontSize: 32,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(right: 20),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                WaitingAddingScreen()
+                              )
+                            );
+                          },
+                          child: Image.asset(
+                            'assets/image/button/waiting adding.png',
+                            width: 30,
+                            height: 30,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // 여기서 ListView 를 사용하도록 수정합니다.
+            Expanded(
+              child: ListView.builder(
+                itemCount: currentWaitingData!.teamInfoList.length,
+                itemBuilder: (context, index) {
+                  WaitingTeam? team = currentWaitingData!.teamInfoList[index];
+                  Color textColor;
+                  String? guestStatus;
+                  switch (team.status) {
+                    case 1:
+                      textColor = Colors.blue;
+                      guestStatus = '대기중';
+                      break;
+                    case 2:
+                      textColor = Colors.green;
+                      guestStatus = '착석 완료';
+                      break;
+                    case 3:
+                      textColor = Colors.red;
+                      guestStatus = '삭제 완료';
+                      break;
+                    default:
+                      textColor = Colors.black; // 기본값, 필요에 따라 변경 가능
+                  }
+
+                  // 마감까지 남은 시간 계산
+                  Duration? timeRemaining;
+                  String? remainingTimeString;
+
+                  if (team.entryTime != null) {
+                    timeRemaining = team.entryTime!.difference(DateTime.now());
+                    remainingTimeString =
+                        '${timeRemaining.inHours.toString().padLeft(2, '0')}:${(timeRemaining.inMinutes % 60).toString().padLeft(2, '0')}';
+                  } else {
+                    remainingTimeString = 'Unknown';
+                  }
+
+                  return Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: IconButton(
+                              onPressed: () {
+                                ref
+                                    .read(waitingProvider.notifier)
+                                    .requestUserDelete(
+                                        context, storeCode, team.waitingNumber);
+                              },
+                              icon:
+                                  Icon(Icons.delete, color: Color(0xFFDFDFDF)),
+                              iconSize: 30,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 4, // 더 넓은 공간을 차지하도록 설정
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      '대기번호 ${team.waitingNumber}번',
+                                      style: TextStyle(
+                                        fontFamily: 'Dovemayo_gothic',
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                    SizedBox(width: 20),
+                                    Text(
+                                      '${team.personNumber}명',
+                                      style: TextStyle(
+                                        fontFamily: 'Dovemayo_gothic',
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  '상태 : $guestStatus',
+                                  style: TextStyle(
+                                    fontFamily: 'Dovemayo_gothic',
+                                    fontSize: 16,
+                                    color: textColor,
+                                  ),
+                                ),
+                                Text(
+                                  '${team.phoneNumber}',
+                                  style: TextStyle(
+                                    fontFamily: 'Dovemayo_gothic',
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // 알람 버튼을 클릭하면, 해당 위치에 이미지와 타이머 뜨게 구현
+                          Expanded(
+                            flex: 2,
+                            child: Row(
+                              children: [
+                                if(team.entryTime != null)
+                                  IconButton(
+                                    icon: Icon(Icons.check_box), // 초록색 체크박스 아이콘
+                                    onPressed: () async {
+                                      print('${team.waitingNumber}번 입장처리 요청 [waitinScreen]');
+                                      await ref.read(waitingProvider.notifier).confirmEnterance(
+                                        ref.context, loginData!, team.waitingNumber
+                                      );
+                                      // print('Checked options for ${team.waitingNumber}');
+                                    },
+                                  )
+                                else
+                                  SizedBox(width: 48),
+                                CallIconButton(
+                                  waitingNumber: team.waitingNumber,
+                                  storeCode: storeCode,
+                                  minutesToAdd: minutesToAdd,
+                                  ref: ref, phoneNumber: team.phoneNumber,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Divider(
+                          color: Color(0xFFDFDFDF),
+                          thickness: 1,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
+              children: [
+                // ElevatedButton(
+                //   onPressed: () {
+                //     ref.read(waitingProvider.notifier).requestUserCall(
+                //         context,
+                //         currentWaitingData!.teamInfoList[0].phoneNumber,
+                //         currentWaitingData!.teamInfoList[0].waitingNumber,
+                //         storeCode,
+                //         minutesToAdd);
+                //   },
+                //   child: Text('손님 호출하기'),
+                // ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) =>
+                            TableManagementScreen()));
+                  },
+                  child: Text('좌석페이지'),
+                ),
+
+              ],
+            ),
+          ],
+        ),
+      ),
     );
+
+    // return Scaffold(
+    //   appBar: AppBar(title: Text('Store Page')),
+    //   body: currentWaitingData == null
+    //       ? _LoadingScreen()
+    //       : buildWaitingScreen(),
+    //   floatingActionButton: buildAddingWaitingTeam(),
+    // );
   }
 
   Widget buildInitialScreen() {
@@ -268,3 +570,4 @@ class _LoadingScreen extends StatelessWidget {
 //     );
 //   }
 // }
+

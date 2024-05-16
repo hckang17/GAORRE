@@ -31,7 +31,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
     try {
       // state 또는 state의 menuInfo가 null일 경우 예외를 발생시킵니다.
       if (state == null || state!.menuInfo == null) {
-        throw Exception('가게 데이터가 없거나 메뉴 정보가 없습니다.');
+        throw Exception('가게 데이터가 없거나 메뉴 정보가 없습니다. [storeDataProvider - getMenuCode]');
       }
       
       // 메뉴 리스트를 순회하며 메뉴 이름과 일치하는 메뉴 코드를 찾습니다.
@@ -42,17 +42,17 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
       }
 
       // 일치하는 메뉴가 없을 경우 예외를 발생시킵니다.
-      throw Exception('해당 이름의 메뉴를 찾을 수 없습니다: $menuName');
+      throw Exception('해당 이름의 메뉴를 찾을 수 없습니다: $menuName [storeDataProvider - getMenuCode]');
     } catch (e) {
       // 예외 발생 시 예외 메시지를 출력하고 빈 문자열을 반환합니다.
       print('오류 발생: $e');
-      throw Exception('해당 이름의 메뉴를 찾을 수 없습니다: $menuName');
+      throw Exception('해당 이름의 메뉴를 찾을 수 없습니다: $menuName [storeDataProvider - getMenuCode]');
     }
   }
 
   // 점포정보 갱신
   void updateState(StoreData? newState){
-    print('가게정보를 업데이트합니다.');
+    print('가게정보를 업데이트합니다. [storeDataProvider - updateState]');
     state = newState;
   }
 
@@ -72,7 +72,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
       "storeCode" : storeCode,
       "tableNumber" : tableNumber,
     });
-      print('가게 정보를 요청합니다.');
+      print('가게 정보를 요청합니다. [storeDataProvider - requestStoreData]');
     try {
       final response = await HttpsService.postRequest('/StoreAdmin/storeInfo', jsonBody);
       if(response.statusCode == 200){
@@ -86,7 +86,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
       }
     } catch (error) {
       print('에러 발생 : $error');
-      throw Exception('가게정보 요청 실패');
+      throw Exception('가게정보 요청 실패 [storeDataProvider - requestStoreData]');
     }
   }
 
