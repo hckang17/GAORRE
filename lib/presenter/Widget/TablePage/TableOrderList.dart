@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/restaurant_table_model.dart';
+import 'package:orre_manager/Model/RestaurantTableModel.dart';
 import 'package:orre_manager/presenter/Widget/TablePage/EditOrderedMenu.dart';
 import 'package:orre_manager/provider/Data/tableDataProvider.dart';
 

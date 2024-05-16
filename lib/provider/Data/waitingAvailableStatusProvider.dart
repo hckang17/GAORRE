@@ -2,9 +2,9 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/login_data_model.dart';
-import 'package:orre_manager/services/hive_service.dart';
-import 'package:orre_manager/services/http_service.dart';
+import 'package:orre_manager/Model/LoginDataModel.dart';
+import 'package:orre_manager/services/HIVE_service.dart';
+import 'package:orre_manager/services/HTTP_service.dart';
 
 enum WaitingAvailableState {
   POSSIBLE, // 0
@@ -20,7 +20,12 @@ class WaitingAvailableStatusNotifier extends StateNotifier<int> {
     _initialize();
   }
 
+  int getState(){
+    return state;
+  }
+
   void updateState(int newState){
+    newState == 0 ? print('현재 : 웨이팅 접수 받는중') : print('현재 : 웨이팅 접수 안받는중');
     state = newState;
     saveWaitingAvailableStatus();
   }

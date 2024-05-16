@@ -1,25 +1,26 @@
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/MainScreen/start_screen.dart';
-import 'package:orre_manager/presenter/MainScreen/waiting_screen.dart';
+import 'package:orre_manager/presenter/Screen/StartScreen.dart';
+import 'package:orre_manager/presenter/Screen/WaitingScreen.dart';
+import 'package:orre_manager/presenter/MainScreen.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Network/websocketRefreshServiceProvider.dart';
 import 'package:orre_manager/provider/errorStateNotifier.dart';
-import 'package:orre_manager/provider/firstBootFutureProvider.dart';
-import 'package:orre_manager/services/hive_service.dart';
-import 'presenter/MainScreen/login_screen.dart';
+import 'package:orre_manager/services/FirstBootService.dart';
+import 'package:orre_manager/services/HIVE_service.dart';
+import 'presenter/Screen/LoginScreen.dart';
 
 
 void main() {
   runApp(
     ProviderScope(
-      child: MyApp(),
+      child: GAORRE_APP(),
     ),
   );
 }
 
-class MyApp extends ConsumerWidget {
+class GAORRE_APP extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loginData = ref.watch(loginProvider);
@@ -52,7 +53,7 @@ class MyApp extends ConsumerWidget {
           child: Image.asset("assets/image/gaorre.png"),
         ),
         onAnimationEnd: () => debugPrint("On Fade In End [main.dart]"),
-        nextScreen: loginData == null ? StartScreen() : StoreScreenWidget(),
+        nextScreen: loginData == null ? StartScreen() : MainScreen(),
       ),
       title: 'Flutter Demo',
       theme: ThemeData(

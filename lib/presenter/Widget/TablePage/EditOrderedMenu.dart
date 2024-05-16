@@ -73,6 +73,7 @@ class EditOrderedMenuForm extends ConsumerWidget {
                   ) {
                   await ref.read(tableProvider.notifier).requestTableOrderList(
                      ref.read(loginProvider.notifier).getLoginData()!.storeCode, tableNumber);
+                  
                   Navigator.of(context).pop(); // 다이얼로그를 닫습니다.
                 }
               },

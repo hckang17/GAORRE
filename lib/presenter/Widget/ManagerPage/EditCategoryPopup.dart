@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/menu_data_model.dart';
+import 'package:orre_manager/Model/MenuDataModel.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 

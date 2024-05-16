@@ -1,6 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
-import 'package:orre_manager/Model/menu_data_model.dart'; // 이 경로는 실제 프로젝트의 구조에 따라 조정하세요.
+import 'package:orre_manager/Model/MenuDataModel.dart'; // 이 경로는 실제 프로젝트의 구조에 따라 조정하세요.
 
 class StoreData {
   final int storeCode;

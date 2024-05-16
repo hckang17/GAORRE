@@ -1,5 +1,6 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:orre_manager/presenter/Widget/alertDialog.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:telephony/telephony.dart';
 
 class SendSMSService {
@@ -11,10 +12,21 @@ class SendSMSService {
   ///
   final String linkPageSMS = '웨이팅 연기는 링크에서(아래 링크 클릭)';
 
-  static Future<bool> requestSendSMS(String phoneNumber, String title, String content) async {
+  static Future<bool> requestSendSMS(BuildContext context, String phoneNumber, String title, String content) async {
     String message = "[$title] $content";
     String recipients = phoneNumber;
     final telephony = Telephony.instance;
+
+    // 권한 요청
+    var permissionStatus = await Permission.sms.status;
+    if (!permissionStatus.isGranted) {
+      var requestedStatus = await Permission.sms.request();
+      if (!requestedStatus.isGranted) {
+        print('SMS 전송 권한이 거부되었습니다.');
+        showAlertDialog(context, "SMS전송", "권한이 거부되어 호출 메세지 전송이 불가능합니다.", null);
+        return false;
+      }
+    }
 
     print('[SMS send service]');
     print('연락처 $phoneNumber 님에게 SMS를 전송합니다');

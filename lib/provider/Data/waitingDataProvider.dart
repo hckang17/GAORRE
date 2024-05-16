@@ -2,12 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/login_data_model.dart';
-import 'package:orre_manager/Model/waiting_data_model.dart';
-import 'package:orre_manager/presenter/Widget/alertDialog.dart';
-import 'package:orre_manager/services/hive_service.dart';
-import 'package:orre_manager/services/http_service.dart';
-import 'package:orre_manager/services/send_SMS_service.dart';
+import 'package:orre_manager/Model/LoginDataModel.dart';
+import 'package:orre_manager/Model/WaitingDataModel.dart';
+import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
+import 'package:orre_manager/provider/Data/storeDataProvider.dart';
+import 'package:orre_manager/services/HIVE_service.dart';
+import 'package:orre_manager/services/HTTP_service.dart';
+import 'package:orre_manager/services/SMS_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
@@ -134,23 +135,22 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
-  Future<void> requestUserCall(BuildContext context, String phoneNumber, int waitingNumber, int storeCode, int minutesToAdd) async {
+  Future<void> requestUserCall(WidgetRef ref, String phoneNumber, int waitingNumber, int storeCode, int minutesToAdd) async {
     print('고객 호출 - waitingNumber $waitingNumber');
+    String storeName = ref.read(storeDataProvider.notifier).getStoreData()!.storeName;
+    print('우리점포 이름 : $storeName');
     final jsonBody = json.encode({
         "storeCode": storeCode,
         "waitingTeam": waitingNumber,
         "minutesToAdd": minutesToAdd,
     });
     final response = await HttpsService.postRequest('/StoreAdmin/userCall', jsonBody);
-    bool result = await SendSMSService.requestSendSMS(phoneNumber, "낭만단대", "웨이팅호출");
-    if(result) await showAlertDialog(context, "웨이팅 호출 SMS 전송", "성공!!", null);
     if(response.statusCode == 200) {
       final Map<String, dynamic> responseBody = json.decode(utf8.decode(response.bodyBytes));
       try {
         CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseBody);
-        if(callGuestResponse.storeCode == storeCode)
+        if(callGuestResponse.storeCode == storeCode) //고객호출 성공시! 이때, storeCode가 같은지로 확인함.
         {
-          //고객호출 성공
           String formattedTime = extractEntryTime(callGuestResponse.entryTime);
           WaitingData? currentState = state;
           // WaitingTeam의 entryTime을 업데이트
@@ -160,15 +160,20 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
             }
           });
           updateState(currentState);
-          showAlertDialog(context, '$waitingNumber번 고객 호출', '입장 마감 시간 : $formattedTime', null);
+          showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '입장 마감 시간 : $formattedTime', null);
+          
+          String SMScontent = SMScontentString(waitingNumber, storeName, extractEntryTimeInMinutes(callGuestResponse.entryTime));
+          print(SMScontent);
+          bool result = await SendSMSService.requestSendSMS(ref.context ,phoneNumber, "[웨이팅 호출]", SMScontent);
+          if(result) await showAlertDialog(ref.context, "웨이팅 호출 SMS 전송", "성공!", null);
         } else {
           // 고객호출 실패
           print('고객호출 실패');
-          showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+          showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
         }
       }catch(error){
         print('고객 호출 실패. 에러 : $error');
-        showAlertDialog(context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+        showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
       }
     } else {
       print('HTTP 에러. 에러코드 : ${response.statusCode}');
@@ -338,6 +343,17 @@ String extractEntryTime(String message) {
   String formattedTime =
       '${parsedTime.hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')}:${parsedTime.second.toString().padLeft(2, '0')}';
   return formattedTime;
+}
+
+String extractEntryTimeInMinutes(String message) {
+  DateTime parsedTime = DateTime.parse(message);
+  String formattedTime = '${parsedTime.hour.toString().padLeft(2, '0')}시${parsedTime.minute.toString().padLeft(2, '0')}분';
+  return formattedTime;
+}
+
+String SMScontentString(int waitingNumber, String storeName, String deadlineTime){
+  String result = "안녕하세요~! $waitingNumber 번 고객님! $storeName에 입장하실 시간이에요! $deadlineTime까지 내점해주세요~!";
+  return result;
 }
 
 

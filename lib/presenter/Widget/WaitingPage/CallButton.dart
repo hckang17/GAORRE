@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
-import 'package:orre_manager/provider/WidgetProvider/call_button_provider.dart';
-import 'package:orre_manager/provider/WidgetProvider/waitingTimerProvider.dart';
+import 'package:orre_manager/provider/WidgetProvider/CallButtonProvider.dart';
+import 'package:orre_manager/provider/WidgetProvider/WaitingTimerProvider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
-import 'package:orre_manager/provider/WidgetProvider/call_button_provider.dart';
-import 'package:orre_manager/provider/WidgetProvider/waitingTimerProvider.dart';
+import 'package:orre_manager/provider/WidgetProvider/CallButtonProvider.dart';
+import 'package:orre_manager/provider/WidgetProvider/WaitingTimerProvider.dart';
 
 class CallIconButton extends ConsumerWidget {
   final int waitingNumber;
@@ -43,7 +43,7 @@ class CallIconButton extends ConsumerWidget {
                 onPressed: () {
                   ref.read(callButtonProvider(waitingNumber).notifier).pressButton(); // 상태 변경
                   ref.read(waitingProvider.notifier).requestUserCall(
-                    context,
+                    ref,
                     phoneNumber,
                     waitingNumber,
                     storeCode,

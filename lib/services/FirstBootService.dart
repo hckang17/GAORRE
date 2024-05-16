@@ -4,10 +4,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart';
+import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/provider/Network/stompClientStateNotifier.dart';
 import 'package:orre_manager/provider/errorStateNotifier.dart';
-import 'package:orre_manager/services/hive_service.dart';
+import 'package:orre_manager/services/HIVE_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 final firstBootState = StateProvider<bool>((ref) => false);
 
@@ -18,10 +19,14 @@ final firstBootState = StateProvider<bool>((ref) => false);
 class FirstBootService {
   static Future<bool> firstBoot(WidgetRef ref) async {
     try{
+      print('SMS전송 권한을 확인합니다... [FirstBootService]');
+      var permissionStatus = await Permission.sms.status;
+      if (!permissionStatus.isGranted) { await Permission.sms.request(); }
+      
       print('하이브 저장소를 초기화합니다. [FIrstBootService]');
-      await HiveService.initHive(); // 하이브 저장소를 초기화 해줌.
+      await HiveService.initHive().whenComplete(() => print('하이브 저장소를 초기화 했습니다! [FirstBootService]')); // 하이브 저장소를 초기화 해줌.
       print('자동 로그인을 실행합니다. [FIrstBootService]');
-      await ref.read(loginProvider.notifier).requestAutoLogin();
+      await ref.read(loginProvider.notifier).requestAutoLogin().whenComplete(() => print('자동로그인 요청을 끝냈습니다. [FirstBootService]'));
       print('Websocket을 구동합니다. [FIrstBootService]');
       await ref.read(stompClientStateNotifierProvider.notifier).configureClient().listen((event) {
         print("!!!!!!!!!!!!!!!! 발생한 이벤트: $event [FIrstBootService]");
@@ -32,12 +37,16 @@ class FirstBootService {
           print("웹소켓 연결되지 않음... [FIrstBootService]");
           ref.read(errorStateNotifierProvider.notifier).addError(Error.websocket);
         }
-        print("웹소켓 관련 에러체크 완료. [FIrstBootService]");
+        print("웹소켓 부팅 서비스를 완료했습니다..... [FIrstBootService]");
       });
+      print('가게정보를 로드합니다.. [FIrstBootService]');
+      await ref.read(storeDataProvider.notifier).requestStoreData(ref.read(loginProvider.notifier).getLoginData()!.storeCode).whenComplete(
+        () => print('가게정보 요청처리를 완료했습니다. [FirstBootService]')
+      );
     }catch(error){
       print('최초부팅 오류 감지 : $error [FIrstBootService]');
       return false;
-    }finally{
+    } finally{
       ref.watch(firstBootState.notifier).state = true;
       print('최초부팅 완료... [firstBootService]');
     }
