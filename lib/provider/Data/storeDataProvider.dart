@@ -4,12 +4,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/login_data_model.dart';
-import 'package:orre_manager/Model/menu_data_model.dart';
-import 'package:orre_manager/Model/restaurant_table_model.dart';
-import 'package:orre_manager/Model/store_data_model.dart';
+import 'package:orre_manager/Model/LoginDataModel.dart';
+import 'package:orre_manager/Model/MenuDataModel.dart';
+import 'package:orre_manager/Model/RestaurantTableModel.dart';
+import 'package:orre_manager/Model/StoreDataModel.dart';
 import 'package:orre_manager/presenter/Widget/alertDialog.dart';
-import 'package:orre_manager/services/http_service.dart';
+import 'package:orre_manager/services/HTTP_service.dart';
 import 'package:http/http.dart' as http;
 // ignore: depend_on_referenced_packages
 import 'package:http_parser/http_parser.dart';
@@ -33,7 +33,6 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
       if (state == null || state!.menuInfo == null) {
         throw Exception('가게 데이터가 없거나 메뉴 정보가 없습니다. [storeDataProvider - getMenuCode]');
       }
-      
       // 메뉴 리스트를 순회하며 메뉴 이름과 일치하는 메뉴 코드를 찾습니다.
       for (Menu menu in state!.menuInfo!) {
         if (menu.menuName == menuName) {
@@ -66,7 +65,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
     return state!.menuInfo;
   }
 
-  FutureOr<bool> requestStoreData(int storeCode) async {
+  Future<bool> requestStoreData(int storeCode) async {
     int tableNumber = 1;  // 딱히 중요하지 않은 변수라 일단 1 처리.
     final jsonBody = json.encode({
       "storeCode" : storeCode,

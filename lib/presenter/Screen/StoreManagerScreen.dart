@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/store_data_model.dart';
+import 'package:orre_manager/Model/StoreDataModel.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/MenuList.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
-import '../../Model/login_data_model.dart';
+import '../../Model/LoginDataModel.dart';
 
 class ManagementScreenWidget extends ConsumerWidget {
 

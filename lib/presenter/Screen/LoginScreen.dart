@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/MainScreen/waiting_screen.dart';
-import 'package:orre_manager/presenter/Widget/alertDialog.dart';
+import 'package:orre_manager/presenter/Screen/WaitingScreen.dart';
+import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
+import 'package:orre_manager/presenter/MainScreen.dart';
 import '../../provider/Data/loginDataProvider.dart';
 import '../../Coding_references/stompClientFutureProvider.dart';
 
@@ -28,9 +29,11 @@ class _LoginScreenBody extends ConsumerWidget {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder : (context) => StoreScreenWidget(),
+          builder : (context) => MainScreen(),
         )
       );
+    }else{
+      showAlertDialog(context, "로그인", "로그인에 실패했습니다!", null);
     }
   }
 

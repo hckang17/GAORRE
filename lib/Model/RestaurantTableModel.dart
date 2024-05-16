@@ -1,5 +1,5 @@
-import 'package:orre_manager/Model/guest_data_model.dart';
-import 'package:orre_manager/Model/orderList_data.dart';
+import 'package:orre_manager/Model/GuestDataModel.dart';
+import 'package:orre_manager/Model/OrderListModel.dart';
 
 class RestaurantTable {
   final List<Seat> table;

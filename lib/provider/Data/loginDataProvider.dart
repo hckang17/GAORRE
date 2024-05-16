@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 // import 'package:orre_manager/Coding_references/login.dart';
-import 'package:orre_manager/services/hive_service.dart';
-import 'package:orre_manager/services/http_service.dart';
-import '../../Model/login_data_model.dart';
+import 'package:orre_manager/services/HIVE_service.dart';
+import 'package:orre_manager/services/HTTP_service.dart';
+import '../../Model/LoginDataModel.dart';
 
 // LoginInfo 객체를 관리하는 프로바이더를 정의합니다.
 final loginProvider =

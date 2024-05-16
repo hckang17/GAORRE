@@ -2,22 +2,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
-import 'package:orre_manager/presenter/Widget/WaitingPage/AddWaitingPopup.dart';
 import 'package:orre_manager/presenter/Widget/WaitingPage/CallButton.dart';
-import 'package:orre_manager/presenter/MainScreen/management_screen.dart';
-import 'package:orre_manager/presenter/MainScreen/table_status_screen.dart';
-import 'package:orre_manager/presenter/Widget/WaitingPage/waiting_adding_screen.dart';
+import 'package:orre_manager/presenter/Screen/StoreManagerScreen.dart';
+import 'package:orre_manager/presenter/Screen/TableScreen.dart';
+import 'package:orre_manager/presenter/Widget/WaitingPage/ShowWaitingLog.dart';
+import 'package:orre_manager/presenter/Widget/WaitingPage/AddWaitingScreen.dart';
+import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
+import 'package:orre_manager/provider/Data/UserLogProvider.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/Coding_references/stompClientFutureProvider.dart';
 import 'package:orre_manager/provider/Data/waitingAvailableStatusProvider.dart';
-import 'package:stomp_dart_client/stomp.dart';
-import 'package:stomp_dart_client/stomp_frame.dart';
-import '../../Model/login_data_model.dart';
-import '../../Model/waiting_data_model.dart';
+import '../../Model/LoginDataModel.dart';
+import '../../Model/WaitingDataModel.dart';
 import '../../provider/Data/waitingDataProvider.dart';
 
-class StoreScreenWidget extends ConsumerWidget {
-  StoreScreenWidget();
+class WaitingScreenWidget extends ConsumerWidget {
+  WaitingScreenWidget();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,7 +42,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   late int storeCode;
   late LoginData? loginData;
   late int waitingAvailableState;
-  int minutesToAdd = 1;
+  int minutesToAdd = 8;
   WaitingData? currentWaitingData;
   bool isSubscribed = false;
   late bool switchValue;
@@ -104,7 +103,6 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                         ),
                         SizedBox(width: 10), // 간격 조절
                         LiteRollingSwitch(
-                          //initial value
                           value: switchValue,
                           textOn: 'ON',
                           textOff: 'OFF',
@@ -115,13 +113,46 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                           iconOn: Icons.done,
                           iconOff: Icons.remove_circle_outline,
                           textSize: 16.0,
-                          onTap: () {}, // null 값을 전달하여 콜백 함수를 사용하지 않음
-                          onDoubleTap: () {}, // null 값을 전달하여 콜백 함수를 사용하지 않음
-                          onSwipe: () {}, // null 값을 전달하여 콜백 함수를 사용하지 않음
-                          onChanged: (bool state) {
-                            //Use it to manage the different states
-                            print('Current State of SWITCH IS: $state');
+                          onChanged: (bool newState) async {
+                            if(!newState) {
+                              //false일 때, -> 웨이팅 안받음.
+                              await showAlertDialog(ref.context, "웨이팅 접수", "지금부터 신규 웨이팅 접수를 받지 않습니다.", null);
+                            }else{
+                              await showAlertDialog(ref.context, "웨이팅 접수", "지금부터 신규 웨이팅 접수를 받습니다!", null);
+                            }
+                            // if (!newState) {
+                            //   bool confirmation = await showConfirmDialog(
+                            //     ref.context,
+                            //     "웨이팅 가능여부 변경",
+                            //     "웨이팅 가능여부를 'OFF'로 변경할 시, 새로운 웨이팅을 접수받지 않게 됩니다. 괜찮으십니까?"
+                            //   );
+                            //   if (!confirmation) {
+                            //     ref.read(waitingAvailableStatusStateProvider.notifier).updateState(!newState ? 1 : 0);
+                            //     return;  // 롤백을 트리거하지 않고 종료
+                            //   }
+                            // }
+                            // // 상태 변경 로직 실행
+                            // bool success = await ref.read(waitingAvailableStatusStateProvider.notifier)
+                            //   .changeAvailableStatus(ref.read(loginProvider.notifier).getLoginData()!);
+                            // if(success){
+                            //   if(1 == ref.read(waitingAvailableStatusStateProvider.notifier).getState){
+                            //     // 웨이팅 접수 받지 않을 때
+                            //   }else{
+                            //     // 웨이팅 접수 받도록 할 때
+                            //   }
+                            // }else{
+                            //   print('웨이팅 접수상태 변경요청 실패... [waitingScreen - LiteRollingSwitch]');
+                            //   print('웨이팅접수요청 상태변경 시도 : ${!newState} -> $newState [waitingScreen - LiteRollingSwitch]');
+                            //   await showAlertDialog(ref.context, "웨이팅 접수상태 변경", "변경실패", null);
+                            //   return;  // 롤백을 트리거
+                            // }
                           },
+                          onDoubleTap: () => null, 
+                          onSwipe: () => null,
+                          onTap: () async {
+                            bool success = await ref.read(waitingAvailableStatusStateProvider.notifier)
+                              .changeAvailableStatus(ref.read(loginProvider.notifier).getLoginData()!);
+                            },
                         ),
                       ],
                     ),
@@ -239,14 +270,18 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                           Expanded(
                             flex: 1,
                             child: IconButton(
-                              onPressed: () {
-                                ref
-                                    .read(waitingProvider.notifier)
-                                    .requestUserDelete(
-                                        context, storeCode, team.waitingNumber);
+                              onPressed: () async {
+                                bool confirmation = await showConfirmDialog(
+                                  ref.context,
+                                  "대기 고객 삭제",
+                                  "${team.waitingNumber}번 고객님을 정말 웨이팅 취소(노쇼)처리 하시겠습니까?"
+                                );
+                                if(confirmation){
+                                  ref.read(waitingProvider.notifier).requestUserDelete(context, storeCode, team.waitingNumber);
+                                }
                               },
                               icon:
-                                  Icon(Icons.delete, color: Color(0xFFDFDFDF)),
+                                Icon(Icons.delete, color: Color(0xFFDFDFDF)),
                               iconSize: 30,
                             ),
                           ),
@@ -256,7 +291,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
+                                Row(  
                                   children: [
                                     Text(
                                       '대기번호 ${team.waitingNumber}번',
@@ -335,34 +370,44 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
               ),
             ),
 
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
-              children: [
-                // ElevatedButton(
-                //   onPressed: () {
-                //     ref.read(waitingProvider.notifier).requestUserCall(
-                //         context,
-                //         currentWaitingData!.teamInfoList[0].phoneNumber,
-                //         currentWaitingData!.teamInfoList[0].waitingNumber,
-                //         storeCode,
-                //         minutesToAdd);
-                //   },
-                //   child: Text('손님 호출하기'),
-                // ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) =>
-                            TableManagementScreen()));
-                  },
-                  child: Text('좌석페이지'),
-                ),
 
-              ],
-            ),
+            ///
+            /// 이 아래에 원래 메뉴버튼을 두려고 했으나...
+            
+            // Row(
+            //   mainAxisAlignment:
+            //       MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
+            //   children: [
+            //     // ElevatedButton(
+            //     //   onPressed: () {
+            //     //     ref.read(waitingProvider.notifier).requestUserCall(
+            //     //         context,
+            //     //         currentWaitingData!.teamInfoList[0].phoneNumber,
+            //     //         currentWaitingData!.teamInfoList[0].waitingNumber,
+            //     //         storeCode,
+            //     //         minutesToAdd);
+            //     //   },
+            //     //   child: Text('손님 호출하기'),
+            //     // ),
+            //     // ElevatedButton(
+            //     //   onPressed: () {
+            //     //     Navigator.of(context).push(MaterialPageRoute(
+            //     //         builder: (BuildContext context) =>
+            //     //             TableManagementScreen()));
+            //     //   },
+            //     //   child: Text('좌석페이지'),
+            //     // ),
+            //   ],
+            // ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await ref.read(userLogProvider.notifier).retrieveUserLogData(ref.read(loginProvider.notifier).getLoginData()!);
+          showWaitingLog(ref);
+        },
+        child: Icon(Icons.assignment), // 로그 확인 아이콘
       ),
     );
 
@@ -374,6 +419,9 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
     //   floatingActionButton: buildAddingWaitingTeam(),
     // );
   }
+
+  // 이 아래부터는... LECAGY가 될 확률 높음.. 아니면 다 분리해서 디자인 해야함.
+
 
   Widget buildInitialScreen() {
     return Center(
@@ -483,7 +531,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
         ElevatedButton(
           onPressed: () {
             ref.read(waitingProvider.notifier).requestUserCall(
-              ref.context,
+              ref,
               currentWaitingData!.teamInfoList[0].phoneNumber,
               currentWaitingData!.teamInfoList[0].waitingNumber,
               storeCode,
@@ -511,12 +559,12 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
     );
   }
 
-  Widget buildAddingWaitingTeam() {
-    return FloatingActionButton(
-      onPressed: () => showAddWaitingDialog(ref.context),
-      child: Icon(Icons.person_add),
-      tooltip: '웨이팅팀 수동 추가하기',);
-  }
+  // Widget buildAddingWaitingTeam() {
+  //   return FloatingActionButton(
+  //     onPressed: () => showAddWaitingDialog(ref.context),
+  //     child: Icon(Icons.person_add),
+  //     tooltip: '웨이팅팀 수동 추가하기',);
+  // }
 
   String _getGuestStatus(int status) {
     switch (status) {
