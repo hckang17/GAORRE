@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/presenter/Error/network_error_screen.dart';
 import 'package:orre_manager/presenter/Error/websocket_error_screen.dart';
+import 'package:orre_manager/presenter/MainScreen.dart';
 import 'package:orre_manager/provider/errorStateNotifier.dart';
 
 class ErrorScreen extends ConsumerWidget {
@@ -14,13 +15,13 @@ class ErrorScreen extends ConsumerWidget {
       print(element);
     });
 
-    // if (error.isEmpty) {
-    //   return Scaffold(
-    //     body: Center(
-    //       child: MainScreen(),
-    //     ),
-    //   );
-    // }
+    if (error.isEmpty) {
+      return Scaffold(
+        body: Center(
+          child: MainScreen(),
+        ),
+      );
+    }
 
     switch (error.last) {
       case Error.websocket:

@@ -1,7 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/StoreDataModel.dart';
-import 'package:orre_manager/presenter/Widget/ManagerPage/MenuList.dart';
+import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
+import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/MenuList.dart';
+import 'package:orre_manager/provider/Data/AddWaitingTimeProider.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import '../../Model/LoginDataModel.dart';
@@ -30,6 +33,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
   late LoginData? loginData;
   StoreData? currentStoreData;
   bool isSubscribed = false;
+  late int minutesToAdd;
 
   @override
   void initState() {
@@ -42,24 +46,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
   @override
   Widget build(BuildContext context) {
     currentStoreData = ref.watch(storeDataProvider);
-
-    if (currentStoreData == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text('가게 관리 화면')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('매장 코드 : ${loginData!.storeCode}', style: TextStyle(fontSize: 20)),
-              ElevatedButton(
-                onPressed: () {}, // 데이터는 이미 요청됨
-                child: Text("가게 정보 수신하기"),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    minutesToAdd = ref.watch(minutesToAddProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text('가게 정보 관리 화면')),
@@ -110,6 +97,23 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                     },
                     child: Text('새로고침'),
                   ),
+                  ListTile(
+                    title: Text('웨이팅 시간 설정'),
+                    subtitle: Text('$minutesToAdd 분'),
+                    onTap: () => _selectWaitingTime(context),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if(true == await showConfirmDialogWithConfirmText(context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")){
+                        if(true == await ref.read(storeDataProvider.notifier).requestCloseStore(ref)){
+                          showAlertDialog(context, "영업 종료", "성공적으로 영업종료를 처리 완료하였습니다.", null);
+                        }else{
+                          showAlertDialog(context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
+                        }
+                      }
+                    },
+                    child: Text('영업종료하기'),
+                  ),
                 ],
               ),
             ),
@@ -129,6 +133,30 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
           child: Text('$label 수정하기'),
         ),
       ],
+    );
+  }
+
+  void _selectWaitingTime(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext builder) {
+        return Container(
+          height: MediaQuery.of(context).copyWith().size.height / 3,
+          child: CupertinoPicker(
+            magnification: 1.0,
+            children: List<Widget>.generate(13, (int index) {
+              return Center(
+                child: Text('${index * 5} 분'),
+              );
+            }),
+            itemExtent: 30, // 각 항목의 높이
+            onSelectedItemChanged: (int index) async {
+              ref.read(minutesToAddProvider.notifier).updateState(index*5);
+              await showAlertDialog(context, "호출시간 변경", "기본 호출시간을 ${index*5}분으로 설정하였습니다.", null);
+            },
+          ),
+        );
+      }
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/waiting_data_model.dart';
+import 'package:orre_manager/Model/WaitingDataModel.dart';
 import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
 
 void _showReservationList(BuildContext context, WidgetRef ref) {

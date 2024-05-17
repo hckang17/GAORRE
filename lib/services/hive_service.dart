@@ -7,7 +7,7 @@ class HiveService {
   static const String _boxName = "Gaorre";
 
   // Hive 초기화 및 기본 박스 열기
-  static Future<void> initHive() async {
+  static Future<bool> initHive() async {
     if (kIsWeb) {
       await Hive.initFlutter(); // 웹에서는 이 방식을 사용
     } else {
@@ -16,9 +16,12 @@ class HiveService {
         Hive.init(appDocumentDir.path); // 모바일에서는 path_provider 사용
       } catch (error) {
         print('하이브 저장소 초기화 실패. 에러코드 : $error');
+        return false;
       }
     }
     await Hive.openBox(_boxName); // 모든 플랫폼에서 박스 열기
+    print('HIVE저장소 초기화 성공... [HiveService]');
+    return true;
   }
 
   static Future<bool> saveIntData(String key, int value) async {

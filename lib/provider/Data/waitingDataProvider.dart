@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/LoginDataModel.dart';
 import 'package:orre_manager/Model/WaitingDataModel.dart';
 import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
+import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/services/HIVE_service.dart';
 import 'package:orre_manager/services/HTTP_service.dart';
@@ -15,14 +16,19 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 // WaitingInfo 객체를 관리하는 프로바이더를 정의합니다.
 final waitingProvider =
     StateNotifierProvider<WaitingDataNotifier, WaitingData?>((ref) {
-  return WaitingDataNotifier(); // 초기 상태를 null로 설정합니다.
+  return WaitingDataNotifier(ref); // 초기 상태를 null로 설정합니다.
 });
 
 // StateNotifier를 확장하여 WaitingInfo 객체를 관리하는 클래스를 정의합니다.
 class WaitingDataNotifier extends StateNotifier<WaitingData?> {
   StompClient? _client; // StompClient 인스턴스를 저장할 내부 변수 추가
-  WaitingDataNotifier() : super(null);
-  // dynamic nowSubscribeToCallGuest;
+  Timer? _heartbeatTimer;  // 하트비트 타이머..
+  WaitingDataNotifier(this.ref) : super(null) {
+    _startHeartbeatCheck();
+  }
+  final Ref ref;
+  
+  List<DateTime?> lastHeartbeatReceived = [null, null, null]; // 마지막 heartbeat 시간 기록
   List<dynamic> subscriptionInfo = [null, null, null];
   /* 
     subscriptionInfo[0] : WaitingData 구독정보
@@ -30,11 +36,30 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     subscriptionInfo[2] : NoShow 구독정보
   */
 
+  void _startHeartbeatCheck() async {
+    // 1분마다 heartbeat 체크
+    _heartbeatTimer = Timer.periodic(Duration(seconds: 10), (_) async {
+      print('구독상태 점검... [waitingProvider - heartBeatTimer]');
+      for (int i = 0; i < subscriptionInfo.length; i++) {
+        if (subscriptionInfo[i] != null && lastHeartbeatReceived[i] != null &&
+            DateTime.now().difference(lastHeartbeatReceived[i]!).inSeconds > 30) {
+          // 2분동안 heartbeat을 받지 못했다면 구독 해제 및 재구독
+          print('Heartbeat not received for subscription index $i, re-subscribing...');
+          unSubscribe(i);
+          await subscribeToWaitingData(ref.read(loginProvider.notifier).getLoginData()!.storeCode);
+          sendWaitingData(ref.read(loginProvider.notifier).getLoginData()!.storeCode);
+        }
+      }
+      print('구독상태 점검 완료... 이상없음 [waitingProvider - heartBeatTimer]');
+    });
+  }
+
+
   // StompClient 인스턴스를 설정하는 메소드
-  void setClient(StompClient client) {
+  void setClient(StompClient? client) {
     print("<WaitingProvider> 스텀프 연결 설정");
     _client = client; // 내부 변수에 StompClient 인스턴스 저장
-    print('클라이언트 상태 : ${_client}');
+    print('클라이언트 상태 : ${_client.toString()}');
   }
 
   void saveWaitingData() async {
@@ -42,7 +67,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       await HiveService.saveData('waitingData', state!.toJson());
       print('[saveWaitingData] 성공! ');
     } catch (error) {
-      print('웨이팅데이터 저장 실패... 에러 : $error');
+      print('웨이팅데이터 저장 실패... 에러 : $error [saveWaitingData]');
     }
   }
 
@@ -135,7 +160,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
-  Future<void> requestUserCall(WidgetRef ref, String phoneNumber, int waitingNumber, int storeCode, int minutesToAdd) async {
+  Future<bool> requestUserCall(WidgetRef ref, String phoneNumber, int waitingNumber, int storeCode, int minutesToAdd) async {
     print('고객 호출 - waitingNumber $waitingNumber');
     String storeName = ref.read(storeDataProvider.notifier).getStoreData()!.storeName;
     print('우리점포 이름 : $storeName');
@@ -166,17 +191,22 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
           print(SMScontent);
           bool result = await SendSMSService.requestSendSMS(ref.context ,phoneNumber, "[웨이팅 호출]", SMScontent);
           if(result) await showAlertDialog(ref.context, "웨이팅 호출 SMS 전송", "성공!", null);
+          return true;
         } else {
           // 고객호출 실패
           print('고객호출 실패');
-          showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+          await showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+          return false;
         }
       }catch(error){
         print('고객 호출 실패. 에러 : $error');
-        showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+        await showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '고객호출 실패', null);
+        return false;
       }
     } else {
       print('HTTP 에러. 에러코드 : ${response.statusCode}');
+      await showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '고객호출 실패\n잠시후 재시도 해주세요', null);
+      return false;
     }
   }
 
@@ -247,20 +277,26 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
-  void subscribeToWaitingData(int storeCode) {
+  Future<void> subscribeToWaitingData(int storeCode) async {
     print('<WaitingData> 구독요청 수신.');
-    print('Stomp Client 상태: ${_client?.connected}');
-    if (subscriptionInfo[0] != null) {
-      // Do nothing
-      print('이미 <WaitingData>를 구독중입니다.');
-    } else {
-      subscriptionInfo[0] = _client?.subscribe(
-        destination: '/topic/admin/dynamicStoreWaitingInfo/$storeCode',
-        callback: (StompFrame frame) {
-          waitingData_CallBack(frame);
-        },
-      );
+    if (_client == null || !_client!.connected) {
+        print('Stomp Client is not connected. Subscription aborted. [waitingProvider - subscribeToWaitingData]');
+        await Future.delayed(Duration(seconds: 5));
+        print('WaitingData 구독을 재시도 합니다... [waitingProvider - subscribeToWaitingData]');
+        subscribeToWaitingData(storeCode);
+        return;
     }
+    if (subscriptionInfo[0] != null) {
+        print('이미 <WaitingData>를 구독중입니다.');
+        return;
+    }
+    subscriptionInfo[0] = _client?.subscribe(
+      destination: '/topic/admin/dynamicStoreWaitingInfo/$storeCode',
+      callback: (StompFrame frame) {
+        lastHeartbeatReceived[0] = DateTime.now();  // 구독에 응답 받을 때마다 마지막 heartbeat 시간 업데이트
+        waitingData_CallBack(frame);
+      },
+    );
     print('Subscription 객체: ${subscriptionInfo[0].toString()}');
   }
 
@@ -286,6 +322,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     // index는 어떤것을 구독해제 할 지 결정하기 위한 변수임.
     // print("<callGuest> is now unsubscribed");
     subscriptionInfo[index](unsubscribeHeaders: null);
+    subscriptionInfo[index] = null;
   }
 
   Future<bool> confirmEnterance(BuildContext context, LoginData loginData, int waitingNumber) async {
@@ -323,6 +360,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
   }
 
 
+
   @override
   void dispose() {
     for(int i=0; i<subscriptionInfo.length; i++){
@@ -333,7 +371,6 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     _client?.deactivate();
     super.dispose();
   }
-
 }
 
 // extractTime method
@@ -352,7 +389,7 @@ String extractEntryTimeInMinutes(String message) {
 }
 
 String SMScontentString(int waitingNumber, String storeName, String deadlineTime){
-  String result = "안녕하세요~! $waitingNumber 번 고객님! $storeName에 입장하실 시간이에요! $deadlineTime까지 내점해주세요~!";
+  String result = "안녕하세요~! $waitingNumber번 고객님! $storeName에 입장하실 시간이에요! $deadlineTime까지 내점해주세요~!";
   return result;
 }
 
