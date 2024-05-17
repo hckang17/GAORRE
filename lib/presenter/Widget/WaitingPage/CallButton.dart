@@ -40,15 +40,12 @@ class CallIconButton extends ConsumerWidget {
                   color: Color(0xFF72AAD8),
                 ),
                 iconSize: 30,
-                onPressed: () {
-                  ref.read(callButtonProvider(waitingNumber).notifier).pressButton(); // 상태 변경
-                  ref.read(waitingProvider.notifier).requestUserCall(
-                    ref,
-                    phoneNumber,
-                    waitingNumber,
-                    storeCode,
-                    minutesToAdd,
-                  );
+                onPressed: () async {
+                  if(true == await ref.read(waitingProvider.notifier).requestUserCall(
+                    ref,phoneNumber,waitingNumber,storeCode,minutesToAdd)
+                  ){
+                    ref.read(callButtonProvider(waitingNumber).notifier).pressButton(); // 상태 변경
+                  }
                 },
               ),
       ],

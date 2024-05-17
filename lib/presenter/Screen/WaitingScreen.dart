@@ -8,9 +8,10 @@ import 'package:orre_manager/presenter/Screen/TableScreen.dart';
 import 'package:orre_manager/presenter/Widget/WaitingPage/ShowWaitingLog.dart';
 import 'package:orre_manager/presenter/Widget/WaitingPage/AddWaitingScreen.dart';
 import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
+import 'package:orre_manager/provider/Data/AddWaitingTimeProider.dart';
 import 'package:orre_manager/provider/Data/UserLogProvider.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/provider/Data/waitingAvailableStatusProvider.dart';
+import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import '../../Model/LoginDataModel.dart';
 import '../../Model/WaitingDataModel.dart';
 import '../../provider/Data/waitingDataProvider.dart';
@@ -42,7 +43,6 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   late int storeCode;
   late LoginData? loginData;
   late int waitingAvailableState;
-  int minutesToAdd = 8;
   WaitingData? currentWaitingData;
   bool isSubscribed = false;
   late bool switchValue;
@@ -64,7 +64,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
 
   @override
   Widget build(BuildContext context) {
-    waitingAvailableState = ref.watch(waitingAvailableStatusStateProvider);
+    waitingAvailableState = ref.watch(storeDataProvider.select((value) => value!.waitingAvailable));
     currentWaitingData = ref.watch(waitingProvider);
     switchValue = waitingAvailableState == 0 ? true : false;
     
@@ -120,37 +120,11 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                             }else{
                               await showAlertDialog(ref.context, "웨이팅 접수", "지금부터 신규 웨이팅 접수를 받습니다!", null);
                             }
-                            // if (!newState) {
-                            //   bool confirmation = await showConfirmDialog(
-                            //     ref.context,
-                            //     "웨이팅 가능여부 변경",
-                            //     "웨이팅 가능여부를 'OFF'로 변경할 시, 새로운 웨이팅을 접수받지 않게 됩니다. 괜찮으십니까?"
-                            //   );
-                            //   if (!confirmation) {
-                            //     ref.read(waitingAvailableStatusStateProvider.notifier).updateState(!newState ? 1 : 0);
-                            //     return;  // 롤백을 트리거하지 않고 종료
-                            //   }
-                            // }
-                            // // 상태 변경 로직 실행
-                            // bool success = await ref.read(waitingAvailableStatusStateProvider.notifier)
-                            //   .changeAvailableStatus(ref.read(loginProvider.notifier).getLoginData()!);
-                            // if(success){
-                            //   if(1 == ref.read(waitingAvailableStatusStateProvider.notifier).getState){
-                            //     // 웨이팅 접수 받지 않을 때
-                            //   }else{
-                            //     // 웨이팅 접수 받도록 할 때
-                            //   }
-                            // }else{
-                            //   print('웨이팅 접수상태 변경요청 실패... [waitingScreen - LiteRollingSwitch]');
-                            //   print('웨이팅접수요청 상태변경 시도 : ${!newState} -> $newState [waitingScreen - LiteRollingSwitch]');
-                            //   await showAlertDialog(ref.context, "웨이팅 접수상태 변경", "변경실패", null);
-                            //   return;  // 롤백을 트리거
-                            // }
                           },
                           onDoubleTap: () => null, 
                           onSwipe: () => null,
                           onTap: () async {
-                            bool success = await ref.read(waitingAvailableStatusStateProvider.notifier)
+                            bool success = await ref.read(storeDataProvider.notifier)
                               .changeAvailableStatus(ref.read(loginProvider.notifier).getLoginData()!);
                             },
                         ),
@@ -335,12 +309,19 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                               children: [
                                 if(team.entryTime != null)
                                   IconButton(
-                                    icon: Icon(Icons.check_box), // 초록색 체크박스 아이콘
+                                    icon: Icon(Icons.check_box, color:Colors.green), // 초록색 체크박스 아이콘
                                     onPressed: () async {
                                       print('${team.waitingNumber}번 입장처리 요청 [waitinScreen]');
-                                      await ref.read(waitingProvider.notifier).confirmEnterance(
-                                        ref.context, loginData!, team.waitingNumber
+                                      bool confirmation = await showConfirmDialog(
+                                        ref.context,
+                                        "대기 고객 삭제",
+                                        "${team.waitingNumber}번 고객님을 입장처리 하시겠습니까?"
                                       );
+                                      if(confirmation){
+                                        await ref.read(waitingProvider.notifier).confirmEnterance(
+                                          ref.context, loginData!, team.waitingNumber
+                                        );
+                                      }
                                       // print('Checked options for ${team.waitingNumber}');
                                     },
                                   )
@@ -349,7 +330,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                                 CallIconButton(
                                   waitingNumber: team.waitingNumber,
                                   storeCode: storeCode,
-                                  minutesToAdd: minutesToAdd,
+                                  minutesToAdd: ref.read(minutesToAddProvider.notifier).getState(),
                                   ref: ref, phoneNumber: team.phoneNumber,
                                 ),
                               ],
@@ -419,180 +400,180 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
     //   floatingActionButton: buildAddingWaitingTeam(),
     // );
   }
-
+}
   // 이 아래부터는... LECAGY가 될 확률 높음.. 아니면 다 분리해서 디자인 해야함.
 
 
-  Widget buildInitialScreen() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('매장코드 : $storeCode', style: TextStyle(fontSize: 20)),
-          ElevatedButton(
-            onPressed: () {ref.read(waitingProvider.notifier).sendWaitingData(loginData!.storeCode);}, // No action needed, already subscribed and data sent
-            child: Text("웨이팅정보 수신하기"),
-          ),
-        ],
-      ),
-    );
-  }
+//   Widget buildInitialScreen() {
+//     return Center(
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Text('매장코드 : $storeCode', style: TextStyle(fontSize: 20)),
+//           ElevatedButton(
+//             onPressed: () {ref.read(waitingProvider.notifier).sendWaitingData(loginData!.storeCode);}, // No action needed, already subscribed and data sent
+//             child: Text("웨이팅정보 수신하기"),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
 
-  Widget buildWaitingScreen() {
-    _startTimerForTeamDeletion(ref);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Consumer(
-            builder: (context, ref, child) {
-              ref.watch(waitingProvider);
-              final currentWaitingCount = ref.watch(waitingProvider.select((data) => data?.teamInfoList.length ?? 0));
-              return Text('현재 대기 팀수 : $currentWaitingCount', style: TextStyle(fontSize: 24));
-            },
-          ),
-          ElevatedButton(onPressed: () {
-            ref.read(loginProvider.notifier).logout();
-            Navigator.pop(context);
-            }, child: Text('로그아웃')),
-          ElevatedButton(onPressed: () {
-            ref.read(waitingAvailableStatusStateProvider.notifier).changeAvailableStatus(loginData!);
-            }, 
-            child: Text('현재 웨이팅 가능 상태 : $waitingAvailableState. 0이면 웨이팅추가가능, 1이면 웨이팅추가불가')
-            ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: currentWaitingData!.teamInfoList.length,
-              itemBuilder: (context, index) {
-                WaitingTeam? team = currentWaitingData!.teamInfoList[index];
-                return ListTile(
-                  title: Text('예약 번호 : ${team.waitingNumber}'),
-                  subtitle: buildSubtitle(team),
-                  trailing: buildTrailingButtons(team, ref),
-                );
-              },
-            ),
-          ),
-          buildFooterButtons(),
-        ],
-      ),
-    );
-  }
+//   Widget buildWaitingScreen() {
+//     _startTimerForTeamDeletion(ref);
+//     return Center(
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Consumer(
+//             builder: (context, ref, child) {
+//               ref.watch(waitingProvider);
+//               final currentWaitingCount = ref.watch(waitingProvider.select((data) => data?.teamInfoList.length ?? 0));
+//               return Text('현재 대기 팀수 : $currentWaitingCount', style: TextStyle(fontSize: 24));
+//             },
+//           ),
+//           ElevatedButton(onPressed: () {
+//             ref.read(loginProvider.notifier).logout();
+//             Navigator.pop(context);
+//             }, child: Text('로그아웃')),
+//           ElevatedButton(onPressed: () {
+//             ref.read(storeDataProvider.notifier).changeAvailableStatus(loginData!);
+//             }, 
+//             child: Text('현재 웨이팅 가능 상태 : $waitingAvailableState. 0이면 웨이팅추가가능, 1이면 웨이팅추가불가')
+//             ),
+//           Expanded(
+//             child: ListView.builder(
+//               itemCount: currentWaitingData!.teamInfoList.length,
+//               itemBuilder: (context, index) {
+//                 WaitingTeam? team = currentWaitingData!.teamInfoList[index];
+//                 return ListTile(
+//                   title: Text('예약 번호 : ${team.waitingNumber}'),
+//                   subtitle: buildSubtitle(team),
+//                   trailing: buildTrailingButtons(team, ref),
+//                 );
+//               },
+//             ),
+//           ),
+//           // buildFooterButtons(),
+//         ],
+//       ),
+//     );
+//   }
 
-  Column buildSubtitle(WaitingTeam team) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('상태 : ${_getGuestStatus(team.status)}'),
-        Text('연락처 : ${team.phoneNumber}'),
-        if (team.entryTime != null)
-          StreamBuilder<Duration>(
-            stream: startCountdown(team.entryTime),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Text('Calculating...');
-              } else if (snapshot.hasData) {
-                final mins = snapshot.data!.inMinutes.remainder(60).toString().padLeft(2, '0');
-                final secs = snapshot.data!.inSeconds.remainder(60).toString().padLeft(2, '0');
-                return Text('입장마감까지 남은 시간 : $mins:$secs');
-              } else {
-                return Text('Time expired');
-              }
-            },
-          ),
-      ],
-    );
-  }
+//   Column buildSubtitle(WaitingTeam team) {
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text('상태 : ${_getGuestStatus(team.status)}'),
+//         Text('연락처 : ${team.phoneNumber}'),
+//         if (team.entryTime != null)
+//           StreamBuilder<Duration>(
+//             stream: startCountdown(team.entryTime),
+//             builder: (context, snapshot) {
+//               if (snapshot.connectionState == ConnectionState.waiting) {
+//                 return Text('Calculating...');
+//               } else if (snapshot.hasData) {
+//                 final mins = snapshot.data!.inMinutes.remainder(60).toString().padLeft(2, '0');
+//                 final secs = snapshot.data!.inSeconds.remainder(60).toString().padLeft(2, '0');
+//                 return Text('입장마감까지 남은 시간 : $mins:$secs');
+//               } else {
+//                 return Text('Time expired');
+//               }
+//             },
+//           ),
+//       ],
+//     );
+//   }
 
-  Row buildTrailingButtons(WaitingTeam team, WidgetRef ref) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        CallIconButton(
-          phoneNumber: team.phoneNumber,
-          waitingNumber: team.waitingNumber,
-          storeCode: storeCode,
-          minutesToAdd: minutesToAdd,
-          ref: ref,
-        ),
-        SizedBox(width: 8),
-        ElevatedButton(
-          onPressed: () => ref.read(waitingProvider.notifier).requestUserDelete(ref.context, storeCode, team.waitingNumber),
-          child: const Text('웨이팅 삭제하기'),
-        ),
-      ],
-    );
-  }
+//   Row buildTrailingButtons(WaitingTeam team, WidgetRef ref) {
+//     return Row(
+//       mainAxisSize: MainAxisSize.min,
+//       children: [
+//         CallIconButton(
+//           phoneNumber: team.phoneNumber,
+//           waitingNumber: team.waitingNumber,
+//           storeCode: storeCode,
+//           minutesToAdd: minutesToAdd,
+//           ref: ref,
+//         ),
+//         SizedBox(width: 8),
+//         ElevatedButton(
+//           onPressed: () => ref.read(waitingProvider.notifier).requestUserDelete(ref.context, storeCode, team.waitingNumber),
+//           child: const Text('웨이팅 삭제하기'),
+//         ),
+//       ],
+//     );
+//   }
 
-  Row buildFooterButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        ElevatedButton(
-          onPressed: () {
-            ref.read(waitingProvider.notifier).requestUserCall(
-              ref,
-              currentWaitingData!.teamInfoList[0].phoneNumber,
-              currentWaitingData!.teamInfoList[0].waitingNumber,
-              storeCode,
-              minutesToAdd);
-          },
-          child: Text('다음손님 호출하기'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.of(ref.context).push(MaterialPageRoute(
-              builder: (BuildContext context) =>
-                ManagementScreenWidget()));
-          },
-          child: Text('가게 정보 수정하기'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.of(ref.context).push(MaterialPageRoute(
-              builder: (BuildContext context) =>
-                TableManagementScreen()));
-          },
-          child: Text('테이블 관리하기'),
-        ),
-      ],
-    );
-  }
+//   // Row buildFooterButtons() {
+//   //   return Row(
+//   //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//   //     children: [
+//   //       ElevatedButton(
+//   //         onPressed: () {
+//   //           ref.read(waitingProvider.notifier).requestUserCall(
+//   //             ref,
+//   //             currentWaitingData!.teamInfoList[0].phoneNumber,
+//   //             currentWaitingData!.teamInfoList[0].waitingNumber,
+//   //             storeCode,
+//   //             minutesToAdd);
+//   //         },
+//   //         child: Text('다음손님 호출하기'),
+//   //       ),
+//   //       ElevatedButton(
+//   //         onPressed: () {
+//   //           Navigator.of(ref.context).push(MaterialPageRoute(
+//   //             builder: (BuildContext context) =>
+//   //               ManagementScreenWidget()));
+//   //         },
+//   //         child: Text('가게 정보 수정하기'),
+//   //       ),
+//   //       ElevatedButton(
+//   //         onPressed: () {
+//   //           Navigator.of(ref.context).push(MaterialPageRoute(
+//   //             builder: (BuildContext context) =>
+//   //               TableManagementScreen()));
+//   //         },
+//   //         child: Text('테이블 관리하기'),
+//   //       ),
+//   //     ],
+//   //   );
+//   // }
 
-  // Widget buildAddingWaitingTeam() {
-  //   return FloatingActionButton(
-  //     onPressed: () => showAddWaitingDialog(ref.context),
-  //     child: Icon(Icons.person_add),
-  //     tooltip: '웨이팅팀 수동 추가하기',);
-  // }
+//   // Widget buildAddingWaitingTeam() {
+//   //   return FloatingActionButton(
+//   //     onPressed: () => showAddWaitingDialog(ref.context),
+//   //     child: Icon(Icons.person_add),
+//   //     tooltip: '웨이팅팀 수동 추가하기',);
+//   // }
 
-  String _getGuestStatus(int status) {
-    switch (status) {
-      case 1: return '대기중';
-      case 2: return '착석 완료';
-      case 3: return '삭제 완료';
-      default: return 'Unknown';
-    }
-  }
+//   String _getGuestStatus(int status) {
+//     switch (status) {
+//       case 1: return '대기중';
+//       case 2: return '착석 완료';
+//       case 3: return '삭제 완료';
+//       default: return 'Unknown';
+//     }
+//   }
 
-  Stream<Duration> startCountdown(DateTime? startTime) {
-    return Stream.periodic(Duration(seconds: 1), (count) {
-      return startTime!.difference(DateTime.now());
-    }).map((duration) => Duration(seconds: duration.inSeconds.abs()));
-  }
+//   Stream<Duration> startCountdown(DateTime? startTime) {
+//     return Stream.periodic(Duration(seconds: 1), (count) {
+//       return startTime!.difference(DateTime.now());
+//     }).map((duration) => Duration(seconds: duration.inSeconds.abs()));
+//   }
 
-  void _startTimerForTeamDeletion(WidgetRef ref) {
-    _timer?.cancel();
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
-      for (var team in currentWaitingData!.teamInfoList) {
-        if (team.entryTime != null && team.entryTime!.difference(DateTime.now()) <= Duration.zero) {
-          await ref.read(waitingProvider.notifier).requestUserDelete(ref.context, storeCode, team.waitingNumber);
-          break;
-        }
-      }
-    });
-  }
-}
+//   void _startTimerForTeamDeletion(WidgetRef ref) {
+//     _timer?.cancel();
+//     _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+//       for (var team in currentWaitingData!.teamInfoList) {
+//         if (team.entryTime != null && team.entryTime!.difference(DateTime.now()) <= Duration.zero) {
+//           await ref.read(waitingProvider.notifier).requestUserDelete(ref.context, storeCode, team.waitingNumber);
+//           break;
+//         }
+//       }
+//     });
+//   }
+// }
 
 
 class _LoadingScreen extends StatelessWidget {
@@ -605,17 +586,17 @@ class _LoadingScreen extends StatelessWidget {
   }
 }
 
-// class _ErrorScreen extends StatelessWidget {
-//   final dynamic error;
+// // class _ErrorScreen extends StatelessWidget {
+// //   final dynamic error;
   
-//   _ErrorScreen(this.error);
+// //   _ErrorScreen(this.error);
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text('Manager screen')),
-//       body: Center(child: Text('Error: $error')),
-//     );
-//   }
-// }
+// //   @override
+// //   Widget build(BuildContext context) {
+// //     return Scaffold(
+// //       appBar: AppBar(title: Text('Manager screen')),
+// //       body: Center(child: Text('Error: $error')),
+// //     );
+// //   }
+// // }
 

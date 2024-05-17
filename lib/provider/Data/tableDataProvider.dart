@@ -7,7 +7,7 @@ import 'package:orre_manager/Model/LoginDataModel.dart';
 import 'package:orre_manager/Model/OrderListModel.dart';
 import 'package:orre_manager/Model/RestaurantTableModel.dart';
 import 'package:http/http.dart' as http;
-import 'package:orre_manager/presenter/Widget/alertDialog.dart';
+import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
 import 'package:orre_manager/services/HIVE_service.dart';
 import 'package:orre_manager/services/HTTP_service.dart';
 

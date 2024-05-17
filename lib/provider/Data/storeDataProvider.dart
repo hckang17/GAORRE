@@ -8,11 +8,17 @@ import 'package:orre_manager/Model/LoginDataModel.dart';
 import 'package:orre_manager/Model/MenuDataModel.dart';
 import 'package:orre_manager/Model/RestaurantTableModel.dart';
 import 'package:orre_manager/Model/StoreDataModel.dart';
-import 'package:orre_manager/presenter/Widget/alertDialog.dart';
+import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
+import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/services/HTTP_service.dart';
 import 'package:http/http.dart' as http;
 // ignore: depend_on_referenced_packages
 import 'package:http_parser/http_parser.dart';
+
+enum WaitingAvailableState {
+  POSSIBLE, // 0
+  IMPOSSIBLE, // 1
+}
 
 final storeDataProvider = StateNotifierProvider<StoreDataNotifier, StoreData?>((ref) {
   return StoreDataNotifier(); // 초기상태 null.
@@ -24,6 +30,11 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
   // 점포정보 반환
   StoreData? getStoreData() {
     return state;
+  }
+
+  // 웨이팅가능여부 정보 반환. 1 -> 웨이팅접수불가 / 0 -> 웨이팅접수가능
+  int getWaitingAvailable() {
+    return state!.waitingAvailable;
   }
 
   // 메뉴코드 찾는 메서드
@@ -65,6 +76,43 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
     return state!.menuInfo;
   }
 
+  // 웨이팅가능여부 변경 메서드
+  Future<bool> changeAvailableStatus(LoginData loginData) async {
+    late int payload;
+    if(state!.waitingAvailable == WaitingAvailableState.POSSIBLE.index){
+      payload = WaitingAvailableState.IMPOSSIBLE.index;
+    }else{
+      payload = WaitingAvailableState.POSSIBLE.index;
+    }
+
+    final jsonBody = json.encode({
+      "storeCode" : loginData.storeCode,
+      "jwtAdmin" : loginData.loginToken,
+      "storeWaitingAvailable" : payload,
+    });
+    try {
+      final response = await HttpsService.postRequest('/StoreAdmin/available/waiting', jsonBody);
+      if(response.statusCode == 200){
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        if(responseBody['status'] == "200"){
+          print('가게 웨이팅 가능 여부 변경 성공!~ [waitingAvailableStatusProvider]');
+          state!.waitingAvailable = payload;
+          return true;
+        }else{
+          print('가게 웨이팅 가능 여부 변경 실패.. [waitingAvailableStatusProvider]');
+          return false;
+        }
+      }else{
+        print('HTTP 수신에 문제가 발생한것같습니다. [waitingAvailableStatusProvider]');
+        return false;
+      }
+    } catch(error) {
+      print('웨이팅 가능 여부 변경에 오류가 있습니다.. 에러 : $error [waitingAvailableStatusProvider]');
+      return false;
+    } 
+  }
+
+  // ★매우 중요★ 가게 정보를 일괄 요청하는 메서드
   Future<bool> requestStoreData(int storeCode) async {
     int tableNumber = 1;  // 딱히 중요하지 않은 변수라 일단 1 처리.
     final jsonBody = json.encode({
@@ -84,11 +132,12 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
         return false;
       }
     } catch (error) {
-      print('에러 발생 : $error');
+      print('에러 발생 : $error [storeDataProvider - requestStoreData]');
       throw Exception('가게정보 요청 실패 [storeDataProvider - requestStoreData]');
     }
   }
 
+  // 메뉴 추가 메서드
   FutureOr<bool> addMenu(BuildContext context, Uint8List imageBytes, String menuCode, String name, String categoryKey, String description, int price, LoginData? loginData) async {
     // 이미지 파일 이름 설정
     String imageName = '$menuCode.jpg';
@@ -147,6 +196,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
     }
   }
 
+  // 메뉴 수정 메서드
   FutureOr<bool> modifyMenu(BuildContext context, LoginData loginData, String menuName, String menuCode, int price, String introduce) async {
     print('메뉴 변경 신청...');
     final jsonBody = json.encode({
@@ -186,6 +236,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
     }
   }
 
+  // 메뉴 삭제 메서드
   FutureOr<bool> removeMenu(BuildContext context, String menuCode, String name, LoginData? loginData) async {
     print('메뉴삭제 신청...');
     final jsonBody = json.encode({
@@ -221,6 +272,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
     }
   }
 
+  // 카테고리 추가/수정/삭제 메서드.   카테고리명이 비어있으면 삭제요청임. 
   FutureOr<bool> editCategory(BuildContext context, LoginData? loginData, List<Menu>? menuInCategory, String singleMenuCode, String? categoryName) async {
     print('카테고리 수정 요청 수신');
     if(menuInCategory!.isNotEmpty){
@@ -260,4 +312,34 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
     }
   }
 
+  // 오늘 영업 종료! 모든 웨이팅을 해제합니다. 
+  Future<bool> requestCloseStore(WidgetRef ref) async {
+    ///StoreAdmin/closing - jwtAdmin, storeCode
+    print('영업종료 요청... [storeDataProvider - closeStore]');
+    final LoginData loginData = ref.read(loginProvider.notifier).getLoginData()!;
+    final jsonBody = json.encode({
+      "jwtAdmin" : loginData.loginToken,
+      "storeCode" : loginData.storeCode,
+    });
+    try{
+      final response = await HttpsService.postRequest('/StoreAdmin/closing', jsonBody);
+      if(response.statusCode == 200){
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        if(responseBody['status'] == "200"){
+          // 폐점성공
+          print('영업종료처리 성공 [storeDataProvider - closeStore]');
+          return true;
+        }else{
+          print('영업종료처리 실패 [storeDataProvider - closeStore]');
+          return false;
+        }
+      }else{
+        print('HTTP statusCode not 200 [storeDataProvider - closeStore]');
+        return false;
+      }
+    }catch(error){
+      print("HTTP 에러발생. 에러 : $error [storeDataProvider - closeStore]");
+      return false;
+    }
+  }
 }

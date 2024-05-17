@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
+import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart';
 import 'package:orre_manager/provider/Network/stompClientStateNotifier.dart';
 import 'package:orre_manager/provider/errorStateNotifier.dart';
 import 'package:orre_manager/services/HIVE_service.dart';
@@ -16,43 +17,143 @@ final firstBootState = StateProvider<bool>((ref) => false);
 //   return FirstBootService(ref);
 // });
 
-class FirstBootService {
-  static Future<bool> firstBoot(WidgetRef ref) async {
-    try{
-      print('SMS전송 권한을 확인합니다... [FirstBootService]');
-      var permissionStatus = await Permission.sms.status;
-      if (!permissionStatus.isGranted) { await Permission.sms.request(); }
-      
-      print('하이브 저장소를 초기화합니다. [FIrstBootService]');
-      await HiveService.initHive().whenComplete(() => print('하이브 저장소를 초기화 했습니다! [FirstBootService]')); // 하이브 저장소를 초기화 해줌.
-      print('자동 로그인을 실행합니다. [FIrstBootService]');
-      await ref.read(loginProvider.notifier).requestAutoLogin().whenComplete(() => print('자동로그인 요청을 끝냈습니다. [FirstBootService]'));
-      print('Websocket을 구동합니다. [FIrstBootService]');
-      await ref.read(stompClientStateNotifierProvider.notifier).configureClient().listen((event) {
-        print("!!!!!!!!!!!!!!!! 발생한 이벤트: $event [FIrstBootService]");
-        if (event == StompStatus.CONNECTED) {
-          print("웹소켓 연결됨..... [FIrstBootService]");
-          ref.read(errorStateNotifierProvider.notifier).deleteError(Error.websocket);
-        } else {
-          print("웹소켓 연결되지 않음... [FIrstBootService]");
-          ref.read(errorStateNotifierProvider.notifier).addError(Error.websocket);
-        }
-        print("웹소켓 부팅 서비스를 완료했습니다..... [FIrstBootService]");
-      });
-      print('가게정보를 로드합니다.. [FIrstBootService]');
-      await ref.read(storeDataProvider.notifier).requestStoreData(ref.read(loginProvider.notifier).getLoginData()!.storeCode).whenComplete(
-        () => print('가게정보 요청처리를 완료했습니다. [FirstBootService]')
-      );
-    }catch(error){
-      print('최초부팅 오류 감지 : $error [FIrstBootService]');
-      return false;
-    } finally{
-      ref.watch(firstBootState.notifier).state = true;
-      print('최초부팅 완료... [firstBootService]');
+Future<int> firstBoot(WidgetRef ref) async {
+  try{
+    final networkStatus = ref.read(networkStateProvider);
+    final stompCompleter = Completer<void>();
+    final requestLoginData = Completer<void>();
+    final requestStoreInfoCompleter = Completer<void>();
+    final hiveInitializeCompleter = Completer<void>();
+
+    // 하이브 저장소 초기화 
+    print('하이브 저장소를 초기화합니다. [FIrstBootService]');
+    bool hiveSuccess = await HiveService.initHive();
+    if(hiveSuccess){
+      hiveInitializeCompleter.complete();
+    }else{
+      hiveInitializeCompleter.completeError('하이브 초기화 실패..[firstBootService]');
     }
-    return true;
+    await hiveInitializeCompleter.future;
+
+    // 네트워크 연결 확인
+    final networkStatusSubscription = networkStatus.listen((isConnected) {
+      if (isConnected) {
+        ref.read(networkStateNotifierProvider.notifier).state = true;
+      } else {
+        ref.read(networkStateNotifierProvider.notifier).state = false;
+      }
+    });
+    
+    // 10초 후에 타임아웃 처리
+    final networkTimeout = Future.delayed(const Duration(seconds: 10), () {
+      networkStatusSubscription.cancel();
+      ref.read(networkStateNotifierProvider.notifier).state = false;
+    });
+
+
+    // 네트워크 연결되었을때
+    print("네트워크 연결 성공! [FirstBootService]");
+    final stompStatusStream =
+        ref.read(stompClientStateNotifierProvider.notifier).configureClient();
+    bool isStompConnected = false;
+    StreamSubscription<StompStatus>? stompSubscription;
+
+    stompSubscription = stompStatusStream.listen((status) {
+      if (status == StompStatus.CONNECTED) {
+        isStompConnected = true;
+        stompSubscription?.cancel();
+        stompCompleter.complete();
+      }
+    });
+
+    // 10초 후에 타임아웃 처리
+    final stompTimeout = Future.delayed(const Duration(seconds: 5), () {
+      if (!stompCompleter.isCompleted) {
+        stompSubscription?.cancel();
+        stompCompleter.completeError('STOMP timeout');
+      }
+    });
+
+    await Future.any([stompCompleter.future, stompTimeout]);
+
+    if(!isStompConnected) { // 스텀프 연결 실패
+      print('STOMP 연결 실패... [firstBootService]');
+      return 2; // 2는 STOMP 연결 에러
+    } // STOMP초기화가 완료되었다면 다음 초기화 작업 수행...
+
+    // SMS 권한 요청 확인
+    var permissionStatus = await Permission.sms.status;
+    if (!permissionStatus.isGranted) { await Permission.sms.request(); }
+
+    // 자동로그인 시도
+    bool autoLoginResult = await ref.read(loginProvider.notifier).requestAutoLogin();
+    if(!autoLoginResult){
+      requestLoginData.completeError("최초 로그인 정보가 존재하지 않음");
+      return 0; // 최초 화면으로..
+    }else{
+      requestLoginData.complete();
+    }
+
+    await requestLoginData.future;
+
+    // 가게 정보 취득 시도
+    bool retrieveStoreDataResult = await ref.read(storeDataProvider.notifier).requestStoreData(
+      ref.read(loginProvider.notifier).getLoginData()!.storeCode
+    );
+    if(!retrieveStoreDataResult){
+      requestStoreInfoCompleter.completeError('가게정보 수신 실패');
+      return 0; // 최초 화면으로
+    }else{
+      requestStoreInfoCompleter.complete();
+    }
+
+    await requestStoreInfoCompleter.future;
+
+  } catch (e) {
+      print("에러 발생 : $e [firstBootService]");
+      return 4; // 에러 발생 시 4 반환
   }
+
+  return 1;   // 아무 문제없음! MainScreen으로~
 }
+
+class FirstBootLegacy {
+// class FirstBootService {
+//     try{
+//       print('SMS전송 권한을 확인합니다... [FirstBootService]');
+//       var permissionStatus = await Permission.sms.status;
+//       if (!permissionStatus.isGranted) { await Permission.sms.request(); }
+      
+//       print('하이브 저장소를 초기화합니다. [FIrstBootService]');
+//       await HiveService.initHive().whenComplete(() => print('하이브 저장소를 초기화 했습니다! [FirstBootService]')); // 하이브 저장소를 초기화 해줌.
+//       print('자동 로그인을 실행합니다. [FIrstBootService]');
+//       await ref.read(loginProvider.notifier).requestAutoLogin().whenComplete(() => print('자동로그인 요청을 끝냈습니다. [FirstBootService]'));
+//       print('Websocket을 구동합니다. [FIrstBootService]');
+//       await ref.read(stompClientStateNotifierProvider.notifier).configureClient().listen((event) {
+//         print("!!!!!!!!!!!!!!!! 발생한 이벤트: $event [FIrstBootService]");
+//         if (event == StompStatus.CONNECTED) {
+//           print("웹소켓 연결됨..... [FIrstBootService]");
+//           ref.read(errorStateNotifierProvider.notifier).deleteError(Error.websocket);
+//         } else {
+//           print("웹소켓 연결되지 않음... [FIrstBootService]");
+//           ref.read(errorStateNotifierProvider.notifier).addError(Error.websocket);
+//         }
+//         print("웹소켓 부팅 서비스를 완료했습니다..... [FIrstBootService]");
+//       });
+//       print('가게정보를 로드합니다.. [FIrstBootService]');
+//       await ref.read(storeDataProvider.notifier).requestStoreData(ref.read(loginProvider.notifier).getLoginData()!.storeCode).whenComplete(
+//         () => print('가게정보 요청처리를 완료했습니다. [FirstBootService]')
+//       );
+//     }catch(error){
+//       print('최초부팅 오류 감지 : $error [FIrstBootService]');
+//       return false;
+//     } finally{
+//       ref.watch(firstBootState.notifier).state = true;
+//       print('최초부팅 완료... [firstBootService]');
+//     }
+//     return true;
+// }
+
 
 // final signInProvider = FutureProvider<void>((ref) async {
 //   print("로그인 프로바이더 start [SignInProvider]");
@@ -123,3 +224,5 @@ class FirstBootService {
 //     }
 //   }
 // });
+
+}

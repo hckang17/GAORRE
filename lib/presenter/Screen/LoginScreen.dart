@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/presenter/Screen/WaitingScreen.dart';
 import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
 import 'package:orre_manager/presenter/MainScreen.dart';
+import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import '../../provider/Data/loginDataProvider.dart';
 import '../../Coding_references/stompClientFutureProvider.dart';
 
@@ -26,6 +29,15 @@ class _LoginScreenBody extends ConsumerWidget {
   Future<void> loginProcess(WidgetRef ref) async {
     print('로그인 프로세스. [LoginScreen - loginProces]');
     if(true == await ref.read(loginProvider.notifier).requestLoginData(_idController.text, _pwController.text)){
+      final requestStoreDataCompleter = Completer<void>();
+      if(true == await ref.read(storeDataProvider.notifier).requestStoreData(
+        ref.read(loginProvider.notifier).getLoginData()!.storeCode
+      )){
+        requestStoreDataCompleter.complete();
+      }else{
+        requestStoreDataCompleter.completeError('가게정보 취득 실패');
+      }
+      await requestStoreDataCompleter.future;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

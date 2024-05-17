@@ -1,10 +1,10 @@
 import 'package:flutter/widgets.dart';
-import 'package:orre_manager/presenter/Widget/alertDialog.dart';
+import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:telephony/telephony.dart';
 
 class SendSMSService {
-  /// 전화번호로 제목과 내용을 포함하는 SMS를 보냅니다.
+  /// 전화번호로 제목과 내용을 포함하는 SMS를 보냄.
   /// 
   /// [phoneNumber] SMS를 받을 전화번호.
   /// [title] SMS 제목.
