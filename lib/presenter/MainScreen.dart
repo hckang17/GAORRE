@@ -43,7 +43,7 @@ class MainScreen extends ConsumerWidget {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        "네트워크 연결이 끊어졌습니다. 네트워크 연결을 체크해주세요.",
+                        "네트워크 연결을 확인해주세요.",
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
