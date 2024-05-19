@@ -35,30 +35,30 @@ class NetworkStateNotifier extends StateNotifier<bool> {
 }
 //--
 
-// final networkStateProvider = Provider<Stream<bool>>((ref) {
-//   return ConnectivityChecker(interval: const Duration(seconds: 5)).stream;
-// });
+final connectStateProvider = Provider<Stream<bool>>((ref) {
+  return ConnectivityChecker(interval: const Duration(seconds: 5)).stream;
+});
 
-// final networkStateNotifierProvider =
-//     StateNotifierProvider<NetworkStateNotifier, bool>((ref) {
-//   return NetworkStateNotifier(ref);
-// });
+final connectNotifierProvider =
+    StateNotifierProvider<ConnectStateNotifier, bool>((ref) {
+  return ConnectStateNotifier(ref);
+});
 
-// class NetworkStateNotifier extends StateNotifier<bool> {
-//   late final Ref ref;
+class ConnectStateNotifier extends StateNotifier<bool> {
+  late final Ref ref;
 
-//   NetworkStateNotifier(this.ref) : super(false) {
-//     _checkNetworkStatus();
-//   }
+  ConnectStateNotifier(this.ref) : super(false) {
+    _checkNetworkStatus();
+  }
 
-//   void _checkNetworkStatus() {
-//     ref.watch(networkStateProvider).listen((isConnected) {
-//       if (state != isConnected) {
-//         state = isConnected;
-//       }
-//     });
-//   }
-// }
+  void _checkNetworkStatus() {
+    ref.watch(connectStateProvider).listen((isConnected) {
+      if (state != isConnected) {
+        state = isConnected;
+      }
+    });
+  }
+}
 
 //--
 
