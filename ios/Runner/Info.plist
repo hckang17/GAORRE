@@ -28,11 +28,19 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>sms</string>
+	</array>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>This application sends SMS messages from your device.</string>
 	<array>
 		<string>sms</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
