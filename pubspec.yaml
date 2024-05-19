@@ -53,12 +53,16 @@ dependencies:
   lite_rolling_switch: ^1.0.1
   permission_handler: ^11.3.1
   sliver_app_bar_builder: ^1.1.0
+  flutter_sms:
+    git:
+      url: https://github.com/fluttercommunity/flutter_sms.git
+      ref: master
   intl: ^0.18.1
 
 flutter_icons:
   android: true
   ios: true
-  image_path: "lib/Assets/Image/gaorre.png"
+  image_path: "assets/image/logo/gaorre.png"
 
 dev_dependencies:
   flutter_launcher_icons: ^0.9.2

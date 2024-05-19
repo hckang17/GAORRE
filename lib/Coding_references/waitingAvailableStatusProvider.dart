@@ -43,19 +43,19 @@
 //     }
 //   }
 
-//   Future<bool> loadWaitingAvailableStatus() async {
-//     String? rawData = await HiveService.retrieveData('waitingAvailableStatus');
-//     if(rawData == null){
-//       updateState(0);
-//       print('기존 데이터가 존재하지 않음으로.. 웨이팅 가능하도록 설정합니다. [waitingAvailableStatus]');
-//       return false;
-//     } else {
-//       print('기존 데이터가 존재합니다! [waitingAvailableStatus]');
-//       int IntData = int.parse(rawData);
-//       state = IntData;
-//       return true;
-//     }
-//   }
+  // Future<bool> loadWaitingAvailableStatus() async {
+  //   String? rawData = await HiveService.retrieveData('waitingAvailableStatus');
+  //   if(rawData == null){
+  //     updateState(0);
+  //     print('기존 데이터가 존재하지 않음으로.. 웨이팅 가능하도록 설정합니다. [waitingAvailableStatus]');
+  //     return false;
+  //   } else {
+  //     print('기존 데이터가 존재합니다! [waitingAvailableStatus]');
+  //     int IntData = int.parse(rawData);
+  //     state = IntData;
+  //     return true;
+  //   }
+  // }
 
 //   Future<bool> saveWaitingAvailableStatus() async {
 //     try {
