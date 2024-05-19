@@ -366,6 +366,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     for(int i=0; i<subscriptionInfo.length; i++){
       if(subscriptionInfo[i] != null){
         unSubscribe(i);
+        subscriptionInfo[i] = null;
       }
     }
     _client?.deactivate();
