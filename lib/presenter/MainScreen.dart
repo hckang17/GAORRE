@@ -15,6 +15,7 @@ class MainScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(selectedIndexProvider);
     final networkStatus = ref.watch(networkStateProvider);
+    final connectStatus = ref.watch(connectNotifierProvider);
 
     // 탭에 따라 표시될 페이지 리스트
     final pages = [
@@ -32,7 +33,7 @@ class MainScreen extends ConsumerWidget {
                 child: pages[selectedIndex], // 선택된 인덱스에 따른 페이지 표시
               ),
             ),
-            if (!networkStatus) // 네트워크 연결이 끊어졌을 때 경고 메시지 표시
+            if (!connectStatus) // 네트워크 연결이 끊어졌을 때 경고 메시지 표시
               Container(
                 width: double.infinity,
                 color: Colors.red[600],
@@ -43,7 +44,7 @@ class MainScreen extends ConsumerWidget {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        "네트워크 연결을 확인해주세요.",
+                        "네트워크를 확인해주세요.",
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
