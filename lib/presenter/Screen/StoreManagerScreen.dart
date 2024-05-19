@@ -40,7 +40,11 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
     super.initState();
     // 데이터 요청 로직을 initState로 이동하여 최초 1회만 실행
     loginData = ref.read(loginProvider.notifier).getLoginData();
-    ref.read(storeDataProvider.notifier).requestStoreData(loginData!.storeCode);
+    if(ref.read(storeDataProvider.notifier).getStoreData() != null){
+      currentStoreData = ref.read(storeDataProvider.notifier).getStoreData();
+    }else{
+      ref.read(storeDataProvider.notifier).requestStoreData(loginData!.storeCode);
+    }
   }
 
   @override

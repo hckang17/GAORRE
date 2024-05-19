@@ -37,6 +37,10 @@ class HiveService {
     }
   }
 
+  static bool checkHive(){
+    return Hive.isBoxOpen(_boxName);
+  }
+
   static Future<bool> saveStringData(String key, String value) async {
     var box = Hive.box(_boxName);
     try {

@@ -104,8 +104,8 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                         SizedBox(width: 10), // 간격 조절
                         LiteRollingSwitch(
                           value: switchValue,
-                          textOn: 'ON',
-                          textOff: 'OFF',
+                          textOn: '웨이팅접수',
+                          textOff: '웨이팅미접수',
                           colorOn: Color(0xFFE6F4FE),
                           colorOff: Color(0xFFDFDFDF),
                           textOnColor: Color(0xFF72AAD8),

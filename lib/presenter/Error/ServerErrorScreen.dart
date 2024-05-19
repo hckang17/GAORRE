@@ -13,6 +13,8 @@ class ServerErrorScreen extends ConsumerWidget {
           children: [
             TextWidget('서버 에러가 발생했습니다.'),
             TextWidget('앱을 종료하고, 잠시 후에 다시 실행해주세요.'),
+            TextWidget('오류가 반복되면 관리자에게 문의해주세요'),
+            TextWidget('010-3546-3360'),
           ],
         ),
       ),

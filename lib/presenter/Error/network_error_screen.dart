@@ -17,13 +17,18 @@ class NetworkErrorScreen extends ConsumerWidget {
             TextWidget('네트워크 정보를 불러오는데 실패했습니다.'),
             TextButtonWidget(
               onPressed: () {
-                ref.read(networkStateProvider).listen((event) {
-                  if (event) {
-                    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-                      ref.refresh(stompClientStateNotifierProvider.notifier);
-                    });
-                  }
-                });
+                if(ref.read(networkStateProvider)){
+                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                    ref.refresh(stompClientStateNotifierProvider.notifier).configureClient();
+                  });
+                }
+                // ref.read(networkStateProvider).listen((event) {
+                //   if (event) {
+                //     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+                //       ref.refresh(stompClientStateNotifierProvider.notifier);
+                //     });
+                //   }
+                // });
               },
               text: '다시 시도하기',
             ),
