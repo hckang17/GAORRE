@@ -5,24 +5,16 @@ import 'package:orre_manager/presenter/Error/ServerErrorScreen.dart';
 import 'package:orre_manager/presenter/Error/error_screen.dart';
 import 'package:orre_manager/presenter/Error/network_error_screen.dart';
 import 'package:orre_manager/presenter/Screen/StartScreen.dart';
-import 'package:orre_manager/presenter/Screen/WaitingScreen.dart';
 import 'package:orre_manager/presenter/MainScreen.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart';
 import 'package:orre_manager/provider/Network/stompClientStateNotifier.dart';
-import 'package:orre_manager/provider/Network/websocketRefreshServiceProvider.dart';
-import 'package:orre_manager/provider/errorStateNotifier.dart';
 import 'package:orre_manager/services/FirstBootService.dart';
-import 'package:orre_manager/services/HIVE_service.dart';
 import 'package:orre_manager/widget/text/text_widget.dart';
-import 'presenter/Screen/LoginScreen.dart';
-
 
 void main() {
-
-  WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진과 위젯 바인딩을 초기화
-
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     ProviderScope(
       child: GAORRE_APP(),
@@ -32,18 +24,65 @@ void main() {
 
 final initStateProvider = StateProvider<int>((ref) => 3);
 
-class GAORRE_APP extends ConsumerWidget {
+class GAORRE_APP extends ConsumerStatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _GAORRE_APPState createState() => _GAORRE_APPState();
+}
+
+class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObserver {
+  List<Widget> nextScreen = [
+      StartScreen(),
+      MainScreen(),
+      WebsocketErrorScreen(),
+      NetworkCheckScreen(),
+      ErrorScreen(),
+  ];  
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    print('GAORRE_APP disposed [main.dart]');
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _executeReboot() async {
+    print("백그라운드 -> 포그라운드 돌아옴.... [main.dart - executeReboot]");
+    // 반투명 로딩 스크린 표시
+    showDialog(
+      context: context,
+      barrierDismissible: false,  // 사용자가 다이얼로그 바깥을 눌러도 닫히지 않도록 설정
+      builder: (BuildContext context) {
+        return WillPopScope(
+          onWillPop: () async => false,  // Android 뒤로가기 버튼 비활성화
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+
+    int rebootState = await firstBoot(ref);
+    Navigator.pop(context);  // 로딩 스크린 제거
+
+    if (rebootState != 1) {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (BuildContext context) =>
+          nextScreen[rebootState]
+        )
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     int initState = ref.watch(initStateProvider);
-    List<Widget> nextScreen = [
-      StartScreen(), // 최초 로그인 화면 -> 0
-      MainScreen(), //  이상없음! 메인스크린으로~ -> 1
-      WebsocketErrorScreen(), // 웹소켓 에러 스크린 -> 2
-      NetworkCheckScreen(),   // 네트워크 체크 스크린 -> 3
-      ErrorScreen(),          // 에러 스크린 -> 4
-    ];
-    print("MyApp build() called");
+    print("GAORRE_APP build() called");
     return MaterialApp(
       home: FlutterSplashScreen.fadeIn(
         backgroundColor: Colors.white,
@@ -63,13 +102,66 @@ class GAORRE_APP extends ConsumerWidget {
         onAnimationEnd: () => debugPrint("On Fade In End [main.dart]"),
         nextScreen: nextScreen[initState],
       ),
-      title: 'Flutter Demo',
+      title: '가 오 리 ',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
     );
   }
 }
+
+
+// void main() {
+
+//   WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진과 위젯 바인딩을 초기화
+
+//   runApp(
+//     ProviderScope(
+//       child: GAORRE_APP(),
+//     ),
+//   );
+// }
+
+// final initStateProvider = StateProvider<int>((ref) => 3);
+
+// class GAORRE_APP extends ConsumerWidget {
+  // @override
+  // Widget build(BuildContext context, WidgetRef ref) {
+  //   int initState = ref.watch(initStateProvider);
+  //   List<Widget> nextScreen = [
+  //     StartScreen(), // 최초 로그인 화면 -> 0
+  //     MainScreen(), //  이상없음! 메인스크린으로~ -> 1
+  //     WebsocketErrorScreen(), // 웹소켓 에러 스크린 -> 2
+  //     NetworkCheckScreen(),   // 네트워크 체크 스크린 -> 3
+  //     ErrorScreen(),          // 에러 스크린 -> 4
+  //   ];
+  //   print("MyApp build() called");
+  //   return MaterialApp(
+  //     home: FlutterSplashScreen.fadeIn(
+  //       backgroundColor: Colors.white,
+  //       onInit: () async {
+  //         debugPrint("최초 실행 초기화중....");
+  //         initState = await firstBoot(ref);
+  //         ref.read(initStateProvider.notifier).state = initState;
+  //       },
+  //       onEnd: () {
+  //         print('최초 초기화 완료... [main.dart]');
+  //       },
+  //       childWidget: SizedBox(
+  //         height: 200,
+  //         width: 200,
+  //         child: Image.asset("assets/image/gaorre.png"),
+  //       ),
+  //       onAnimationEnd: () => debugPrint("On Fade In End [main.dart]"),
+  //       nextScreen: nextScreen[initState],
+  //     ),
+  //     title: '가 오 리 ',
+  //     theme: ThemeData(
+  //       primarySwatch: Colors.blue,
+  //     ),
+  //   );
+  // }
+// }
 
 
 
@@ -148,7 +240,7 @@ class UserInfoCheckWidget extends ConsumerWidget {
         future: ref.watch(loginProvider.notifier).requestAutoLogin(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.data != null) {
+            if (snapshot.data == true) {
               print("유저 정보 존재 : ${snapshot.data} [UserInfoCheck - main.dart]");
               return StoreDataCheckWidget();
             } else {

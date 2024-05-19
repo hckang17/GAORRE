@@ -19,11 +19,11 @@ final firstBootState = StateProvider<bool>((ref) => false);
 
 Future<int> firstBoot(WidgetRef ref) async {
   try{
-    final networkStatus = ref.read(networkStateProvider);
-    final stompCompleter = Completer<void>();
-    final requestLoginData = Completer<void>();
-    final requestStoreInfoCompleter = Completer<void>();
-    final hiveInitializeCompleter = Completer<void>();
+    var networkStatus = ref.read(networkStateProvider);
+    var stompCompleter = Completer<void>();
+    var requestLoginData = Completer<void>();
+    var requestStoreInfoCompleter = Completer<void>();
+    var hiveInitializeCompleter = Completer<void>();
 
     // 하이브 저장소 초기화 
     print('하이브 저장소를 초기화합니다. [FIrstBootService]');

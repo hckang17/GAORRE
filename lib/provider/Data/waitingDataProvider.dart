@@ -50,7 +50,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
           sendWaitingData(ref.read(loginProvider.notifier).getLoginData()!.storeCode);
         }
       }
-      print('구독상태 점검 완료... 이상없음 [waitingProvider - heartBeatTimer]');
+      // print('구독상태 점검 완료... 이상없음 [waitingProvider - heartBeatTimer]');
     });
   }
 
@@ -280,7 +280,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
   Future<void> subscribeToWaitingData(int storeCode) async {
     print('<WaitingData> 구독요청 수신.');
     if (_client == null || !_client!.connected) {
-        print('Stomp Client is not connected. Subscription aborted. [waitingProvider - subscribeToWaitingData]');
+        print('STOMP가 연결되어 있지 않습니다. Subscription aborted. [waitingProvider - subscribeToWaitingData]');
         await Future.delayed(Duration(seconds: 5));
         print('WaitingData 구독을 재시도 합니다... [waitingProvider - subscribeToWaitingData]');
         subscribeToWaitingData(storeCode);
