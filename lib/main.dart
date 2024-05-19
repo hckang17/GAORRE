@@ -6,18 +6,21 @@ import 'package:orre_manager/presenter/Error/error_screen.dart';
 import 'package:orre_manager/presenter/Error/network_error_screen.dart';
 import 'package:orre_manager/presenter/Screen/StartScreen.dart';
 import 'package:orre_manager/presenter/MainScreen.dart';
+import 'package:orre_manager/presenter/Widget/LoadingDialog.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart';
 import 'package:orre_manager/provider/Network/stompClientStateNotifier.dart';
-import 'package:orre_manager/services/FirstBootService.dart';
+import 'package:orre_manager/services/Booting_service.dart';
 import 'package:orre_manager/widget/text/text_widget.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     ProviderScope(
-      child: GAORRE_APP(),
+      child: MaterialApp(
+        home: GAORRE_APP(),
+      ),
     ),
   );
 }
@@ -51,27 +54,45 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObse
     super.dispose();
   }
 
-  void _executeReboot() async {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.inactive:
+        // 앱이 비활성 상태일 때 실행할 코드
+        print('앱이 비활성화 상태입니다... [main.dart]');
+        break;
+      case AppLifecycleState.paused:
+        // 앱이 일시 정지 상태일 때 실행할 코드
+        print('앱이 일시정지 상태입니다... [main.dart]');
+        break;
+      case AppLifecycleState.resumed:
+        // 앱이 활성 상태로 돌아왔을 때 실행할 코드
+        print('앱이 활성화 상태입니다... [main.dart]');
+        _executeReboot(ref);
+        break;
+      case AppLifecycleState.detached:
+        // 앱이 종료 상태일 때 실행할 코드
+        print('앱이 종료된 상태입니다... [main.dart]');
+        break;
+      case AppLifecycleState.hidden:
+        // TODO: Handle this case.
+        print('앱이 숨겨진 상태입니다... [main.dart]');
+    }
+  }
+
+
+  void _executeReboot(WidgetRef ref) async {
     print("백그라운드 -> 포그라운드 돌아옴.... [main.dart - executeReboot]");
     // 반투명 로딩 스크린 표시
-    showDialog(
-      context: context,
-      barrierDismissible: false,  // 사용자가 다이얼로그 바깥을 눌러도 닫히지 않도록 설정
-      builder: (BuildContext context) {
-        return WillPopScope(
-          onWillPop: () async => false,  // Android 뒤로가기 버튼 비활성화
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
-    );
+    showLoadingDialog(context);
 
-    int rebootState = await firstBoot(ref);
+    int rebootState = await reboot(ref);
     Navigator.pop(context);  // 로딩 스크린 제거
 
     if (rebootState != 1) {
-      Navigator.of(context).push(MaterialPageRoute(
+      Navigator.of(context).push(
+        MaterialPageRoute(
         builder: (BuildContext context) =>
           nextScreen[rebootState]
         )

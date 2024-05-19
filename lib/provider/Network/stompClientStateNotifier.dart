@@ -36,7 +36,7 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
   StompClientStateNotifier(this.ref) : super(null) {}
 
   Stream<StompStatus> configureClient() {
-    print("configureClient");
+    print("configureClient [stompClientStateNotifier - ConfigureClient]");
     final streamController = StreamController<StompStatus>.broadcast();
 
     if (state != null) {
@@ -54,13 +54,6 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
             ref.read(stompState.notifier).state = StompStatus.CONNECTED;
             streamController.add(StompStatus.CONNECTED);
             onConnectCallback(frame);
-            // if (firstBoot == true) {
-            //   // 최초 부팅일때만 실행하는 코드인것 같음.
-            //   // ref.read(serviceLogProvider.notifier).fetchStoreServiceLog(
-            //   //     ref.read(userInfoProvider)!.phoneNumber);
-            // } else {
-            //   onConnectCallback(frame);
-            // }
           },
           onWebSocketError: (dynamic error) {
             print("websocket error: $error [StompClientStateNotifier]");

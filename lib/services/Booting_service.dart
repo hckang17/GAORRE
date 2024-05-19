@@ -13,9 +13,126 @@ import 'package:permission_handler/permission_handler.dart';
 
 final firstBootState = StateProvider<bool>((ref) => false);
 
-// final firstBootServiceProvider = Provider<FirstBootService>((ref) {
-//   return FirstBootService(ref);
-// });
+Future<int> reboot(WidgetRef ref) async {
+  try{
+    var networkStatus = ref.read(networkStateProvider);
+    var stompCompleter = Completer<void>();
+    var networkCompleter = Completer<void>();
+    var requestLoginData = Completer<void>();
+    var requestStoreInfoCompleter = Completer<void>();
+    var hiveInitializeCompleter = Completer<void>();
+
+    // 하이브 저장소 초기화 
+    print('하이브 저장소를 초기화합니다. [RebootService]');
+    bool hiveSuccess = await HiveService.initHive();
+    if(hiveSuccess){
+      hiveInitializeCompleter.complete();
+    }else{
+      hiveInitializeCompleter.completeError('하이브 초기화 실패..[RebootService]');
+    }
+    await hiveInitializeCompleter.future;
+
+    // 네트워크 연결 확인
+    print('네트워크 연결을 확인합니다... [RebootService]');
+    bool isNetworkConnected = false;
+    final networkStatusSubscription = networkStatus.listen((isConnected) {
+      if (isConnected) {
+        ref.read(networkStateNotifierProvider.notifier).state = true;
+        isNetworkConnected = true;
+        networkCompleter.complete();
+      } else {
+        ref.read(networkStateNotifierProvider.notifier).state = false;
+        // networkCompleter.completeError('네트워크 연결 없음');
+      }
+    });
+    
+    // 10초 후에 타임아웃 처리
+    final networkTimeout = Future.delayed(const Duration(seconds: 10), () {
+      networkStatusSubscription.cancel();
+      ref.read(networkStateNotifierProvider.notifier).state = false;
+    });
+
+
+    // 네트워크 확인이 끝날때까지 대기
+    await Future.any([networkTimeout, networkCompleter.future]);
+    if(!isNetworkConnected){
+      print('네트워크 연결 없음! [RebootService]');
+      return 3;
+    }else{
+      print("네트워크 연결 성공! [RebootService]");
+    }
+
+    // 스텀프 연결을 확인합니다..
+    StreamSubscription<StompStatus>? stompSubscription;
+    bool isStompConnected = false;
+    if(ref.read(stompState.notifier).state == StompStatus.CONNECTED){
+      // 스텀프 연결이 확인되어 있을 때
+      print('STOMP웹소켓이 연결되어 있습니다.. [RebootService]');
+      isStompConnected = true;
+      stompCompleter.complete();
+    }else{
+      print('STOMP웹소켓이 연결되어있지 않아 ReConfigureClient를 진행합니다...');
+      final stompStatusStream = ref.read(stompClientStateNotifierProvider.notifier).configureClient();
+      stompSubscription = stompStatusStream.listen((status) {
+        if (status == StompStatus.CONNECTED) {
+          stompSubscription?.cancel();
+          isStompConnected = true;
+          stompCompleter.complete();
+        }
+      });
+    }
+
+    final stompTimeout = Future.delayed(const Duration(seconds: 5), () {
+        if (!stompCompleter.isCompleted) {
+          stompSubscription?.cancel();
+          // stompCompleter.completeError('STOMP timeout [RebootService]');
+        }
+    });
+    // 10초 후에 타임아웃 처리
+
+    // 스텀프 연결상태 확인을 기다립니다..
+    await Future.any([stompCompleter.future, stompTimeout]);
+
+    if(!isStompConnected) { // 스텀프 연결 실패
+      print('STOMP 연결 실패... [RebootService]');
+      return 2; // 2는 웹소켓(STOMP) 연결 에러
+    } // STOMP초기화가 완료되었다면 다음 초기화 작업 수행...
+
+    // SMS 권한 요청 확인
+    var permissionStatus = await Permission.sms.status;
+    if (!permissionStatus.isGranted) { await Permission.sms.request(); }
+
+    // 자동로그인 시도
+    bool autoLoginResult = await ref.read(loginProvider.notifier).requestAutoLogin();
+    if(!autoLoginResult){
+      requestLoginData.completeError("최초 로그인 정보가 존재하지 않음");
+      return 0; // 최초 화면으로..
+    }else{
+      requestLoginData.complete();
+    }
+
+    await requestLoginData.future;
+
+    // 가게 정보 취득 시도
+    bool retrieveStoreDataResult = await ref.read(storeDataProvider.notifier).requestStoreData(
+      ref.read(loginProvider.notifier).getLoginData()!.storeCode
+    );
+    if(!retrieveStoreDataResult){
+      requestStoreInfoCompleter.completeError('가게정보 수신 실패');
+      return 0; // 최초 화면으로
+    }else{
+      requestStoreInfoCompleter.complete();
+    }
+
+    await requestStoreInfoCompleter.future;
+
+  } catch (e) {
+      print("에러 발생 : $e [RebootService]");
+      return 4; // 원인미상 에러 발생 시 4 반환
+  }
+
+  return 1;   // 아무 문제없음! MainScreen으로~
+}
 
 Future<int> firstBoot(WidgetRef ref) async {
   try{
