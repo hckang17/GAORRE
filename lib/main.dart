@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/presenter/Error/ServerErrorScreen.dart';
 import 'package:orre_manager/presenter/Error/error_screen.dart';
 import 'package:orre_manager/presenter/Error/network_error_screen.dart';
+import 'package:orre_manager/presenter/Error/websocket_error_screen.dart';
 import 'package:orre_manager/presenter/Screen/StartScreen.dart';
 import 'package:orre_manager/presenter/MainScreen.dart';
 import 'package:orre_manager/presenter/Widget/LoadingDialog.dart';
@@ -132,106 +133,52 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObse
 }
 
 
-// void main() {
-
-//   WidgetsFlutterBinding.ensureInitialized(); // Flutter 엔진과 위젯 바인딩을 초기화
-
-//   runApp(
-//     ProviderScope(
-//       child: GAORRE_APP(),
-//     ),
-//   );
-// }
-
-// final initStateProvider = StateProvider<int>((ref) => 3);
-
-// class GAORRE_APP extends ConsumerWidget {
-  // @override
-  // Widget build(BuildContext context, WidgetRef ref) {
-  //   int initState = ref.watch(initStateProvider);
-  //   List<Widget> nextScreen = [
-  //     StartScreen(), // 최초 로그인 화면 -> 0
-  //     MainScreen(), //  이상없음! 메인스크린으로~ -> 1
-  //     WebsocketErrorScreen(), // 웹소켓 에러 스크린 -> 2
-  //     NetworkCheckScreen(),   // 네트워크 체크 스크린 -> 3
-  //     ErrorScreen(),          // 에러 스크린 -> 4
-  //   ];
-  //   print("MyApp build() called");
-  //   return MaterialApp(
-  //     home: FlutterSplashScreen.fadeIn(
-  //       backgroundColor: Colors.white,
-  //       onInit: () async {
-  //         debugPrint("최초 실행 초기화중....");
-  //         initState = await firstBoot(ref);
-  //         ref.read(initStateProvider.notifier).state = initState;
-  //       },
-  //       onEnd: () {
-  //         print('최초 초기화 완료... [main.dart]');
-  //       },
-  //       childWidget: SizedBox(
-  //         height: 200,
-  //         width: 200,
-  //         child: Image.asset("assets/image/gaorre.png"),
-  //       ),
-  //       onAnimationEnd: () => debugPrint("On Fade In End [main.dart]"),
-  //       nextScreen: nextScreen[initState],
-  //     ),
-  //     title: '가 오 리 ',
-  //     theme: ThemeData(
-  //       primarySwatch: Colors.blue,
-  //     ),
-  //   );
-  // }
-// }
-
-
-
 /// 여기서부터는 최초 실행시 필요한 스크린들..
-class WebsocketErrorScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // final stomp = ref.watch(stompClientStateNotifierProvider);
-    final stompStack = ref.watch(stompErrorStack);
-    final networkError = ref.watch(networkStateNotifierProvider);
+// class WebsocketErrorScreen extends ConsumerWidget {
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     // final stomp = ref.watch(stompClientStateNotifierProvider);
+//     final stompStack = ref.watch(stompErrorStack);
+//     final networkError = ref.watch(networkStateProvider);
 
-    print("ServerErrorScreen : $stompStack");
-    // 네트워크 연결은 정상이나 웹소켓 연결을 5번 이상 실패했을 경우
-    if (stompStack > 5 && networkError == true) {
-      // 서버 에러로 판단하여 서버 에러 화면으로 이동
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => ServerErrorScreen()));
-    } else {
-      print("다시 시도하기");
-      ref.read(stompClientStateNotifierProvider.notifier).state?.activate();
-    }
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextWidget('웹소켓을 불러오는데 실패했습니다.'),
-            ElevatedButton(
-              onPressed: () {
-                print("다시 시도하기");
-                ref.read(stompErrorStack.notifier).state = 0;
-                ref
-                    .read(stompClientStateNotifierProvider.notifier)
-                    .state
-                    ?.activate();
-              },
-              child: TextWidget('다시 시도하기'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//     print("ServerErrorScreen : $stompStack");
+//     // 네트워크 연결은 정상이나 웹소켓 연결을 5번 이상 실패했을 경우
+//     if (stompStack > 5 && networkError == true) {
+//       // 서버 에러로 판단하여 서버 에러 화면으로 이동
+//       Navigator.pushReplacement(context,
+//           MaterialPageRoute(builder: (context) => ServerErrorScreen()));
+//     } else {
+//       print("다시 시도하기");
+//       ref.read(stompClientStateNotifierProvider.notifier).state?.activate();
+//     }
+//     return Scaffold(
+//       body: Center(
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             TextWidget('웹소켓을 불러오는데 실패했습니다.'),
+//             ElevatedButton(
+//               onPressed: () {
+//                 print("다시 시도하기");
+//                 ref.read(stompErrorStack.notifier).state = 0;
+//                 ref
+//                     .read(stompClientStateNotifierProvider.notifier)
+//                     .state
+//                     ?.activate();
+//               },
+//               child: TextWidget('다시 시도하기'),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class NetworkCheckScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isConnected = ref.watch(networkStateNotifierProvider);
+    final isConnected = ref.watch(networkStateProvider);
     return isConnected ? StompCheckScreen() : NetworkErrorScreen();
   }
 }

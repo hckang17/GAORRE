@@ -13,7 +13,6 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 
 
 final stompErrorStack = StateProvider<int>((ref) => 0);
-final firstStompSetup = StateProvider<bool>((ref) => false);
 
 enum StompStatus {
   CONNECTED,
@@ -81,7 +80,7 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
             // 여기에 만약 network off 로 인한 웹소켓끊어짐이라면? 대응해야할거같은데.
             streamController.add(reconnectionCallback(StompStatus.ERROR));
           },
-          heartbeatOutgoing: const Duration(seconds: 10), // 클라이언트에서 서버로 20초마다 heartbeat 보냄
+          // heartbeatOutgoing: const Duration(seconds: 10), // 클라이언트에서 서버로 20초마다 heartbeat 보냄
           heartbeatIncoming: const Duration(seconds: 10), // 서버에서 클라이언트로 20초마다 heartbeat 수신 기대
         ),
       );
@@ -97,8 +96,6 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
   void onConnectCallback(StompFrame connectFrame) {
     print("웹소켓 연결 성공 [StompClientStateNotifier]");
     ref.read(stompErrorStack.notifier).state = 0;
-    ref.read(firstStompSetup.notifier).state = true;
-
     // 필요한 초기화 수행
     // 예를 들어, 여기서 다시 구독 로직을 실행
     ref.read(waitingProvider.notifier).setClient(client);
@@ -108,12 +105,16 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
 
   reconnectionCallback(StompStatus status) async {
     print("재연결 Callback [StompClientStateNotifier]");
+    // 연결 상태 확인: 이미 연결된 상태면 재연결 로직 중단
+    if (ref.read(stompState) == StompStatus.CONNECTED) {
+      print("이미 연결된 상태입니다. 재연결 시도를 중단합니다.");
+      return;
+    }
+
     if (ref.read(errorStateNotifierProvider.notifier).state.contains(Error.network)) {
       return;
     }
-    // if (ref.read(stompErrorStack.notifier).state == 5) {
-    //   return status;
-    // }
+
     ref.read(stompState.notifier).state = status;
     await Future.delayed(Duration(milliseconds: 1000), () {
       print("웹소켓 재시도 [StompClientStateNotifier]");

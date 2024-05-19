@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:orre_manager/widget/text/text_widget.dart';
 
 void showLoadingDialog(BuildContext context) {
   showDialog(
@@ -42,21 +43,38 @@ class _LoadingDialogState extends State<LoadingDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final String textToShow = '로딩중입니다${"." * dotCount}';
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           CircularProgressIndicator(),
           SizedBox(height: 16),
-          Text(
-            '안정성을 체크중입니다${'.' * dotCount}',
-            style: TextStyle(
-              color: Color.fromARGB(255, 0, 0, 0),
-              fontSize: 16,
-            ),
-          ),
+          TextWidget(textToShow),
+          SizedBox(height: 16),
         ],
       ),
     );
   }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Center(
+  //     child: Column(
+  //       mainAxisSize: MainAxisSize.min,
+  //       children: [
+  //         CircularProgressIndicator(),
+  //         SizedBox(height: 16),
+  //         Text(
+  //           '로딩중입니다' + '.'*dotCount,
+  //           style: TextStyle(
+  //             color: Color.fromARGB(255, 0, 0, 0),
+  //             fontSize: 16,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

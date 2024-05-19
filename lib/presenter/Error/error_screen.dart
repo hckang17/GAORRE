@@ -10,7 +10,7 @@ class ErrorScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final error = ref.watch(errorStateNotifierProvider);
 
-    print("ErrorScreen");
+    print("ErrorScreen 호출 [ErrorScreen]");
     error.forEach((element) {
       print(element);
     });

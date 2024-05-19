@@ -14,7 +14,7 @@ class MainScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(selectedIndexProvider);
-    final networkStatus = ref.watch(networkStateNotifierProvider);
+    final networkStatus = ref.watch(networkStateProvider);
 
     // 탭에 따라 표시될 페이지 리스트
     final pages = [
