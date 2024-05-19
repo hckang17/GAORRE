@@ -6,7 +6,7 @@ import 'dart:async';
 
 final minutesToAddProvider =
     StateNotifierProvider<minutesToAddNotifier, int>((ref) {
-  return minutesToAddNotifier(4); // 초기 상태를 null로 설정합니다.
+  return minutesToAddNotifier(1); // 초기 상태를 null로 설정합니다.
 });
 
 // StateNotifier를 확장하여 UserLogDataList 객체를 관리하는 클래스를 정의합니다.
@@ -19,7 +19,7 @@ class minutesToAddNotifier extends StateNotifier<int> {
     String? rawData = await HiveService.retrieveData('minutesToAdd');
     if (rawData == null) {
       print('기존 데이터가 존재하지 않음으로.. 기본값 8분으로 설정합니다. [waitingAvailableStatus]');
-      state = 8;
+      state = 1;
     } else {
       print('기존 데이터가 존재합니다! [waitingAvailableStatus]');
       int loadedState = int.parse(rawData); // 여기서 오류가 발생하지 않음

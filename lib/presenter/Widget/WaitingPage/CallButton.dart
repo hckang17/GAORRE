@@ -33,7 +33,7 @@ class CallIconButton extends ConsumerWidget {
     return Row(
       children: [
         isPressed
-            ? TimerWidget(minutesToAdd: minutesToAdd)
+            ? TimerWidget(minutesToAdd: minutesToAdd, waitingNumber: waitingNumber)
             : IconButton(
                 icon: Icon(
                   Icons.notifications,
