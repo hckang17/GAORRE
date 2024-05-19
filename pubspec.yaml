@@ -58,6 +58,8 @@ dependencies:
       url: https://github.com/fluttercommunity/flutter_sms.git
       ref: master
   intl: ^0.18.1
+  fluttertoast: ^8.2.5
+  font_awesome_flutter: ^10.7.0
 
 flutter_icons:
   android: true
