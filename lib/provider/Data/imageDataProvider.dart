@@ -12,7 +12,7 @@ class Uint8ListNotifier extends StateNotifier<Uint8List?> {
   Uint8ListNotifier() : super(null);
 
   Future<void> loadInitialImage() async {
-    ByteData bytes = await rootBundle.load('lib/Assets/Image/Duck_with_bell.png');
+    ByteData bytes = await rootBundle.load('assets/image/Duck_with_bell.png');
     state = bytes.buffer.asUint8List();
   }
 

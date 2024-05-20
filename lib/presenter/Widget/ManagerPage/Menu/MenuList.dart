@@ -1,112 +1,263 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/LoginDataModel.dart';
 import 'package:orre_manager/Model/MenuDataModel.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/AddMenuPopup.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/EditCategoryPopup.dart';
+import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/ModifyMenuPopup.dart';
+import 'package:orre_manager/widget/text/text_widget.dart';
 
 class MenuListWidget extends ConsumerWidget {
-  final LoginData loginResponse;
-
-  MenuListWidget({required this.loginResponse});
+  MenuListWidget();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final storeData = ref.watch(storeDataProvider); // StoreData의 변화를 감시
+    final storeData = ref.watch(storeDataProvider);
 
     if (storeData?.menuInfo == null || storeData?.menuCategories == null) {
-      return Center(child: Text("메뉴 정보를 불러올 수 없습니다."));
+      return SliverFillRemaining(child: Center(child: Text("메뉴 정보를 불러올 수 없습니다.")));
     }
 
     Map<String, List<Menu>> categorizedMenus = {};
-    // 먼저 모든 카테고리에 대해 빈 리스트를 생성합니다.
     storeData!.menuCategories!.forEach((key, value) {
-      if (value != null) { // value가 null이 아닌 경우에만 빈 리스트를 추가
+      if (value != null) {
         categorizedMenus[key] = [];
       }
     });
-    
-    // 실제 메뉴 데이터를 categorizedMenus에 추가합니다.
-    for (var menu in storeData!.menuInfo!) {
-      String categoryKey = menu.menuCode[0].toLowerCase();  // 메뉴 코드의 첫 글자를 소문자로 변환
+
+    for (var menu in storeData.menuInfo!) {
+      String categoryKey = menu.menuCode[0].toLowerCase();
       if (categorizedMenus.containsKey(categoryKey)) {
         categorizedMenus[categoryKey]!.add(menu);
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('메뉴 리스트'),
-      ),
-      body: ListView.builder(
-        itemCount: storeData.menuCategories.length,
-        itemBuilder: (context, index) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
           String key = storeData.menuCategories.keys.elementAt(index);
-          List<Menu>? menus = categorizedMenus[key]; // 여기서는 nullable로 변경합니다.
-
-          // 만약 menus가 null이면 해당 카테고리를 skip합니다.
+          List<Menu>? menus = categorizedMenus[key];
           if (menus == null) {
             return SizedBox.shrink();
           }
 
           return ExpansionTile(
             initiallyExpanded: true,
-            title: Text(storeData.menuCategories[key] ?? "카테고리 없음"),
-            trailing: IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () {
-                // 카테고리 수정 모달 표시 함수 호출
-                showEditCategoryModal(context, key, storeData.menuCategories[key], storeData.menuCategories, menus);
-              },
+            title: Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
+                  SizedBox(width: 5),
+                  TextWidget(
+                    storeData.menuCategories[key] ?? "카테고리 없음",
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 39, 194, 255),
+                  ),
+                  SizedBox(width: 5),
+                  Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.edit_note),
+                    onPressed: () {
+                      showEditCategoryModal(context, key, storeData.menuCategories[key], storeData.menuCategories, menus);
+                    },
+                  ),
+                ],
+              ),
             ),
             children: menus.isNotEmpty ? menus.map((menu) => Card(
-              child: ListTile(
-                leading: menu.menuImageURL.isNotEmpty ? Image.network(
-                  menu.menuImageURL,
-                  width: 40.0,
-                  height: 40.0,
-                  fit: BoxFit.cover,  // 이미지가 지정된 공간에 맞도록 조절
-                ) : null,
-                title: Text(menu.menuName),
-                subtitle: Text(menu.menuInfo),
-                trailing: Text('${menu.price}￦', style: TextStyle(fontSize: 14)),
-                onTap: () {
-                  showModifyMenuModal(context, menu);
-                },
-              ),
-            )).toList() : [ListTile(title: Text("이 카테고리에는 현재 메뉴가 없습니다. 필요시 추가해주세요!"))], // 메뉴가 없는 경우 처리
+              child: StoreMenuTileWidget(menu: menu) 
+            )).toList() : [ListTile(title: Text("이 카테고리에는 현재 메뉴가 없습니다. 필요시 추가해주세요!"))],
           );
         },
-      ),
-      floatingActionButton: Stack(
-        children: <Widget>[
-          Positioned(
-            bottom: 80.0,
-            right: 10.0,
-            child: FloatingActionButton(
-              onPressed: () {
-                // 새 기능 추가 예정
-                showEditCategoryModal(context, null, null, storeData.menuCategories, []);
-              },
-              child: Icon(Icons.edit),
-              tooltip: '카테고리 추가하기',
-            ),
-          ),
-          Positioned(
-            bottom: 10.0,
-            right: 10.0,
-            child: FloatingActionButton(
-              onPressed: () {
-                showAddMenuModal(context, storeData.menuCategories, storeData.menuInfo);
-              },
-              child: Icon(Icons.add),
-              tooltip: '메뉴 추가하기',
-            ),
-          ),
-        ],
+        childCount: storeData.menuCategories.length,
       ),
     );
   }
 }
+
+class StoreMenuTileWidget extends ConsumerWidget {
+  final Menu menu;
+
+  StoreMenuTileWidget({
+    required this.menu,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Material(
+      child: ListTile(
+        title: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget(
+                    menu.menuName,
+                    textAlign: TextAlign.left,
+                    fontSize: 28,
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  TextWidget(
+                    '${menu.menuInfo}',
+                    textAlign: TextAlign.left,
+                    fontSize: 18,
+                    color: Color(0xFFDFDFDF),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  TextWidget(
+                    '${menu.price}원',
+                    textAlign: TextAlign.left,
+                    fontSize: 24,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              width: 20,
+            ),
+            CachedNetworkImage(
+              imageUrl: menu.menuImageURL,
+              imageBuilder: (context, imageProvider) => Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+              placeholder: (context, url) => CircularProgressIndicator(),
+              errorWidget: (context, url, error) => Icon(Icons.error),
+            ),
+          ],
+        ),
+        onTap: () {
+          showModifyMenuModal(context, menu);
+        },
+      ),
+    );
+  }
+}
+
+// 오류나면 저~사이에 들어가야함.
+              //   ListTile(
+              //   leading: menu.menuImageURL.isNotEmpty ? Image.network(
+              //     menu.menuImageURL,
+              //     width: 40.0,
+              //     height: 40.0,
+              //     fit: BoxFit.cover,
+              //   ) : null,
+              //   title: Text(menu.menuName),
+              //   subtitle: Text(menu.menuInfo),
+              //   trailing: Text('${menu.price}￦', style: TextStyle(fontSize: 14)),
+              //   onTap: () {
+              //     showModifyMenuModal(context, menu);
+              //   },
+              // ),
+
+
+// Padding(
+//                 padding: EdgeInsets.only(left: 10),
+//                 child: Row(
+//                   mainAxisAlignment: MainAxisAlignment.start,
+//                   children: [
+//                     Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
+//                     SizedBox(
+//                       width: 5,
+//                     ),
+//                     TextWidget(storeData.menuCategories[key] ?? "카테고리 없음",
+//                         fontSize: 36,
+//                         fontWeight: FontWeight.bold,
+//                         color: Color(0xFFFFB74D)),
+//                     SizedBox(
+//                       width: 5,
+//                     ),
+//                     Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
+//                   ],
+//                 ),
+//               ),
+
+// class MenuListWidget extends ConsumerWidget {
+//   MenuListWidget();
+
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final storeData = ref.watch(storeDataProvider);
+
+//     if (storeData?.menuInfo == null || storeData?.menuCategories == null) {
+//       return SliverFillRemaining(child: Center(child: Text("메뉴 정보를 불러올 수 없습니다.")));
+//     }
+
+//     Map<String, List<Menu>> categorizedMenus = {};
+//     storeData!.menuCategories!.forEach((key, value) {
+//       if (value != null) {
+//         categorizedMenus[key] = [];
+//       }
+//     });
+
+//     for (var menu in storeData.menuInfo!) {
+//       String categoryKey = menu.menuCode[0].toLowerCase();
+//       if (categorizedMenus.containsKey(categoryKey)) {
+//         categorizedMenus[categoryKey]!.add(menu);
+//       }
+//     }
+
+//     return SliverList(
+//       delegate: SliverChildBuilderDelegate(
+//         (context, index) {
+//           String key = storeData.menuCategories.keys.elementAt(index);
+//           List<Menu>? menus = categorizedMenus[key];
+//           if (menus == null) {
+//             return SizedBox.shrink();
+//           }
+
+//           return ExpansionTile(
+//             initiallyExpanded: true,
+//             title: Padding(
+//               padding: EdgeInsets.only(left: 10),
+//               child: Row(
+//                 children: [
+//                   Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
+//                   SizedBox(width: 5),
+//                   Text(
+//                     storeData.menuCategories[key] ?? "카테고리 없음",
+//                     style: TextStyle(
+//                       fontSize: 36,
+//                       fontWeight: FontWeight.bold,
+//                       color: Color(0xFFFFB74D),
+//                     ),
+//                   ),
+//                   SizedBox(width: 5),
+//                   Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
+//                   Spacer(),
+//                   IconButton(
+//                     icon: Icon(Icons.edit_note),
+//                     onPressed: () {
+//                       showEditCategoryModal(context, key, storeData.menuCategories[key], storeData.menuCategories, menus);
+//                     },
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             children: menus.isNotEmpty ? menus.map((menu) => Card(
+//               child: StoreMenuTileWidget(menu: menu) 
+//             )).toList() : [ListTile(title: Text("이 카테고리에는 현재 메뉴가 없습니다. 필요시 추가해주세요!"))],
+//           );
+//         },
+//         childCount: storeData.menuCategories.length,
+//       ),
+//     );
+//   }
+// }
