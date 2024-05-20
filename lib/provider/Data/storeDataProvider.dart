@@ -275,10 +275,10 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
   // 카테고리 추가/수정/삭제 메서드.   카테고리명이 비어있으면 삭제요청임. 
   FutureOr<bool> editCategory(BuildContext context, LoginData? loginData, List<Menu>? menuInCategory, String singleMenuCode, String? categoryName) async {
     print('카테고리 수정 요청 수신');
-    if(menuInCategory!.isNotEmpty){
-      await showAlertDialog(context, "카테고리 삭제", "카테고리의 메뉴를 모두 삭제한 후 다시 시도해 주세요", null);
-      return false;
-    }
+    // if(menuInCategory!.isNotEmpty){
+    //   await showAlertDialog(context, "카테고리 삭제", "카테고리의 메뉴를 모두 삭제한 후 다시 시도해 주세요", null);
+    //   return false;
+    // }
     final String finalSingleMenuCode = singleMenuCode.toUpperCase();
     final jsonBody = json.encode({
       "storeCode" : loginData!.storeCode,
