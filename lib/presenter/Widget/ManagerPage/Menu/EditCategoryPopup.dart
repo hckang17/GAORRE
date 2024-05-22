@@ -26,6 +26,7 @@ class EditCategoryModal extends StatelessWidget {
   final WidgetRef ref;
   String? menuCategoryValue;
   List<Menu>? menuInCategory;
+  final FocusNode _focusNode = FocusNode();
   final Map<String, String?> currentMenuCategory;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _controller;
@@ -60,6 +61,8 @@ class EditCategoryModal extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextFormField(
+                autofocus: true,
+                focusNode: _focusNode,
                 controller: _controller,
                 decoration: InputDecoration(
                   hintText: '카테고리명을 입력해주세요.',
@@ -71,6 +74,7 @@ class EditCategoryModal extends StatelessWidget {
                   }
                   return null;
                 },
+                onTap: () => _focusNode.requestFocus(),
               ),
             ),
             ElevatedButton(
@@ -87,16 +91,16 @@ class EditCategoryModal extends StatelessWidget {
               child: Text('등록/수정하기'),
             ),
             ElevatedButton(
-            onPressed: (currentMenuCategoryKey != null) ? () async {
-              // 카테고리 삭제 로직 -> 현재 카테고리 키가 null이 아니고 해당 카테고리에 배정된 메뉴가 없을때 
-              print('카테고리 삭제: ${currentMenuCategoryKey}');
-              if(true == await ref.read(storeDataProvider.notifier).editCategory(context,
-               ref.read(loginProvider.notifier).getLoginData(), menuInCategory,
-               currentMenuCategoryKey, null)){ Navigator.of(context).pop(); }
-            } : null, // menuCategoryKey가 null이면 버튼 비활성화
-            child: Text('카테고리 삭제하기'),
-            style: ElevatedButton.styleFrom(
-              disabledForegroundColor: Colors.grey.withOpacity(0.38), disabledBackgroundColor: Colors.grey.withOpacity(0.12), // 비활성화 상태에서의 색상
+              onPressed: (currentMenuCategoryKey != null) ? () async {
+                // 카테고리 삭제 로직 -> 현재 카테고리 키가 null이 아니고 해당 카테고리에 배정된 메뉴가 없을때 
+                print('카테고리 삭제: ${currentMenuCategoryKey}');
+                if(true == await ref.read(storeDataProvider.notifier).editCategory(context,
+                ref.read(loginProvider.notifier).getLoginData(), menuInCategory,
+                currentMenuCategoryKey, null)){ Navigator.of(context).pop(); }
+              } : null, // menuCategoryKey가 null이면 버튼 비활성화
+              child: Text('카테고리 삭제하기'),
+              style: ElevatedButton.styleFrom(
+                disabledForegroundColor: Colors.grey.withOpacity(0.38), disabledBackgroundColor: Colors.grey.withOpacity(0.12), // 비활성화 상태에서의 색상
             ),
           )
           ],
