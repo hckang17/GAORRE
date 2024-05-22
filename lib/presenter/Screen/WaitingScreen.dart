@@ -51,14 +51,16 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   @override
   void initState() {
     super.initState();
+    // loginData 가져오기 및 null 체크
     loginData = ref.read(loginProvider.notifier).getLoginData();
-    storeCode = loginData!.storeCode;
-    // waitingAvailableState = ref.read(waitingAvailableStatusStateProvider.notifier).loadWaitingAvailableStatus();
-    final waitingNotifier = ref.read(waitingProvider.notifier);
-    if (!isSubscribed) {
-      waitingNotifier.subscribeToWaitingData(storeCode);
-      waitingNotifier.sendWaitingData(storeCode);
-      isSubscribed = true;
+    if (loginData != null) {
+      storeCode = loginData!.storeCode;
+      final waitingNotifier = ref.read(waitingProvider.notifier);
+      if (!isSubscribed) {
+        waitingNotifier.subscribeToWaitingData(storeCode);
+        waitingNotifier.sendWaitingData(storeCode);
+        isSubscribed = true;
+      }
     }
   }
 
@@ -66,6 +68,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   Widget build(BuildContext context) {
     waitingAvailableState = ref.watch(storeDataProvider.select((value) => value!.waitingAvailable));
     currentWaitingData = ref.watch(waitingProvider);
+    loginData = ref.watch(loginProvider);
     switchValue = waitingAvailableState == 0 ? true : false;
     
     if(currentWaitingData == null){

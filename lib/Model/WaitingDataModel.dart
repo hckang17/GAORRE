@@ -67,7 +67,7 @@ class WaitingTeam {
 }
 
 class CallWaitingTeam {
-  //	{"storeCode":1,"waitingTeam":1,"entryTime":"2024-03-28T23:04:18.3394633"
+  //	{"storeCode":1,"waitingTeam":1,"entryTime":"2024-03-28T23:04:18.3394633"}
   final int storeCode;
   final int waitingTeam;
   final String entryTime;

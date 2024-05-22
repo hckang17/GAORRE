@@ -266,9 +266,11 @@ Future<int> firstBoot(WidgetRef ref) async {
       requestLoginData.complete();
     }
 
+    print('로그인정보 요청이 끝날때 까지 대기합니다.. [FirstBootService]');
     await requestLoginData.future;
 
     // 가게 정보 취득 시도
+    print('가게정보 요청을 전송합니다. [FirstBootService]');
     bool retrieveStoreDataResult = await ref.read(storeDataProvider.notifier).requestStoreData(
       ref.read(loginProvider.notifier).getLoginData()!.storeCode
     );
