@@ -292,7 +292,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         if(responseBody['status'] == "200"){
           print('카테고리 등록/수정 성공!');
-          requestStoreData(loginData.storeCode);
+          requestStoreData(loginData.storeCode!);
           await showAlertDialog(context, "카테고리 등록/수정", "성공!", null);
           return true;
         }else{
