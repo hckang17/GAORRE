@@ -54,7 +54,7 @@ class MenuListWidget extends ConsumerWidget {
                   SizedBox(width: 5),
                   TextWidget(
                     storeData.menuCategories[key] ?? "카테고리 없음",
-                    fontSize: 36,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(255, 39, 194, 255),
                   ),
