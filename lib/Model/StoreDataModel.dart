@@ -13,8 +13,8 @@ class StoreData {
   final String openingTime;
   final String closingTime;
   final String lastOrderTime;
-  final String startBreakTime;
-  final String endBreakTime;
+  String? startBreakTime;
+  String? endBreakTime;
   final Map<String, String?> menuCategories;  // String 대신 String? 사용
   List<Menu>? menuInfo;
 
@@ -60,9 +60,9 @@ class StoreData {
       openingTime: json['openingTime'],
       closingTime: json['closingTime'],
       lastOrderTime: json['lastOrderTime'],
-      startBreakTime: json['startBreakTime'],
-      endBreakTime: json['endBreakTime'],
-      menuCategories: categoriesMap,
+      startBreakTime: json['startBreakTime'] ?? '21:00:00',
+      endBreakTime: json['endBreakTime'] ?? '21:10:00',
+      menuCategories: categoriesMap, 
       menuInfo: menuList,
     );
   }
