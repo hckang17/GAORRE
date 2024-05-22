@@ -167,7 +167,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
             child: FloatingActionButton(
               onPressed: () {
                 // 카테고리 수정 관련 모달
-                showEditCategoryModal(context, null, null, currentStoreData!.menuCategories, []);
+                showEditCategoryModal(ref, null, null, currentStoreData!.menuCategories, []);
               },
               child: Icon(Icons.edit),
               tooltip: '카테고리 추가하기',

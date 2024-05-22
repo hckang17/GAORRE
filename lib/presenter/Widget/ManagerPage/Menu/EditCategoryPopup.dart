@@ -4,10 +4,10 @@ import 'package:orre_manager/Model/MenuDataModel.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 
-void showEditCategoryModal(BuildContext context, String? menuCategoryKey,
+void showEditCategoryModal(WidgetRef ref, String? menuCategoryKey,
     String? menuCategoryValue, Map<String, String?> currentMenuCategory, List<Menu>? menus) {
   showModalBottomSheet(
-    context: context,
+    context: ref.context,
     isScrollControlled: true,
     builder: (BuildContext context) {
       return EditCategoryModal(
@@ -15,24 +15,26 @@ void showEditCategoryModal(BuildContext context, String? menuCategoryKey,
         menuCategoryValue: menuCategoryValue,
         currentMenuCategory: currentMenuCategory,
         menuInCategory: menus,
+        ref: ref,
       );
     },
   );
 }
 
-class EditCategoryModal extends ConsumerWidget {
+class EditCategoryModal extends StatelessWidget {
   String? menuCategoryKey;
+  final WidgetRef ref;
   String? menuCategoryValue;
   List<Menu>? menuInCategory;
   final Map<String, String?> currentMenuCategory;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _controller;
 
-  EditCategoryModal({this.menuCategoryKey, this.menuCategoryValue, required this.currentMenuCategory, this.menuInCategory})
+  EditCategoryModal({this.menuCategoryKey, this.menuCategoryValue, required this.currentMenuCategory, this.menuInCategory, required this.ref})
       : _controller = TextEditingController(text: menuCategoryValue);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     String? currentMenuCategoryKey = menuCategoryKey; // 현재 menuCategoryKey
       print('menuCategory한번 출력해보자');
       print('${currentMenuCategory.toString()}');

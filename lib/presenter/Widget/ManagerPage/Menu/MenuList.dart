@@ -64,7 +64,7 @@ class MenuListWidget extends ConsumerWidget {
                   IconButton(
                     icon: Icon(Icons.edit_note),
                     onPressed: () {
-                      showEditCategoryModal(context, key, storeData.menuCategories[key], storeData.menuCategories, menus);
+                      showEditCategoryModal(ref, key, storeData.menuCategories[key], storeData.menuCategories, menus);
                     },
                   ),
                 ],
