@@ -205,7 +205,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       }
     } else {
       print('HTTP 에러. 에러코드 : ${response.statusCode}');
-      await showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '고객호출 실패\n잠시후 재시도 해주세요', null);
+      await showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '고객호출 실패\n잠시후 재시도 해주세요.\n에러코드:[${response.statusCode}]', null);
       return false;
     }
   }
@@ -344,7 +344,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
           return true;
         } else {
           print('$waitingNumber번 손님 입장처리를 실패했습니다. [waitingProvider - confirmEnterance]');
-          showAlertDialog(context, '입장 확인', '$waitingNumber번 손님 입장처리 실패', null);
+          showAlertDialog(context, '입장 확인', '$waitingNumber번 손님 입장처리 실패\n에러코드:[${responseBody['status']}]', null);
           return false;
         }
       } else {

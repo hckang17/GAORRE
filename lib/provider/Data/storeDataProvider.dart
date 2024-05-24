@@ -185,8 +185,8 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
         return true;
       } else {
         // 요청이 실패하면 처리
-        await showAlertDialog(context, "메뉴 추가", "메뉴추가 실패..", null);
-        print('메뉴 추가 요청이 실패하였습니다. 상태 코드: ${response.statusCode}');
+        await showAlertDialog(context, "메뉴 추가", "메뉴추가 실패.. 에러코드:[${response.statusCode}]", null);
+        print('메뉴 추가 요청이 실패하였습니다. 상태 코드: ${response.statusCode} [storeDataProvider - addMenu]');
         return false;
       }
     } catch (e) {
@@ -197,15 +197,17 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
   }
 
   // 메뉴 수정 메서드
-  FutureOr<bool> modifyMenu(BuildContext context, LoginData loginData, String menuName, String menuCode, int price, String introduce) async {
-    print('메뉴 변경 신청...');
+  FutureOr<bool> modifyMenu(BuildContext context, LoginData loginData, String originMenu, String menuName, String menuCode, int price, String introduce, int recommend) async {
+    print('메뉴 변경 신청... [storeDataProvider - modifyMenu]');
     final jsonBody = json.encode({
       'storeCode' : loginData.storeCode,
       'menuCode' : menuCode,
-      'menu' : menuName,
+      'menu' : originMenu,
+      'newMenu' : menuName,
       'jwtAdmin' : loginData.loginToken,
       'price' : price,
       'introduce' : introduce,
+      'recommend' : recommend,
     });
     try {
       final response = await HttpsService.postRequest('/StoreAdmin/menu/s3/modify', jsonBody);
@@ -216,18 +218,19 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
           // 메뉴 수정 완료
           print('메뉴 수정 완료!');
           await showAlertDialog(context, "메뉴 변경", "메뉴명 : $menuName 변경 성공!", null);
-          requestStoreData(loginData.storeCode);
+          await requestStoreData(loginData.storeCode);
           return true;
         } else {
           // 메뉴 수정 실패
           print('메뉴 수정 실패. status = ${responseBody['status']}');
-          await showAlertDialog(context, "메뉴 변경", "메뉴명 : $menuName 변경 실패...", null);
-          requestStoreData(loginData.storeCode);
+          await showAlertDialog(context, "메뉴 변경", "메뉴명 : $menuName 변경 실패...\n에러코드:[${responseBody['status']}]", null);
+          await requestStoreData(loginData.storeCode);
           return false;
         }
       } else {
         //HTTP부터 정상수신 되지 않았을 때
         print('HTTP 에러 : status code <${response.statusCode}>');
+        await showAlertDialog(context, "메뉴 변경", "메뉴명 : $menuName 변경 실패... \n에러코드:HTTP${response.statusCode}", null);
         return false;
       }
     } catch (error) {
@@ -257,7 +260,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
           return true;
         } else {
           // 메뉴 삭제 실패
-          await showAlertDialog(context, "메뉴 삭제", "메뉴명 : $name 삭제 실패...", null);
+          await showAlertDialog(context, "메뉴 삭제", "메뉴명 : $name 삭제 실패... 에러코드:[${responseBody['status']}]", null);
           print('삭제 실패. StatusCode : ${response.statusCode}');
           return false;
         }
@@ -298,7 +301,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
         }else{
           // 다른 문제 발생
           print('카테고리 등록/성공 실패');
-          await showAlertDialog(context, "카테고리 등록/수정", "실패", null);
+          await showAlertDialog(context, "카테고리 등록/수정", "실패.\n에러코드:[${responseBody['status']}]", null);
           return false;
         }
       }else{
@@ -328,17 +331,21 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
         if(responseBody['status'] == "200"){
           // 폐점성공
           print('영업종료처리 성공 [storeDataProvider - closeStore]');
+          await showAlertDialog(ref.context, "영업종료", "성공", null);
           return true;
         }else{
           print('영업종료처리 실패 [storeDataProvider - closeStore]');
+          await showAlertDialog(ref.context, "영업종료", "실패\n에러코드:[${responseBody['status']}]", null);
           return false;
         }
       }else{
         print('HTTP statusCode not 200 [storeDataProvider - closeStore]');
+        await showAlertDialog(ref.context, "영업종료", "실패\n에러코드:[${response.statusCode}]", null);
         return false;
       }
     }catch(error){
       print("HTTP 에러발생. 에러 : $error [storeDataProvider - closeStore]");
+      await showAlertDialog(ref.context, "영업종료", "실패\n에러코드:HTTP", null);
       return false;
     }
   }
