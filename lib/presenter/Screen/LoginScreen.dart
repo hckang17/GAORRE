@@ -28,6 +28,7 @@ class _LoginScreenBody extends ConsumerWidget {
   Future<void> loginProcess(WidgetRef ref) async {
     print('로그인 프로세스. [LoginScreen - loginProces]');
     if(true == await ref.read(loginProvider.notifier).requestLoginData(_idController.text, _pwController.text)){
+      await showAlertDialog(ref.context, "로그인", "성공!", null);
       final requestStoreDataCompleter = Completer<void>();
       if(true == await ref.read(storeDataProvider.notifier).requestStoreData(
         ref.read(loginProvider.notifier).getLoginData()!.storeCode
@@ -44,7 +45,7 @@ class _LoginScreenBody extends ConsumerWidget {
         )
       );
     }else{
-      showAlertDialog(context, "로그인", "로그인에 실패했습니다!", null);
+      showAlertDialog(ref.context, "로그인", "로그인에 실패했습니다!", null);
     }
   }
 

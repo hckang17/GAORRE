@@ -1,21 +1,21 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-// import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
+// import 'package:orre_manager/widget/button/text_button_widget.dart';
+// import 'package:orre_manager/widget/text/text_widget.dart';
 
-// void showAddWaitingDialog(BuildContext context) {
+// void showEditCategoryDialog(BuildContext context) {
 //   showDialog(
 //     context: context,
 //     builder: (BuildContext context) {
 //       return Dialog(
-//         child: AddWaitingForm(),
+//         child: EditCategoryForm(),
 //       );
 //     },
 //   );
 // }
 
-// class AddWaitingForm extends ConsumerWidget {
+// class EditCategoryForm extends ConsumerWidget {
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
 //     return Padding(
@@ -23,36 +23,33 @@
 //       child: Column(
 //         mainAxisSize: MainAxisSize.min,
 //         children: [
-//           Text('웨이팅 추가', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+//           TextWidget('카테고리 수정'),
 //           SizedBox(height: 20),
-//           AddWaitingFields(),
+//           EditCategoryFields(),
 //         ],
 //       ),
 //     );
 //   }
 // }
 
-// class AddWaitingFields extends ConsumerStatefulWidget {
+// class EditCategoryFields extends ConsumerStatefulWidget {
 //   @override
-//   _AddWaitingFieldsState createState() => _AddWaitingFieldsState();
+//   _EditCategoryFieldsState createState() => _EditCategoryFieldsState();
 // }
 
-// class _AddWaitingFieldsState extends ConsumerState<AddWaitingFields> {
+// class _EditCategoryFieldsState extends ConsumerState<EditCategoryFields> {
 //   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-//   late TextEditingController phoneNumberController;
-//   late TextEditingController waitingPersonCountController;
+//   late TextEditingController categoryController;
 
 //   @override
 //   void initState() {
 //     super.initState();
-//     phoneNumberController = TextEditingController();
-//     waitingPersonCountController = TextEditingController();
+//     categoryController = TextEditingController();
 //   }
 
 //   @override
 //   void dispose() {
-//     phoneNumberController.dispose();
-//     waitingPersonCountController.dispose();
+//     categoryController.dispose();
 //     super.dispose();
 //   }
 
@@ -63,59 +60,44 @@
 //       child: Column(
 //         children: [
 //           TextFormField(
-//             controller: phoneNumberController,
+//             controller: categoryController,
 //             decoration: InputDecoration(
-//               labelText: '연락처',
+//               labelText: '카테고리 명',
 //               border: OutlineInputBorder(),
-//               prefixIcon: Icon(Icons.phone),  // '전화기' 아이콘 추가
+//               prefixIcon: Icon(Icons.category),  // '전화기' 아이콘 추가
 //             ),
 //             keyboardType: TextInputType.number,
 //             inputFormatters: [FilteringTextInputFormatter.digitsOnly],  // 숫자만 입력 가능
 //             validator: (value) {
 //               if (value == null || value.isEmpty) {
-//                 return '연락처를 입력해주세요.';
-//               } else if (value.length < 10) {  // 최소 길이 설정 (예시)
-//                 return '유효한 연락처를 입력해주세요.';
-//               }
+//                 return '공백은 입력할 수 없습니다.';
+//               } 
 //               return null;
 //             },
 //           ),
 //           SizedBox(height: 20),
-//           TextFormField(
-//             controller: waitingPersonCountController,
-//             decoration: InputDecoration(
-//               labelText: '대기 인원 수',
-//               border: OutlineInputBorder(),
-//               prefixIcon: Icon(Icons.person),  // '사람' 아이콘 추가
-//             ),
-//             keyboardType: TextInputType.number,
-//             inputFormatters: [FilteringTextInputFormatter.digitsOnly],  // 숫자만 입력 가능
-//             validator: (value) {
-//               if (value == null || value.isEmpty) {
-//                 return '대기 인원 수를 입력해주세요.';
-//               } else if (int.tryParse(value) == null) {
-//                 return '숫자를 입력해주세요.';
-//               }
-//               return null;
-//             },
-//           ),
-//           SizedBox(height: 20),
-//           ElevatedButton(
-//             onPressed: () {
-//               if (_formKey.currentState!.validate()) {
-//                 // 폼 데이터를 검증하고 처리
-//                 int waitingCount = int.parse(waitingPersonCountController.text);
-//                 ref.read(waitingProvider.notifier).addWaitingTeam(
-//                   ref.context, ref.read(loginProvider.notifier).getLoginData()!,
-//                   phoneNumberController.text, waitingCount
-//                 );
-//                 print('연락처: ${phoneNumberController.text}, 대기 인원 수: $waitingCount');
-//                 // 여기에다가 이제~ 웨이팅 수동 등록 코드 작성하기. 
-//                 Navigator.pop(context);
-//               }
-//             },
-//             child: Text('추가하기'),
-//           ),
+//           Row(
+//             children: [
+//               TextButtonWidget(
+//                 onPressed: () async {
+//                   if (_formKey.currentState!.validate()) {
+//                     // 폼 데이터를 검증하고 처리
+
+//                     // 여기에다가 이제~ 웨이팅 수동 등록 코드 작성하기. 
+//                     Navigator.pop(context);
+//                   }
+//                 },
+//                 text: '수정',
+//               ),
+//               TextButtonWidget(
+//                 onPressed: () async {
+
+//                 },
+//                 text: '삭제',
+//               ),
+//             ],
+//           )
+          
 //         ],
 //       ),
 //     );
