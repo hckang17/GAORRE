@@ -48,7 +48,7 @@ class AddCategoryForm extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextWidget('카테고리 수정'),
+          TextWidget('카테고리 추가'),
           SizedBox(height: 20),
           AddCategoryFields(
             menuCategoryKey: menuCategoryKey,
