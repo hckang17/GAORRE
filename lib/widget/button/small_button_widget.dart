@@ -29,7 +29,7 @@ class SmallButtonWidget extends ConsumerWidget {
       ),
       style: ElevatedButton.styleFrom(
         padding: EdgeInsets.symmetric(vertical: 10),
-        backgroundColor: Color(0xFFFFBF52),
+        backgroundColor: Color(0xFF72AAD8),
         maximumSize: maxSize,
         minimumSize: minSize,
         shape: RoundedRectangleBorder(

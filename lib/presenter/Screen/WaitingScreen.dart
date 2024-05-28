@@ -386,13 +386,13 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await ref.read(userLogProvider.notifier).retrieveUserLogData(ref.read(loginProvider.notifier).getLoginData()!);
-          showWaitingLog(ref);
-        },
-        child: Icon(Icons.assignment), // 로그 확인 아이콘
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () async {
+      //     await ref.read(userLogProvider.notifier).retrieveUserLogData(ref.read(loginProvider.notifier).getLoginData()!);
+      //     showWaitingLog(ref);
+      //   },
+      //   child: Icon(Icons.assignment), // 로그 확인 아이콘
+      // ),
     );
 
     // return Scaffold(
