@@ -11,7 +11,6 @@ import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/ModifyMenuPopup.d
 import 'package:orre_manager/widget/text/text_widget.dart';
 
 class MenuListWidget extends ConsumerWidget {
-  MenuListWidget();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,18 +46,18 @@ class MenuListWidget extends ConsumerWidget {
           return ExpansionTile(
             initiallyExpanded: true,
             title: Padding(
-              padding: EdgeInsets.only(left: 10),
+              padding: EdgeInsets.only(left: 0),
               child: Row(
                 children: [
                   Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
-                  SizedBox(width: 5),
+                  // SizedBox(width: 5),
                   TextWidget(
                     storeData.menuCategories[key] ?? "카테고리 없음",
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(255, 39, 194, 255),
                   ),
-                  SizedBox(width: 5),
+                  // SizedBox(width: 5),
                   Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
                   Spacer(),
                   IconButton(
@@ -151,10 +150,10 @@ class StoreMenuTileWidget extends ConsumerWidget {
             },
           ),
         ),
-        Divider(
-          color: Colors.grey,
-          height: 1,
-        ),
+        // Divider(
+        //   color: Colors.grey,
+        //   height: 1,
+        // ),
       ],
     );
   }

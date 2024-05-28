@@ -1,7 +1,9 @@
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/Error/ServerErrorScreen.dart';
 import 'package:orre_manager/presenter/Error/error_screen.dart';
 import 'package:orre_manager/presenter/Error/network_error_screen.dart';
 import 'package:orre_manager/presenter/Error/websocket_error_screen.dart';
@@ -13,10 +15,61 @@ import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart';
 import 'package:orre_manager/provider/Network/stompClientStateNotifier.dart';
 import 'package:orre_manager/services/Booting_service.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
 
-void main() {
+late AndroidNotificationChannel channel;
+late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print('Handling a background message ${message.messageId}');
+}
+
+
+Future<void> main() async  {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  channel = const AndroidNotificationChannel(
+    'high_importance_channel', // id
+    'High Importance Notifications', // title
+    description:
+        'This channel is used for important notifications.', // description
+    importance: Importance.high,
+  );
+  
+  var initialzationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  // var initialzationSettingsIOS = IOSInitializationSettings(
+  //   requestSoundPermission: true,
+  //   requestBadgePermission: true,
+  //   requestAlertPermission: true,
+  // );
+
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+      
+  var initializationSettings = InitializationSettings(
+      android: initialzationSettingsAndroid, 
+      //iOS: initialzationSettingsIOS
+    );
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+  );
+
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  
   runApp(
     ProviderScope(
       child: MaterialApp(
@@ -46,6 +99,34 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObse
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    //     RemoteNotification? notification = message.notification;
+    //     AndroidNotification? android = message.notification?.android;
+    //     var androidNotiDetails = AndroidNotificationDetails(
+    //       channel.id,
+    //       channel.name,
+    //       channelDescription: channel.description,
+    //     );
+    //     // var iOSNotiDetails = const IOSNotificationDetails();
+    //     var details =
+    //         NotificationDetails(android: androidNotiDetails
+    //         // , iOS: iOSNotiDetails
+    //     );
+    //     if (notification != null) {
+    //       flutterLocalNotificationsPlugin.show(
+    //         notification.hashCode,
+    //         notification.title,
+    //         notification.body,
+    //         details,
+    //       );
+    //     }
+    //   });
+
+    //   FirebaseMessaging.onMessageOpenedApp.listen((message) {
+    //     print(message);
+    //   });
+    // }
   }
 
   @override
@@ -132,48 +213,6 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObse
   }
 }
 
-
-/// 여기서부터는 최초 실행시 필요한 스크린들..
-// class WebsocketErrorScreen extends ConsumerWidget {
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     // final stomp = ref.watch(stompClientStateNotifierProvider);
-//     final stompStack = ref.watch(stompErrorStack);
-//     final networkError = ref.watch(networkStateProvider);
-
-//     print("ServerErrorScreen : $stompStack");
-//     // 네트워크 연결은 정상이나 웹소켓 연결을 5번 이상 실패했을 경우
-//     if (stompStack > 5 && networkError == true) {
-//       // 서버 에러로 판단하여 서버 에러 화면으로 이동
-//       Navigator.pushReplacement(context,
-//           MaterialPageRoute(builder: (context) => ServerErrorScreen()));
-//     } else {
-//       print("다시 시도하기");
-//       ref.read(stompClientStateNotifierProvider.notifier).state?.activate();
-//     }
-//     return Scaffold(
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             TextWidget('웹소켓을 불러오는데 실패했습니다.'),
-//             ElevatedButton(
-//               onPressed: () {
-//                 print("다시 시도하기");
-//                 ref.read(stompErrorStack.notifier).state = 0;
-//                 ref
-//                     .read(stompClientStateNotifierProvider.notifier)
-//                     .state
-//                     ?.activate();
-//               },
-//               child: TextWidget('다시 시도하기'),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 class NetworkCheckScreen extends ConsumerWidget {
   @override
