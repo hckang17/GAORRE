@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/MenuDataModel.dart';
+import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/widget/text/text_widget.dart';
@@ -133,8 +134,17 @@ class EditCategoryModal extends StatelessWidget {
                 ElevatedButton(
                   onPressed: (currentMenuCategoryKey != null)
                       ? () async {
-                          // 카테고리 삭제 로직 -> 현재 카테고리 키가 null이 아니고 해당 카테고리에 배정된 메뉴가 없을때
                           print('카테고리 삭제: ${currentMenuCategoryKey}');
+                          // 카테고리 삭제 로직 -> 현재 카테고리 키가 null이 아니고 해당 카테고리에 배정된 메뉴가 없을때
+                          if(menuInCategory != null){
+                            await showAlertDialog(context, "카테고리 삭제", "카테고리의 모든 메뉴를 삭제한 후 다시 시도해 주세요", null);
+                            return;
+                          }
+
+                          if(false == await showConfirmDialog(context, "카테고리 삭제", "카테고리를 정말 삭제하시겠습니까?")){
+                            return;
+                          }
+                          
                           if (true ==
                               await ref
                                   .read(storeDataProvider.notifier)
