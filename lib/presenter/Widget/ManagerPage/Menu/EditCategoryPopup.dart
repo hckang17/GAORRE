@@ -136,7 +136,7 @@ class EditCategoryModal extends StatelessWidget {
                       ? () async {
                           print('카테고리 삭제: ${currentMenuCategoryKey}');
                           // 카테고리 삭제 로직 -> 현재 카테고리 키가 null이 아니고 해당 카테고리에 배정된 메뉴가 없을때
-                          if(menuInCategory != null){
+                          if(menuInCategory == []){
                             await showAlertDialog(context, "카테고리 삭제", "카테고리의 모든 메뉴를 삭제한 후 다시 시도해 주세요", null);
                             return;
                           }
