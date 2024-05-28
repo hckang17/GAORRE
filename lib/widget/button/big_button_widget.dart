@@ -14,7 +14,7 @@ class BigButtonWidget extends ConsumerWidget {
     Key? key,
     required this.text,
     required this.onPressed,
-    this.backgroundColor = const Color(0xFFFFB74D),
+    this.backgroundColor = const Color(0xFF72AAD8),
     this.textColor = Colors.black,
     this.minimumSize = const Size(double.infinity, 50),
     this.shape = const RoundedRectangleBorder(
