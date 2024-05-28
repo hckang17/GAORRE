@@ -7,7 +7,6 @@ import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
 import 'package:orre_manager/presenter/MainScreen.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import '../../provider/Data/loginDataProvider.dart';
-import '../../Coding_references/stompClientFutureProvider.dart';
 
 class LoginScreenWidget extends ConsumerWidget {
   const LoginScreenWidget();
