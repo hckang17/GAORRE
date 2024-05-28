@@ -107,7 +107,7 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
       final response = await HttpsService.postRequest('/StoreAdmin/login', jsonBody);
       if(response.statusCode == 200){
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
-        if(responseBody['status'] == "success"){
+        if(responseBody['status'] == "200"){
           print('로그인 성공 [loginProvider]');
           print(responseBody.toString());
             // 자동로그인을 위한 데이터 저장
