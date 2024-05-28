@@ -21,13 +21,6 @@ class WaitingScreenWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final stompClientAsyncValue = ref.watch(stompClientProvider);
-
-    // return stompClientAsyncValue.when(
-    //   data: (stompClient) => StoreScreenBody(loginData: loginResponse),
-    //   loading: () => _LoadingScreen(),
-    //   error: (error, stackTrace) => _ErrorScreen(error),
-    // );
     return StoreScreenBody();
   }
 }
@@ -46,7 +39,6 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
   WaitingData? currentWaitingData;
   bool isSubscribed = false;
   late bool switchValue;
-  Timer? _timer;
 
   @override
   void initState() {
@@ -355,44 +347,17 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
             ),
 
 
-            ///
-            /// 이 아래에 원래 메뉴버튼을 두려고 했으나...
-            
-            // Row(
-            //   mainAxisAlignment:
-            //       MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
-            //   children: [
-            //     // ElevatedButton(
-            //     //   onPressed: () {
-            //     //     ref.read(waitingProvider.notifier).requestUserCall(
-            //     //         context,
-            //     //         currentWaitingData!.teamInfoList[0].phoneNumber,
-            //     //         currentWaitingData!.teamInfoList[0].waitingNumber,
-            //     //         storeCode,
-            //     //         minutesToAdd);
-            //     //   },
-            //     //   child: Text('손님 호출하기'),
-            //     // ),
-            //     // ElevatedButton(
-            //     //   onPressed: () {
-            //     //     Navigator.of(context).push(MaterialPageRoute(
-            //     //         builder: (BuildContext context) =>
-            //     //             TableManagementScreen()));
-            //     //   },
-            //     //   child: Text('좌석페이지'),
-            //     // ),
-            //   ],
-            // ),
+
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () async {
-      //     await ref.read(userLogProvider.notifier).retrieveUserLogData(ref.read(loginProvider.notifier).getLoginData()!);
-      //     showWaitingLog(ref);
-      //   },
-      //   child: Icon(Icons.assignment), // 로그 확인 아이콘
-      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await ref.read(userLogProvider.notifier).retrieveUserLogData(ref.read(loginProvider.notifier).getLoginData()!);
+          showWaitingLog(ref);
+        },
+        child: Icon(Icons.assignment), // 로그 확인 아이콘
+      ),
     );
 
     // return Scaffold(
@@ -602,4 +567,33 @@ class _LoadingScreen extends StatelessWidget {
 // //     );
 // //   }
 // // }
+
+            ///
+            /// 이 아래에 원래 메뉴버튼을 두려고 했으나...
+            
+            // Row(
+            //   mainAxisAlignment:
+            //       MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
+            //   children: [
+            //     // ElevatedButton(
+            //     //   onPressed: () {
+            //     //     ref.read(waitingProvider.notifier).requestUserCall(
+            //     //         context,
+            //     //         currentWaitingData!.teamInfoList[0].phoneNumber,
+            //     //         currentWaitingData!.teamInfoList[0].waitingNumber,
+            //     //         storeCode,
+            //     //         minutesToAdd);
+            //     //   },
+            //     //   child: Text('손님 호출하기'),
+            //     // ),
+            //     // ElevatedButton(
+            //     //   onPressed: () {
+            //     //     Navigator.of(context).push(MaterialPageRoute(
+            //     //         builder: (BuildContext context) =>
+            //     //             TableManagementScreen()));
+            //     //   },
+            //     //   child: Text('좌석페이지'),
+            //     // ),
+            //   ],
+            // ),
 
