@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/Screen/WaitingScreen.dart';
 import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
 import 'package:orre_manager/presenter/MainScreen.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
+import 'package:orre_manager/widget/text_field/text_input_widget.dart';
 import '../../provider/Data/loginDataProvider.dart';
+
+final isObscureProvider = StateProvider<bool>((ref) => true);
 
 class LoginScreenWidget extends ConsumerWidget {
   const LoginScreenWidget();
@@ -21,8 +23,12 @@ class LoginScreenWidget extends ConsumerWidget {
 class _LoginScreenBody extends ConsumerWidget {
   final BuildContext context;
   final WidgetRef ref;
-  TextEditingController _idController = TextEditingController();
-  TextEditingController _pwController = TextEditingController();
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _pwController = TextEditingController();
+
+  final FocusNode phoneNumberFocusNode = FocusNode();
+  final FocusNode passwordFocusNode = FocusNode();
+  
   _LoginScreenBody({required this.context, required this.ref});
   
   Future<void> loginProcess(WidgetRef ref) async {
@@ -51,6 +57,8 @@ class _LoginScreenBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isObscure = ref.watch(isObscureProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -65,7 +73,7 @@ class _LoginScreenBody extends ConsumerWidget {
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.cover,
           ),
-          Padding(
+          const Padding(
             padding: EdgeInsets.all(20),
             child: Text(
               "로그인",
@@ -82,48 +90,43 @@ class _LoginScreenBody extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                    child: TextField(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  child: TextInputWidget(
+                      prefixIcon: Icon(Icons.phone),
+                      hintText: '전화번호를 입력해주세요.',
+                      isObscure: false,
+                      type: TextInputType.number,
+                      ref: ref,
+                      autofillHints: [AutofillHints.telephoneNumber],
                       controller: _idController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: '전화번호',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: BorderSide(
-                            color: Color(0xFF77AAD8),
-                            width: 3.0,
-                          ),
-                        ),
-                        labelStyle: TextStyle(
-                          fontFamily: 'Dovemayo_gothic',
-                          fontSize: 20,
-                          color: Color(0xFFD9D9D9),
-                        ),
-                      ),
-                    ),
-                    width: MediaQuery.of(context).size.width * 0.9),
-                SizedBox(height: 20),
+                      minLength: 11,
+                      maxLength: 11,
+
+                      focusNode: phoneNumberFocusNode, // Passing FocusNode
+                    )),
                 Container(
-                    child: TextField(
-                      controller: _pwController,
-                      decoration: InputDecoration(
-                        labelText: '비밀번호',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: BorderSide(
-                            color: Color(0xFF77AAD8),
-                            width: 3.0,
-                          ),
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    child: TextInputWidget(
+                        hintText: '비밀번호를 입력해주세요.',
+                        isObscure: isObscure,
+                        type: TextInputType.text,
+                        ref: ref,
+                        controller: _pwController,
+                        // autofillHints: [AutofillHints.password],
+                        prefixIcon: Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            ref.read(isObscureProvider.notifier).state =
+                                !ref.watch(isObscureProvider.notifier).state;
+                          },
+                          icon: Icon((isObscure == false)
+                              ? (Icons.visibility)
+                              : (Icons.visibility_off)),
                         ),
-                        labelStyle: TextStyle(
-                          fontFamily: 'Dovemayo_gothic',
-                          fontSize: 20,
-                          color: Color(0xFFD9D9D9),
-                        ),
-                      ),
-                    ),
-                    width: MediaQuery.of(context).size.width * 0.9),
-                SizedBox(height: 20),
+                        minLength: 4,
+                        focusNode: passwordFocusNode, // Passing FocusNode
+                      )),
+                SizedBox(height: 35),
                 ElevatedButton(
                   onPressed: () => loginProcess(ref),
                   style: ElevatedButton.styleFrom(
@@ -134,7 +137,7 @@ class _LoginScreenBody extends ConsumerWidget {
                     minimumSize:
                         Size(MediaQuery.of(context).size.width * 0.9, 60),
                   ),
-                  child: Text(
+                  child: const Text(
                     "로그인",
                     style: TextStyle(
                       fontFamily: 'Dovemayo_gothic',
@@ -160,38 +163,4 @@ class _LoginScreenBody extends ConsumerWidget {
       ),
     );
   }
-
-
 }
-
-// class _LoadingScreen extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Login Screen'),
-//       ),
-//       body: Center(
-//         child: CircularProgressIndicator(),
-//       ),
-//     );
-//   }
-// }
-
-// class _ErrorScreen extends StatelessWidget {
-//   final dynamic error;
-
-//   _ErrorScreen(this.error);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Login Screen'),
-//       ),
-//       body: Center(
-//         child: Text('Error: $error'),
-//       ),
-//     );
-//   }
-// }
