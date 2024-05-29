@@ -64,7 +64,7 @@ class MenuListWidget extends ConsumerWidget {
                     IconButton(
                       icon: Icon(Icons.edit_note, color: Color(0xFF72AAD8)),
                       onPressed: () {
-                        showEditCategoryModal(
+                        showEditCategoryDialog(
                             ref,
                             key,
                             storeData.menuCategories[key],

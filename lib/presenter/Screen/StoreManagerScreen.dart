@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/Model/StoreDataModel.dart';
 import 'package:orre_manager/presenter/Screen/StartScreen.dart';
 import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/AddCategoryPopup.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/AddMenuPopup.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/MenuList.dart';
+import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/AddCategoryPopup.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/StoreBasicInfoWidget.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
@@ -164,7 +164,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
             right: 10.0,
             child: FloatingActionButton(
               onPressed: () {
-                showAddCategoryModal(ref, null, null, currentStoreData!.menuCategories, []);
+                showAddCategoryDialog(ref, null, null, currentStoreData!.menuCategories, []);
               },
               backgroundColor: Color(0xFFE6F4FE),
               foregroundColor: Color(0xFF72AAD8),

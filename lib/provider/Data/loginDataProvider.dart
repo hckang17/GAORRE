@@ -39,13 +39,9 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
 
   void logout() async {
     print('로그아웃 요청 [loginProvider]');
-    HiveService.clearAllData().then(
-      (value) => {
-        if(value) {
-          state = null
-        }
-      }
-    );
+    HiveService.deleteData('phoneNumber');
+    HiveService.deleteData('password');
+    state = null;
   }
 
   Future<bool> loadLoginData() async {

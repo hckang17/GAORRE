@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
+import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
 import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart';
 import 'package:orre_manager/provider/Network/stompClientStateNotifier.dart';
 import 'package:orre_manager/provider/errorStateNotifier.dart';
@@ -14,6 +15,11 @@ final firstBootState = StateProvider<bool>((ref) => false);
 final container = ProviderContainer();
 
 Future<int> reboot(WidgetRef ref) async {
+  if(ref.read(firstBootState)){
+    print('최초 실행때는 Reboot을 실행하지 않습니다. [reboot]');
+    return -1;
+    // 아무것도 검사하지 않고 -1를 반환합니다. 최초실행입니다.
+  }
   try{
     var stompCompleter = Completer<void>();
     var networkCompleter = Completer<void>();
@@ -65,25 +71,6 @@ Future<int> reboot(WidgetRef ref) async {
         networkCompleter.completeError('Network connection timeout');
       }
     });
-
-    // final networkStatusSubscription = networkStatus.listen((isConnected) {
-    //   if (isConnected) {
-    //     ref.read(networkStateNotifierProvider.notifier).state = true;
-    //     isNetworkConnected = true;
-    //     if (!networkCompleter.isCompleted) {
-    //       networkCompleter.complete();
-    //     }
-    //   } else {
-    //     ref.read(networkStateNotifierProvider.notifier).state = false;
-    //     // networkCompleter.completeError('네트워크 연결 없음');
-    //   }
-    // });
-    
-    // 10초 후에 타임아웃 처리
-    // final networkTimeout = Future.delayed(const Duration(seconds: 10), () {
-    //   ref.watch(networkStateProvider);
-    //   ref.read(networkStateNotifierProvider.notifier).state = false;
-    // });
 
 
     // 네트워크 확인이 끝날때까지 대기
@@ -168,6 +155,8 @@ Future<int> reboot(WidgetRef ref) async {
         return 0; // 최초 화면으로
       }else{
         requestStoreInfoCompleter.complete();
+        // 마지막으로 웨이팅 마감 시간 정보를 로딩합니다......
+        
       }
     }
     await requestStoreInfoCompleter.future;
@@ -175,6 +164,8 @@ Future<int> reboot(WidgetRef ref) async {
       print("에러 발생 : $e [RebootService]");
       return 4; // 원인미상 에러 발생 시 4 반환
   }
+  print('마지막으로 각 웨이팅별 입장마감시간 정보를 가져옵니다... [Reboot]');
+  ref.read(waitingProvider.notifier).reloadEntryTime();
   return 1;   // 아무 문제없음! MainScreen으로~
 }
 
@@ -274,6 +265,10 @@ Future<int> firstBoot(WidgetRef ref) async {
     bool retrieveStoreDataResult = await ref.read(storeDataProvider.notifier).requestStoreData(
       ref.read(loginProvider.notifier).getLoginData()!.storeCode
     );
+
+    // 웨이팅 마감 시간 정보를 로딩합니다......
+    ref.read(waitingProvider.notifier).reloadEntryTime();
+
     if(!retrieveStoreDataResult){
       requestStoreInfoCompleter.completeError('가게정보 수신 실패');
       return 0; // 최초 화면으로
@@ -288,5 +283,7 @@ Future<int> firstBoot(WidgetRef ref) async {
       return 4; // 에러 발생 시 4 반환
   }
 
+  // print('마지막으로 기존 웨이팅 데이터의 입장마감시간 정보를 가져옵니다... [FirstBoot]');
+  // ref.read(firstBootState.notifier).state = true;
   return 1;   // 아무 문제없음! MainScreen으로~
 }

@@ -109,9 +109,11 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObse
 
     int rebootState = await reboot(ref);
     Navigator.pop(context);  // 로딩 스크린 제거
-
-    if (rebootState != 1) {
-      Navigator.of(context).push(
+    if(rebootState == -1){
+      print('아무것도 하지 않습니다 [_executeReboot]');
+      return;
+    }else if (rebootState != 1) {
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(
         builder: (BuildContext context) =>
           nextScreen[rebootState]
@@ -233,8 +235,6 @@ class StoreDataCheckWidget extends ConsumerWidget {
   }
 }
 
-/// 여기서 부터는 정민호 코드임... 참고하자
-
 Future<void> initializeFirebaseMessaging() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -274,7 +274,7 @@ Future<void> initializeFirebaseMessaging() async {
     AndroidNotification? android = message.notification?.android;
 
     print('메세지 수신... [initializeFirebaseMessaging]');
-    
+
     if (notification != null && android != null) {
       notifications.show(
         notification.hashCode,

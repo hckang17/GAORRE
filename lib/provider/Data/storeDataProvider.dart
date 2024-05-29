@@ -10,6 +10,7 @@ import 'package:orre_manager/Model/RestaurantTableModel.dart';
 import 'package:orre_manager/Model/StoreDataModel.dart';
 import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
+import 'package:orre_manager/services/HIVE_service.dart';
 import 'package:orre_manager/services/HTTP_service.dart';
 import 'package:http/http.dart' as http;
 // ignore: depend_on_referenced_packages
@@ -332,6 +333,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
           // 폐점성공
           print('영업종료처리 성공 [storeDataProvider - closeStore]');
           await showAlertDialog(ref.context, "영업종료", "성공", null);
+          await HiveService.clearAllData();
           return true;
         }else{
           print('영업종료처리 실패 [storeDataProvider - closeStore]');
