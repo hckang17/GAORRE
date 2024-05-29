@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-// import 'package:orre_manager/Coding_references/login.dart';
 import 'package:orre_manager/services/HIVE_service.dart';
 import 'package:orre_manager/services/HTTP_service.dart';
 import '../../Model/LoginDataModel.dart';
@@ -39,13 +39,9 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
 
   void logout() async {
     print('로그아웃 요청 [loginProvider]');
-    HiveService.clearAllData().then(
-      (value) => {
-        if(value) {
-          state = null
-        }
-      }
-    );
+    HiveService.deleteData('phoneNumber');
+    HiveService.deleteData('password');
+    state = null;
   }
 
   Future<bool> loadLoginData() async {
@@ -99,15 +95,18 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
       print('아이디 혹은 비밀번호가 공백입니다. 자동로그인을 실패했습니다. 로그인 화면으로 이동합니다. [loginProvider]');
       return false;
     }
+    String? token = await FirebaseMessaging.instance.getToken();
+    print("FCMtoken : ${token ?? 'token NULL!'} [loginProvider - requestLoginData]");
     try {
       final jsonBody = json.encode({
         "adminPhoneNumber": adminPhoneNumber,
         "adminPassword": password,
+        "adminFcmToken": token,
       });
       final response = await HttpsService.postRequest('/StoreAdmin/login', jsonBody);
       if(response.statusCode == 200){
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
-        if(responseBody['status'] == "success"){
+        if(responseBody['status'] == "200"){
           print('로그인 성공 [loginProvider]');
           print(responseBody.toString());
             // 자동로그인을 위한 데이터 저장

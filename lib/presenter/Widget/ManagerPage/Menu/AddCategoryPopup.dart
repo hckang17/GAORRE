@@ -8,7 +8,7 @@ import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/widget/button/text_button_widget.dart';
 import 'package:orre_manager/widget/text/text_widget.dart';
 
-void showEditCategoryDialog(WidgetRef ref,
+void showAddCategoryDialog(WidgetRef ref,
     String? menuCategoryKey,
     String? menuCategoryValue,
     Map<String, String?> currentMenuCategory,
@@ -17,7 +17,7 @@ void showEditCategoryDialog(WidgetRef ref,
     context: ref.context,
     builder: (ref) {
       return Dialog(
-        child: EditCategoryForm(
+        child: AddCategoryForm(
           menuCategoryKey: menuCategoryKey,
           menuCategoryValue: menuCategoryValue,
           currentMenuCategory: currentMenuCategory,
@@ -28,13 +28,13 @@ void showEditCategoryDialog(WidgetRef ref,
   );
 }
 
-class EditCategoryForm extends ConsumerWidget {
+class AddCategoryForm extends ConsumerWidget {
   late String? menuCategoryKey;
   late String? menuCategoryValue;
   late Map<String, String?>? currentMenuCategory;
   late List<Menu>? menus;
 
-  EditCategoryForm({
+  AddCategoryForm({
     this.menuCategoryKey,
     this.menuCategoryValue,
     this.currentMenuCategory,
@@ -48,9 +48,9 @@ class EditCategoryForm extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextWidget('카테고리 수정'),
+          TextWidget('카테고리 추가'),
           SizedBox(height: 20),
-          EditCategoryFields(
+          AddCategoryFields(
             menuCategoryKey: menuCategoryKey,
             menuCategoryValue: menuCategoryValue,
             currentMenuCategory: currentMenuCategory,
@@ -62,13 +62,13 @@ class EditCategoryForm extends ConsumerWidget {
   }
 }
 
-class EditCategoryFields extends ConsumerStatefulWidget {
+class AddCategoryFields extends ConsumerStatefulWidget {
   late String? menuCategoryKey;
   late String? menuCategoryValue;
   late Map<String, String?>? currentMenuCategory;
   late List<Menu>? menus;
 
-  EditCategoryFields({
+  AddCategoryFields({
     this.menuCategoryKey,
     this.menuCategoryValue,
     this.currentMenuCategory,
@@ -76,16 +76,18 @@ class EditCategoryFields extends ConsumerStatefulWidget {
   });
   
   @override
-  _EditCategoryFieldsState createState() => _EditCategoryFieldsState();
+  _AddCategoryFieldsState createState() => _AddCategoryFieldsState();
 }
 
-class _EditCategoryFieldsState extends ConsumerState<EditCategoryFields> {
+class _AddCategoryFieldsState extends ConsumerState<AddCategoryFields> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late TextEditingController categoryController;
   late String? menuCategoryKey;
   late String? menuCategoryValue;
   late Map<String, String?>? currentMenuCategory;
-  late List<Menu>? menus;  
+  late List<Menu>? menus;
+
+  late String newMenuCategoryKey;  
 
   @override
   void initState() {
@@ -94,7 +96,7 @@ class _EditCategoryFieldsState extends ConsumerState<EditCategoryFields> {
     menuCategoryValue = widget.menuCategoryValue;
     currentMenuCategory = widget.currentMenuCategory;
     menus = widget.menus;
-    categoryController = TextEditingController(text: menuCategoryValue);
+    categoryController = TextEditingController();
   }
 
   @override
@@ -105,6 +107,15 @@ class _EditCategoryFieldsState extends ConsumerState<EditCategoryFields> {
 
   @override
   Widget build(BuildContext context) {
+    if (menuCategoryKey == null) {
+      for (var key in currentMenuCategory!.keys) {
+        if (currentMenuCategory![key] == null) {
+          newMenuCategoryKey = key;
+          break;
+        }
+      }
+    }
+
     return Form(
       key: _formKey,
       child: Column(
@@ -114,7 +125,7 @@ class _EditCategoryFieldsState extends ConsumerState<EditCategoryFields> {
             decoration: InputDecoration(
               labelText: '카테고리 명',
               border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.category),  // '전화기' 아이콘 추가
+              prefixIcon: Icon(Icons.category, color:Colors.blue),  // '전화기' 아이콘 추가
             ),
             keyboardType: TextInputType.text,
             inputFormatters: [FilteringTextInputFormatter.singleLineFormatter],  // 숫자만 입력 가능
@@ -132,45 +143,16 @@ class _EditCategoryFieldsState extends ConsumerState<EditCategoryFields> {
               TextButtonWidget(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    print('메뉴 카테고리: ${menuCategoryKey}, 카테고리명: ${categoryController.text}');
+                    print('메뉴 카테고리: $menuCategoryKey, 카테고리명: ${categoryController.text}');
                     // 등록 또는 수정 작업을 여기서 처리
-                    if (true == await ref.read(storeDataProvider.notifier).editCategory(
-                        context,
-                        ref.read(loginProvider.notifier).getLoginData(),
-                        menus,
-                        menuCategoryKey!,
-                        categoryController.text
-                      )) {
-                      Navigator.of(context).pop();
-                    } // 모달까지 닫아줌.
+                    bool result = await ref.read(storeDataProvider.notifier).editCategory(
+                      context, ref.read(loginProvider.notifier).getLoginData(), menus,
+                      menuCategoryKey ?? newMenuCategoryKey, categoryController.text
+                    );
+                    if(result) { Navigator.of(context).pop(); } // 모달까지 닫아줌.
                   }
                 },
-                text: '수정',
-              ),
-              TextButtonWidget(
-                onPressed: () async {
-                  print('카테고리 삭제: ${menuCategoryKey}');
-                  print(menus.toString());
-                  if (menus!.isNotEmpty) {
-                    await showAlertDialog(context, "카테고리 삭제", "카테고리의 모든 메뉴를 삭제한 후 다시 시도해 주세요", null);
-                    return;
-                  }
-
-                  if (false == await showConfirmDialog(context, "카테고리 삭제", "카테고리를 정말 삭제하시겠습니까?")) {
-                    return;
-                  }
-
-                  if (true == await ref.read(storeDataProvider.notifier).editCategory(
-                      context,
-                      ref.read(loginProvider.notifier).getLoginData(),
-                      menus,
-                      menuCategoryKey!,
-                      null
-                    )) {
-                    Navigator.of(context).pop();
-                  }
-                },
-                text: '삭제',
+                text: '추가',
               ),
             ],
           )

@@ -1,24 +1,21 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/LoginDataModel.dart';
 import 'package:orre_manager/Model/MenuDataModel.dart';
-import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/AddMenuPopup.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/EditCategoryPopup.dart';
-import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/ModifyMenuPopup.dart';
 import 'package:orre_manager/widget/text/text_widget.dart';
 
 class MenuListWidget extends ConsumerWidget {
-  MenuListWidget();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storeData = ref.watch(storeDataProvider);
 
     if (storeData?.menuInfo == null || storeData?.menuCategories == null) {
-      return SliverFillRemaining(child: Center(child: Text("메뉴 정보를 불러올 수 없습니다.")));
+      return SliverFillRemaining(
+          child: Center(child: Text("메뉴 정보를 불러올 수 없습니다.")));
     }
 
     Map<String, List<Menu>> categorizedMenus = {};
@@ -44,36 +41,56 @@ class MenuListWidget extends ConsumerWidget {
             return SizedBox.shrink();
           }
 
-          return ExpansionTile(
-            initiallyExpanded: true,
-            title: Padding(
-              padding: EdgeInsets.only(left: 10),
-              child: Row(
-                children: [
-                  Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
-                  SizedBox(width: 5),
-                  TextWidget(
-                    storeData.menuCategories[key] ?? "카테고리 없음",
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 39, 194, 255),
-                  ),
-                  SizedBox(width: 5),
-                  Icon(Icons.auto_awesome, color: Color.fromARGB(255, 39, 194, 255)),
-                  Spacer(),
-                  IconButton(
-                    icon: Icon(Icons.edit_note),
-                    onPressed: () {
-                      showEditCategoryModal(ref, key, storeData.menuCategories[key], storeData.menuCategories, menus);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            children: menus.isNotEmpty ? menus.map((menu) => Card(
-              child: StoreMenuTileWidget(menu: menu) 
-            )).toList() : [ListTile(title: Text("이 카테고리에는 현재 메뉴가 없습니다. 필요시 추가해주세요!"))],
-          );
+          return Theme(
+              data:
+                  Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                initiallyExpanded: true,
+                iconColor: Color(0xFF72AAD8),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.auto_awesome, color: Color(0xFF72AAD8)),
+                    SizedBox(width: 5),
+                    TextWidget(
+                      storeData.menuCategories[key] ?? "카테고리 없음",
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF72AAD8),
+                    ),
+                    SizedBox(width: 5),
+                    Icon(Icons.auto_awesome, color: Color(0xFF72AAD8)),
+                    Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.edit_note, color: Color(0xFF72AAD8)),
+                      onPressed: () {
+                        showEditCategoryDialog(
+                            ref,
+                            key,
+                            storeData.menuCategories[key],
+                            storeData.menuCategories,
+                            menus);
+                      },
+                    ),
+                  ],
+                ),
+                children: menus.isNotEmpty
+                    ? menus
+                        .map((menu) => Card(
+                              elevation: 0, // 그림자 제거
+                              child: StoreMenuTileWidget(menu: menu),
+                            ))
+                        .toList()
+                    : [
+                        ListTile(
+                            title: TextWidget(
+                          "이 카테고리에는 현재 메뉴가 없습니다. 필요시 추가해주세요!",
+                          color: Color(0xFFDFDFDF),
+                          fontSize: 16,
+                          textAlign: TextAlign.start,
+                        ))
+                      ],
+              ));
         },
         childCount: storeData.menuCategories.length,
       ),
@@ -113,7 +130,7 @@ class StoreMenuTileWidget extends ConsumerWidget {
                         '${menu.menuInfo}',
                         textAlign: TextAlign.left,
                         fontSize: 18,
-                        color: Color.fromARGB(255, 117, 117, 117),
+                        color: Color(0xFF999999),
                         overflow: TextOverflow.ellipsis,
                       ),
                       TextWidget(
@@ -151,9 +168,12 @@ class StoreMenuTileWidget extends ConsumerWidget {
             },
           ),
         ),
-        Divider(
-          color: Colors.grey,
-          height: 1,
+        Padding(
+          padding: EdgeInsets.only(left: 10, right: 10),
+          child: Divider(
+            color: Color(0xFFDFDFDF),
+            thickness: 1,
+          ),
         ),
       ],
     );

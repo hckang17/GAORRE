@@ -153,7 +153,7 @@ String? errorTextWidget(
   }
   if (isPassword) {
     if (!RegExp(pattern).hasMatch(text)) {
-      return '영문, 숫자, 특수문자를 포함해주세요.';
+      return '비밀번호를 입력해주세요'; // 원래는 - 영문, 숫자, 특수문자를 포함해주세요.
     }
   }
   return null;
