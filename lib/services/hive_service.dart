@@ -37,6 +37,19 @@ class HiveService {
     }
   }
 
+  static Future<bool> saveTimeData(String key, String value) async {
+    var box = Hive.box(_boxName);
+    try {
+      String intString = value.toString();
+      await box.put(key, intString);
+      print('[하이브 데이터 저장]\nKey : $key, Value : $value');
+      return true;
+    } catch(error) {
+      print('[하이브 데이터 저장] 실패... 에러코드 : $error');
+      return false;
+    }
+  }
+
   static bool checkHive(){
     return Hive.isBoxOpen(_boxName);
   }
@@ -70,8 +83,11 @@ class HiveService {
 
   // 데이터 불러오기 (JSON 형식)
   static Future<String?> retrieveData(String key) async {
+    print('하이브 데이터 로드... [HiveService - retrieveData]');
+    print('\n\n로드할 데이터 키 : $key');
     var box = Hive.box(_boxName);
     var jsonString = box.get(key);
+    print('로그된 데이터 값 : $jsonString');
     if (jsonString != null) {
       // JSON 문자열을 객체로 변환하거나 그대로 반환할 수 있습니다.
       return jsonString;
@@ -83,11 +99,21 @@ class HiveService {
     var box = Hive.box(_boxName);
     try {
       await box.clear();  // 박스 내 모든 키-값 쌍 삭제
+      print('[하이브 데이터 클리어] 모든 항목 삭제 완료! - [HiveService - clearAllData]');
       return true;
     } catch (error) {
       print('[하이브 데이터 클리어] 클리어 실패... 에러코드 : $error');
       return false;
     }
+  }
+
+  static Future<void> deleteData(String key) async {
+    print('하이브 저장소 $key 항목 삭제 요청... [HiveService - deleteData]');
+    var box = Hive.box(_boxName);
+
+    // 특정 키에 대한 데이터 삭제
+    await box.delete(key);
+    print('$key 항목 삭제완료 [HiveService - deleteData]');
   }
 
   // Hive 종료
