@@ -40,7 +40,8 @@ class MainScreen extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
                 child: Row(
                   children: [
-                    Icon(FontAwesomeIcons.exclamationTriangle, color: Colors.white),
+                    Icon(FontAwesomeIcons.exclamationTriangle,
+                        color: Colors.white),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -64,7 +65,7 @@ class MainScreen extends ConsumerWidget {
               label: '가게 정보 수정',
             ),
           ],
-          selectedItemColor: Color.fromARGB(255, 33, 174, 255),
+          selectedItemColor: Color(0xFF72AAD8),
           unselectedItemColor: Color(0xFFDFDFDF),
           currentIndex: selectedIndex,
           onTap: (index) {

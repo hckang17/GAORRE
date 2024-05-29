@@ -12,6 +12,7 @@ import 'package:orre_manager/provider/Data/AddWaitingTimeProider.dart';
 import 'package:orre_manager/provider/Data/UserLogProvider.dart';
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
+import 'package:orre_manager/services/HIVE_service.dart';
 import '../../Model/LoginDataModel.dart';
 import '../../Model/WaitingDataModel.dart';
 import '../../provider/Data/waitingDataProvider.dart';
@@ -21,32 +22,24 @@ class WaitingScreenWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final stompClientAsyncValue = ref.watch(stompClientProvider);
-
-    // return stompClientAsyncValue.when(
-    //   data: (stompClient) => StoreScreenBody(loginData: loginResponse),
-    //   loading: () => _LoadingScreen(),
-    //   error: (error, stackTrace) => _ErrorScreen(error),
-    // );
-    return StoreScreenBody();
+    return WaitingScreenBody();
   }
 }
 
-class StoreScreenBody extends ConsumerStatefulWidget {
-  StoreScreenBody();
+class WaitingScreenBody extends ConsumerStatefulWidget {
+  WaitingScreenBody();
 
   @override
-  StoreScreenBodyState createState() => StoreScreenBodyState();
+  WaitingScreenBodyState createState() => WaitingScreenBodyState();
 }
 
-class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
+class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
   late int storeCode;
   late LoginData? loginData;
   late int waitingAvailableState;
   WaitingData? currentWaitingData;
   bool isSubscribed = false;
   late bool switchValue;
-  Timer? _timer;
 
   @override
   void initState() {
@@ -60,6 +53,8 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
         waitingNotifier.subscribeToWaitingData(storeCode);
         waitingNotifier.sendWaitingData(storeCode);
         isSubscribed = true;
+        // 마지막으로 기존에 있던 웨이팅 정보들 다시 읽어옴...
+        ref.read(waitingProvider.notifier).reloadEntryTime();
       }
     }
   }
@@ -317,7 +312,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                                       print('${team.waitingNumber}번 입장처리 요청 [waitinScreen]');
                                       bool confirmation = await showConfirmDialog(
                                         ref.context,
-                                        "대기 고객 삭제",
+                                        "고객 입장처리",
                                         "${team.waitingNumber}번 고객님을 입장처리 하시겠습니까?"
                                       );
                                       if(confirmation){
@@ -331,7 +326,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
                                 else
                                   SizedBox(width: 48),
                                 CallIconButton(
-                                  waitingNumber: team.waitingNumber,
+                                  waitingTeam: team,
                                   storeCode: storeCode,
                                   minutesToAdd: ref.read(minutesToAddProvider.notifier).getState(),
                                   ref: ref, phoneNumber: team.phoneNumber,
@@ -355,34 +350,7 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
             ),
 
 
-            ///
-            /// 이 아래에 원래 메뉴버튼을 두려고 했으나...
-            
-            // Row(
-            //   mainAxisAlignment:
-            //       MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
-            //   children: [
-            //     // ElevatedButton(
-            //     //   onPressed: () {
-            //     //     ref.read(waitingProvider.notifier).requestUserCall(
-            //     //         context,
-            //     //         currentWaitingData!.teamInfoList[0].phoneNumber,
-            //     //         currentWaitingData!.teamInfoList[0].waitingNumber,
-            //     //         storeCode,
-            //     //         minutesToAdd);
-            //     //   },
-            //     //   child: Text('손님 호출하기'),
-            //     // ),
-            //     // ElevatedButton(
-            //     //   onPressed: () {
-            //     //     Navigator.of(context).push(MaterialPageRoute(
-            //     //         builder: (BuildContext context) =>
-            //     //             TableManagementScreen()));
-            //     //   },
-            //     //   child: Text('좌석페이지'),
-            //     // ),
-            //   ],
-            // ),
+
           ],
         ),
       ),
@@ -394,14 +362,6 @@ class StoreScreenBodyState extends ConsumerState<StoreScreenBody> {
         child: Icon(Icons.assignment), // 로그 확인 아이콘
       ),
     );
-
-    // return Scaffold(
-    //   appBar: AppBar(title: Text('Store Page')),
-    //   body: currentWaitingData == null
-    //       ? _LoadingScreen()
-    //       : buildWaitingScreen(),
-    //   floatingActionButton: buildAddingWaitingTeam(),
-    // );
   }
 }
   // 이 아래부터는... LECAGY가 될 확률 높음.. 아니면 다 분리해서 디자인 해야함.
@@ -602,4 +562,33 @@ class _LoadingScreen extends StatelessWidget {
 // //     );
 // //   }
 // // }
+
+            ///
+            /// 이 아래에 원래 메뉴버튼을 두려고 했으나...
+            
+            // Row(
+            //   mainAxisAlignment:
+            //       MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
+            //   children: [
+            //     // ElevatedButton(
+            //     //   onPressed: () {
+            //     //     ref.read(waitingProvider.notifier).requestUserCall(
+            //     //         context,
+            //     //         currentWaitingData!.teamInfoList[0].phoneNumber,
+            //     //         currentWaitingData!.teamInfoList[0].waitingNumber,
+            //     //         storeCode,
+            //     //         minutesToAdd);
+            //     //   },
+            //     //   child: Text('손님 호출하기'),
+            //     // ),
+            //     // ElevatedButton(
+            //     //   onPressed: () {
+            //     //     Navigator.of(context).push(MaterialPageRoute(
+            //     //         builder: (BuildContext context) =>
+            //     //             TableManagementScreen()));
+            //     //   },
+            //     //   child: Text('좌석페이지'),
+            //     // ),
+            //   ],
+            // ),
 
