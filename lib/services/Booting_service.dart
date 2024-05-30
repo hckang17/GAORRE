@@ -12,7 +12,8 @@ import 'package:orre_manager/services/HIVE_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 final firstBootState = StateProvider<bool>((ref) => false);
-final container = ProviderContainer();
+final container = ProviderContainer();  // 로딩창...때문에...
+final isNowRebootState = StateProvider<bool>((ref) => false);
 
 Future<int> reboot(WidgetRef ref) async {
   if(ref.read(firstBootState)){
@@ -21,6 +22,7 @@ Future<int> reboot(WidgetRef ref) async {
     // 아무것도 검사하지 않고 -1를 반환합니다. 최초실행입니다.
   }
   try{
+    ref.read(isNowRebootState.notifier).state = true;
     var stompCompleter = Completer<void>();
     var networkCompleter = Completer<void>();
     var requestLoginData = Completer<void>();
@@ -163,10 +165,15 @@ Future<int> reboot(WidgetRef ref) async {
   } catch (e) {
       print("에러 발생 : $e [RebootService]");
       return 4; // 원인미상 에러 발생 시 4 반환
+  } finally {
+    print('마지막으로 각 웨이팅별 입장마감시간 정보를 가져옵니다... [Reboot]');
+    ref.read(waitingProvider.notifier).reloadEntryTime();
+    ref.read(isNowRebootState.notifier).state = false;
+    return 1;   // 아무 문제없음! MainScreen으로~
   }
-  print('마지막으로 각 웨이팅별 입장마감시간 정보를 가져옵니다... [Reboot]');
-  ref.read(waitingProvider.notifier).reloadEntryTime();
-  return 1;   // 아무 문제없음! MainScreen으로~
+  // print('마지막으로 각 웨이팅별 입장마감시간 정보를 가져옵니다... [Reboot]');
+  // ref.read(waitingProvider.notifier).reloadEntryTime();
+  // return 1;   // 아무 문제없음! MainScreen으로~
 }
 
 Future<int> firstBoot(WidgetRef ref) async {

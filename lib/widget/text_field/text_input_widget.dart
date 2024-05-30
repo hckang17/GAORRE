@@ -21,6 +21,7 @@ class TextInputWidget extends ConsumerWidget {
   final int minLength;
   final int? maxLength;
   final bool isRequired;
+  final bool autoFocus;
 
   TextInputWidget({
     required this.hintText,
@@ -39,6 +40,7 @@ class TextInputWidget extends ConsumerWidget {
     this.minLength = 0,
     this.maxLength,
     this.isRequired = false,
+    this.autoFocus = false,
   });
 
   @override
@@ -74,7 +76,7 @@ class TextInputWidget extends ConsumerWidget {
                     (autofillHints?.contains(AutofillHints.password) == true)),
             controller: controller, // TextField에 TextEditingController를 연결
             autofillHints: autofillHints,
-            autofocus: true,
+            autofocus: autoFocus,
             focusNode: focusNode,
             keyboardType: type,
             obscureText: isObscure,

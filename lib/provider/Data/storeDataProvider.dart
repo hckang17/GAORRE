@@ -329,7 +329,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
       final response = await HttpsService.postRequest('/StoreAdmin/closing', jsonBody);
       if(response.statusCode == 200){
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
-        if(responseBody['status'] == "200"){
+        if(responseBody['status'] == "200" || responseBody['status'] == "6402"){
           // 폐점성공
           print('영업종료처리 성공 [storeDataProvider - closeStore]');
           await showAlertDialog(ref.context, "영업종료", "성공", null);

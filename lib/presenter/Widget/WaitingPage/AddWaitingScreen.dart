@@ -140,14 +140,13 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () async {_submitForm();},
+                    onPressed: () async { _submitForm(); },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF72AAD8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      minimumSize:
-                          Size(MediaQuery.of(context).size.width * 0.7, 60),
+                      minimumSize: Size(MediaQuery.of(context).size.width * 0.7, 60),
                     ),
                     child: Text(
                       "수동 웨이팅 추가",
@@ -155,6 +154,25 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
                         fontFamily: 'Dovemayo_gothic',
                         fontSize: 24,
                         color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      minimumSize: Size(MediaQuery.of(context).size.width * 0.7, 60),
+                    ),
+                    child: Text(
+                      "닫기",
+                      style: TextStyle(
+                        fontFamily: 'Dovemayo_gothic',
+                        fontSize: 24,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -167,4 +185,5 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
       ),
     );
   }
+
 }

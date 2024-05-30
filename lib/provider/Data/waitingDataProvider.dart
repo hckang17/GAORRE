@@ -162,6 +162,8 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
 
   void reloadEntryTime() async {
     WaitingData? currentWaitingData = getWaitingData();
+    LoginData? loginData = ref.read(loginProvider.notifier).getLoginData();
+    int storeCode = loginData != null ? loginData.storeCode : -1;
     print('entryTime을 다시 가져옵니다. [waitingProvider - reloadEntryTime]');
     if(currentWaitingData == null) {
       print('\n\n현재 웨이팅 정보가 검색되지 않습니다. [waitingProvider - reloadEntryTime]');
@@ -169,7 +171,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       reloadEntryTime();
     }else{
       for(var team in currentWaitingData!.teamInfoList){
-        String? entryTime = await HiveService.retrieveData(team.waitingNumber.toString());
+        String? entryTime = await HiveService.retrieveData('${storeCode}_${team.waitingNumber.toString()}');
         if(entryTime != null){
           print('대기번호 ${team.waitingNumber}의 입장마감시간이 감지되었습니다.');
           team.entryTime = DateTime.parse(entryTime);
@@ -207,7 +209,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
           updateState(currentState);
           await showAlertDialog(ref.context, '$waitingNumber번 고객 호출', '입장 마감 시간 : $formattedTime', null);
           // 차후 활용을 위해 formattedTime을 저장해 둠. 차후, 노쇼처리 하게 되면 지울거임.
-          await HiveService.saveTimeData(waitingNumber.toString(), callGuestResponse.entryTime);
+          await HiveService.saveTimeData('${storeCode}_${waitingNumber}', callGuestResponse.entryTime);
           String SMScontent = SMScontentString(waitingNumber, storeName, extractEntryTimeInMinutes(callGuestResponse.entryTime));
           print(SMScontent);
           bool result = await SendSMSService.requestSendSMS(ref.context ,phoneNumber, "[웨이팅 호출]", SMScontent);
@@ -242,7 +244,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         if (responseBody['success'] == true) {
-          await HiveService.deleteData(noShowWaitingNumber.toString());
+          await HiveService.deleteData('${storeCode}_${noShowWaitingNumber.toString()}');
           print('성공적으로 $noShowWaitingNumber번 손님을 웨이팅취소했습니다.');
           await showAlertDialog(context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 완료', null);
           print('...웨이팅 리스트 정보를 새로 요청합니다.');
@@ -359,7 +361,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         if (responseBody['status'] == "200") {
-          await HiveService.deleteData(waitingNumber.toString());
+          await HiveService.deleteData('${loginData.storeCode}_${waitingNumber.toString()}');
           print('성공적으로 $waitingNumber번 손님을 입장시켰습니다.. [waitingProvider - confirmEnterance]');
           await showAlertDialog(context, '입장 확인', '$waitingNumber번 손님 입장처리 완료', null);
           print('...웨이팅 리스트 정보를 새로 요청합니다. [waitingProvider - confirmEnterance]');

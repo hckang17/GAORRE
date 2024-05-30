@@ -65,6 +65,7 @@ dependencies:
   flutter_local_notifications: ^17.1.2
   firebase_analytics: ^10.10.6
   firebase_core: ^2.31.1
+  restart_app: ^1.2.1
 
 flutter_icons:
   android: true
