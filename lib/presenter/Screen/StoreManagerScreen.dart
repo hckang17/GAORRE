@@ -11,6 +11,7 @@ import 'package:orre_manager/presenter/Widget/ManagerPage/StoreBasicInfoWidget.d
 import 'package:orre_manager/provider/Data/loginDataProvider.dart';
 import 'package:orre_manager/provider/Data/storeDataProvider.dart';
 import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:restart_app/restart_app.dart';
 import '../../Model/LoginDataModel.dart';
 
 class ManagementScreenWidget extends ConsumerWidget {
@@ -72,19 +73,23 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                   IconButton(
                     icon: Icon(Icons.event_busy, color: Colors.white),
                     onPressed: () async {
-                      if (true ==
-                          await showConfirmDialogWithConfirmText(
-                              context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")) {
-                        if (true ==
-                            await ref
-                                .read(storeDataProvider.notifier)
-                                .requestCloseStore(ref)) {
-                          showAlertDialog(context, "영업 종료",
-                              "성공적으로 영업종료를 처리 완료하였습니다.", null);
+                      if (true == await showConfirmDialogWithConfirmText(
+                        context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")
+                      ) {
+                        if (true == await ref.read(storeDataProvider.notifier).requestCloseStore(ref)) {
+                          // 여기에 이제.. 웨이팅 가능여부가 0 ( POSSIBLE ) 이라면 1 로 변경요청도 보내야함.
+                          if(ref.read(storeDataProvider.notifier).getWaitingAvailable() == 0){
+                            print('현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
+                            await ref.read(storeDataProvider.notifier).changeAvailableStatus(
+                              loginData ?? ref.read(loginProvider.notifier).getLoginData()!
+                            );
+                          }
+                          showAlertDialog(context, "영업 종료", "성공적으로 영업종료를 처리 완료하였습니다.", null);
                         } else {
-                          showAlertDialog(
-                              context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
+                          showAlertDialog(context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
                         }
+                      }else{
+                        showAlertDialog(context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
                       }
                     },
                   ),
@@ -94,15 +99,16 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                     onPressed: () async {
                       // 로그아웃 기능 사용.
                       if (await showConfirmDialog(
-                          context, "로그아웃", "정말 로그아웃 하시겠습니까?")) {
+                          context, "로그아웃", "정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
                         ref.read(loginProvider.notifier).logout();
                         // 모든 subscribe와 websocket을 해제하는게 맞겠지?
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => StartScreen()),
-                          (_) => false, // 조건이 항상 거짓이므로 모든 이전 화면을 제거
-                        );
+                        Restart.restartApp();
+                        // Navigator.pushAndRemoveUntil(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //       builder: (context) => StartScreen()),
+                        //   (_) => false, // 조건이 항상 거짓이므로 모든 이전 화면을 제거
+                        // );
                       } else {
                         return;
                       }

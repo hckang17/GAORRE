@@ -46,6 +46,7 @@ void main() async  {
 }
 
 final initStateProvider = StateProvider<int>((ref) => 3);
+final lastLifeCycleState = StateProvider<AppLifecycleState>((ref) => AppLifecycleState.inactive);
 
 class GAORRE_APP extends ConsumerStatefulWidget {
   @override
@@ -80,30 +81,44 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObse
     switch (state) {
       case AppLifecycleState.inactive:
         // 앱이 비활성 상태일 때 실행할 코드
-        print('앱이 비활성화 상태입니다... [main.dart]');
+        print('앱이 inactive 상태입니다... [main.dart]');
+        ref.read(lastLifeCycleState.notifier).state = AppLifecycleState.inactive;
         break;
       case AppLifecycleState.paused:
         // 앱이 일시 정지 상태일 때 실행할 코드
-        print('앱이 일시정지 상태입니다... [main.dart]');
+        print('앱이 paused 상태입니다... [main.dart]');
+        ref.read(lastLifeCycleState.notifier).state = AppLifecycleState.paused;
         break;
       case AppLifecycleState.resumed:
         // 앱이 활성 상태로 돌아왔을 때 실행할 코드
-        print('앱이 활성화 상태입니다... [main.dart]');
-        _executeReboot(ref);
+        print('앱이 resumed 상태입니다... [main.dart]');
+        if(ref.read(lastLifeCycleState) == AppLifecycleState.paused || ref.read(lastLifeCycleState) == AppLifecycleState.hidden){
+          ref.read(lastLifeCycleState.notifier).state = AppLifecycleState.resumed;
+        }else{
+          ref.read(lastLifeCycleState.notifier).state = AppLifecycleState.resumed;
+          _executeReboot(ref);
+        }
         break;
       case AppLifecycleState.detached:
         // 앱이 종료 상태일 때 실행할 코드
-        print('앱이 종료된 상태입니다... [main.dart]');
+        print('앱이 detached 상태입니다... [main.dart]');
+        ref.read(lastLifeCycleState.notifier).state = AppLifecycleState.detached;
         break;
       case AppLifecycleState.hidden:
         // TODO: Handle this case.
-        print('앱이 숨겨진 상태입니다... [main.dart]');
+        print('앱이 hidden 상태입니다... [main.dart]');
+        ref.read(lastLifeCycleState.notifier).state = AppLifecycleState.hidden;
     }
   }
 
 
   void _executeReboot(WidgetRef ref) async {
     print("백그라운드 -> 포그라운드 돌아옴.... [main.dart - executeReboot]");
+    
+    if(ref.read(isNowRebootState) == true){
+      print('이미 Reboot이 실행중입니다... [executeReboot]');
+      return;
+    }
     // 반투명 로딩 스크린 표시
     showLoadingDialog(context);
 

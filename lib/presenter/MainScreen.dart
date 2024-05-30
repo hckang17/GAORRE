@@ -10,6 +10,7 @@ final selectedIndexProvider = StateProvider<int>((ref) {
   return 0; // 기본적으로 '웨이팅 목록 화면'을 선택 상태로 시작합니다.
 });
 
+
 class MainScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
