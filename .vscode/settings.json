@@ -1,5 +1,5 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "interactive",
-    "cmake.sourceDirectory": "C:/ORRE/orre_manager/linux"
+    "cmake.sourceDirectory": "C:/ORRE/gaorre/linux"
 }

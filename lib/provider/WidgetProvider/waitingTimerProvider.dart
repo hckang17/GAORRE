@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
+import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 
 class TimerWidget extends ConsumerStatefulWidget {
   final int minutesToAdd;
@@ -23,8 +23,16 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
   @override
   void initState() {
     super.initState();
-    var index = ref.read(waitingProvider.notifier).getWaitingData()!.teamInfoList.indexWhere((team) => team.waitingNumber == widget.waitingNumber);
-    final entryTime = ref.read(waitingProvider.notifier).getWaitingData()!.teamInfoList[index].entryTime!;
+    var index = ref
+        .read(waitingProvider.notifier)
+        .getWaitingData()!
+        .teamInfoList
+        .indexWhere((team) => team.waitingNumber == widget.waitingNumber);
+    final entryTime = ref
+        .read(waitingProvider.notifier)
+        .getWaitingData()!
+        .teamInfoList[index]
+        .entryTime!;
     _remainingTime = entryTime.difference(DateTime.now());
     _timerText = formatTime(_remainingTime);
     _imagePath = 'assets/image/timer_images/timer1.png';

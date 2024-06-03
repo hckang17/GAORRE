@@ -1,7 +1,5 @@
-
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/services/HIVE_service.dart';
+import 'package:gaorre/services/HIVE_service.dart';
 import 'dart:async';
 
 final minutesToAddProvider =
@@ -31,7 +29,7 @@ class minutesToAddNotifier extends StateNotifier<int> {
     return state;
   }
 
-  void updateState(newState){
+  void updateState(newState) {
     state = newState;
     saveData();
   }
@@ -45,5 +43,4 @@ class minutesToAddNotifier extends StateNotifier<int> {
       print('에러 : $error [minutesToAddProvider]');
     }
   }
-
 }
