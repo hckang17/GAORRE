@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/LoginDataModel.dart';
-import 'package:orre_manager/Model/WaitingLogDataModel.dart';
-import 'package:orre_manager/services/HTTP_service.dart';
+import 'package:gaorre/Model/LoginDataModel.dart';
+import 'package:gaorre/Model/WaitingLogDataModel.dart';
+import 'package:gaorre/services/HTTP_service.dart';
 
 final userLogProvider =
     StateNotifierProvider<UserLogDataListNotifier, UserLogDataList?>((ref) {
@@ -14,12 +14,12 @@ final userLogProvider =
 class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
   UserLogDataListNotifier() : super(null);
 
-  void updateState(newState){
+  void updateState(newState) {
     print('유저로그 상태 업데이트. [userLogProvider - retrieveUserLogData]');
     state = newState;
   }
 
-  void resetState(newState){
+  void resetState(newState) {
     print('유저로그 상태 초기화 요청... [userLogProvider - retrieveUserLogData]');
     state = null;
   }
@@ -27,22 +27,24 @@ class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
   Future<void> retrieveUserLogData(LoginData loginData) async {
     print('유저 로그 데이터 신청... [userLogProvider - retrieveUserLogData]');
     final jsonBody = json.encode({
-      "storeCode" : loginData.storeCode,
-      "jwtAdmin" : loginData.loginToken,
+      "storeCode": loginData.storeCode,
+      "jwtAdmin": loginData.loginToken,
     });
-    try{
-      final response = await HttpsService.postRequest('/StoreAdmin/log', jsonBody);
-      if(response.statusCode == 200){
+    try {
+      final response =
+          await HttpsService.postRequest('/StoreAdmin/log', jsonBody);
+      if (response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
-        if(responseBody['status'] == "200"){
+        if (responseBody['status'] == "200") {
           // 정상 수신 완료;
-          UserLogDataList retrievedData = UserLogDataList.fromJson(responseBody);
+          UserLogDataList retrievedData =
+              UserLogDataList.fromJson(responseBody);
           updateState(retrievedData);
         }
-      }else{
+      } else {
         throw "HTTP STATUSCODE 오류 : ${response.statusCode}";
       }
-    }catch(error){
+    } catch (error) {
       print('HTTP 에러 발생 : $error [userLogProvider - retrieveUsertLogData]');
     }
   }
@@ -50,5 +52,4 @@ class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
   UserLogDataList? getState() {
     return state;
   }
-
 }

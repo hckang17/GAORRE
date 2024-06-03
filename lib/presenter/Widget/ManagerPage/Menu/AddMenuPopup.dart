@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:orre_manager/Model/LoginDataModel.dart';
-import 'package:orre_manager/Model/MenuDataModel.dart';
-import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/provider/Data/imageDataProvider.dart';
-import 'package:orre_manager/provider/Data/storeDataProvider.dart';
-import 'package:orre_manager/widget/button/big_button_widget.dart';
-import 'package:orre_manager/widget/button/small_button_widget.dart';
-import 'package:orre_manager/widget/button/text_button_widget.dart';
+import 'package:gaorre/Model/LoginDataModel.dart';
+import 'package:gaorre/Model/MenuDataModel.dart';
+import 'package:gaorre/provider/Data/loginDataProvider.dart';
+import 'package:gaorre/provider/Data/imageDataProvider.dart';
+import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/widget/button/big_button_widget.dart';
+import 'package:gaorre/widget/button/small_button_widget.dart';
+import 'package:gaorre/widget/button/text_button_widget.dart';
 
 void showAddMenuModal(BuildContext context,
     Map<String, dynamic>? currentMenuCategory, List<Menu>? currentMenuList) {

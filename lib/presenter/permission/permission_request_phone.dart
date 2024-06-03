@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/widget/button/small_button_widget.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:gaorre/widget/button/small_button_widget.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PermissionRequestPhoneScreen extends ConsumerStatefulWidget {

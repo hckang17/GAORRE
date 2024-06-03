@@ -1,16 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/StoreDataModel.dart';
-import 'package:orre_manager/presenter/Screen/StartScreen.dart';
-import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/AddMenuPopup.dart';
-import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/MenuList.dart';
-import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/AddCategoryPopup.dart';
-import 'package:orre_manager/presenter/Widget/ManagerPage/StoreBasicInfoWidget.dart';
-import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/provider/Data/storeDataProvider.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:gaorre/Model/StoreDataModel.dart';
+import 'package:gaorre/presenter/Screen/StartScreen.dart';
+import 'package:gaorre/presenter/Widget/AlertDialog.dart';
+import 'package:gaorre/presenter/Widget/ManagerPage/Menu/AddMenuPopup.dart';
+import 'package:gaorre/presenter/Widget/ManagerPage/Menu/MenuList.dart';
+import 'package:gaorre/presenter/Widget/ManagerPage/Menu/AddCategoryPopup.dart';
+import 'package:gaorre/presenter/Widget/ManagerPage/StoreBasicInfoWidget.dart';
+import 'package:gaorre/provider/Data/loginDataProvider.dart';
+import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:restart_app/restart_app.dart';
 import '../../Model/LoginDataModel.dart';
 
@@ -73,23 +73,36 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                   IconButton(
                     icon: Icon(Icons.event_busy, color: Colors.white),
                     onPressed: () async {
-                      if (true == await showConfirmDialogWithConfirmText(
-                        context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")
-                      ) {
-                        if (true == await ref.read(storeDataProvider.notifier).requestCloseStore(ref)) {
+                      if (true ==
+                          await showConfirmDialogWithConfirmText(
+                              context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")) {
+                        if (true ==
+                            await ref
+                                .read(storeDataProvider.notifier)
+                                .requestCloseStore(ref)) {
                           // 여기에 이제.. 웨이팅 가능여부가 0 ( POSSIBLE ) 이라면 1 로 변경요청도 보내야함.
-                          if(ref.read(storeDataProvider.notifier).getWaitingAvailable() == 0){
-                            print('현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
-                            await ref.read(storeDataProvider.notifier).changeAvailableStatus(
-                              loginData ?? ref.read(loginProvider.notifier).getLoginData()!
-                            );
+                          if (ref
+                                  .read(storeDataProvider.notifier)
+                                  .getWaitingAvailable() ==
+                              0) {
+                            print(
+                                '현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
+                            await ref
+                                .read(storeDataProvider.notifier)
+                                .changeAvailableStatus(loginData ??
+                                    ref
+                                        .read(loginProvider.notifier)
+                                        .getLoginData()!);
                           }
-                          showAlertDialog(context, "영업 종료", "성공적으로 영업종료를 처리 완료하였습니다.", null);
+                          showAlertDialog(context, "영업 종료",
+                              "성공적으로 영업종료를 처리 완료하였습니다.", null);
                         } else {
-                          showAlertDialog(context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
+                          showAlertDialog(
+                              context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
                         }
-                      }else{
-                        showAlertDialog(context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
+                      } else {
+                        showAlertDialog(
+                            context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
                       }
                     },
                   ),
@@ -98,8 +111,8 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                     icon: Icon(Icons.logout, color: Colors.white),
                     onPressed: () async {
                       // 로그아웃 기능 사용.
-                      if (await showConfirmDialog(
-                          context, "로그아웃", "정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
+                      if (await showConfirmDialog(context, "로그아웃",
+                          "정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
                         ref.read(loginProvider.notifier).logout();
                         // 모든 subscribe와 websocket을 해제하는게 맞겠지?
                         Restart.restartApp();
@@ -170,7 +183,8 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
             right: 10.0,
             child: FloatingActionButton(
               onPressed: () {
-                showAddCategoryDialog(ref, null, null, currentStoreData!.menuCategories, []);
+                showAddCategoryDialog(
+                    ref, null, null, currentStoreData!.menuCategories, []);
               },
               backgroundColor: Color(0xFFE6F4FE),
               foregroundColor: Color(0xFF72AAD8),
