@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/LoginDataModel.dart';
-import 'package:orre_manager/Model/RestaurantTableModel.dart';
-import 'package:orre_manager/provider/Data/tableDataProvider.dart';
+import 'package:gaorre/Model/LoginDataModel.dart';
+import 'package:gaorre/Model/RestaurantTableModel.dart';
+import 'package:gaorre/provider/Data/tableDataProvider.dart';
 
 class TableInfoWidget extends ConsumerStatefulWidget {
   final LoginData loginData;
@@ -31,7 +31,8 @@ class _TableInfoWidgetState extends ConsumerState<TableInfoWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('테이블 정보', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('테이블 정보',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             Text('테이블 번호: ${widget.table.tableNumber}'),
             Text('테이블 최대 착석 인원: ${widget.table.maxPersonPerTable}'),
@@ -39,7 +40,7 @@ class _TableInfoWidgetState extends ConsumerState<TableInfoWidget> {
             if (widget.table.guestInfo != null)
               Text('손님 정보(디버깅용): ${widget.table.guestInfo.toString()}'),
             SizedBox(height: 10),
-            if (widget.table.tableStatus == 0) 
+            if (widget.table.tableStatus == 0)
               TextField(
                 controller: _tempWaitingNumber,
                 keyboardType: TextInputType.number,
@@ -54,15 +55,22 @@ class _TableInfoWidgetState extends ConsumerState<TableInfoWidget> {
                 ElevatedButton(
                   onPressed: () {
                     if (widget.table.tableStatus == 0) {
-                      int waitingNumber = int.tryParse(_tempWaitingNumber.text) ?? 0;
+                      int waitingNumber =
+                          int.tryParse(_tempWaitingNumber.text) ?? 0;
                       ref.read(tableProvider.notifier).sendUnlockRequest(
-                          widget.loginData.storeCode, widget.table.tableNumber, waitingNumber, widget.loginData.loginToken!);
+                          widget.loginData.storeCode,
+                          widget.table.tableNumber,
+                          waitingNumber,
+                          widget.loginData.loginToken!);
                     } else {
                       ref.read(tableProvider.notifier).sendLockRequest(
-                          widget.loginData.storeCode, widget.table.tableNumber, widget.loginData.loginToken!);
+                          widget.loginData.storeCode,
+                          widget.table.tableNumber,
+                          widget.loginData.loginToken!);
                     }
                   },
-                  child: Text(widget.table.tableStatus == 0 ? '테이블 잠금 해제' : '테이블 잠금'),
+                  child: Text(
+                      widget.table.tableStatus == 0 ? '테이블 잠금 해제' : '테이블 잠금'),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),

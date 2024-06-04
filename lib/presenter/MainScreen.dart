@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/Screen/StoreManagerScreen.dart';
-import 'package:orre_manager/presenter/Screen/WaitingScreen.dart';
+import 'package:gaorre/presenter/Screen/StoreManagerScreen.dart';
+import 'package:gaorre/presenter/Screen/WaitingScreen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart'; // 경고 아이콘 사용을 위해 추가
+import 'package:gaorre/provider/Network/connectivityStateNotifier.dart'; // 경고 아이콘 사용을 위해 추가
 
 final selectedIndexProvider = StateProvider<int>((ref) {
   return 0; // 기본적으로 '웨이팅 목록 화면'을 선택 상태로 시작합니다.
 });
-
 
 class MainScreen extends ConsumerWidget {
   @override

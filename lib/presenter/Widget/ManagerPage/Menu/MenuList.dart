@@ -1,14 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/MenuDataModel.dart';
-import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/EditCategoryPopup.dart';
-import 'package:orre_manager/provider/Data/storeDataProvider.dart';
-import 'package:orre_manager/presenter/Widget/ManagerPage/Menu/ModifyMenuPopup.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:gaorre/Model/MenuDataModel.dart';
+import 'package:gaorre/presenter/Widget/ManagerPage/Menu/EditCategoryPopup.dart';
+import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/presenter/Widget/ManagerPage/Menu/ModifyMenuPopup.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 
 class MenuListWidget extends ConsumerWidget {
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storeData = ref.watch(storeDataProvider);

@@ -1,7 +1,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:orre_manager/presenter/table_status_screen.dart';
-// import 'package:orre_manager/provider/stomp_client_future_provider.dart';
+// import 'package:gaorre/presenter/table_status_screen.dart';
+// import 'package:gaorre/provider/stomp_client_future_provider.dart';
 // import 'package:stomp_dart_client/stomp.dart';
 // import 'package:stomp_dart_client/stomp_frame.dart';
 // import '../Model/login_data_model.dart';

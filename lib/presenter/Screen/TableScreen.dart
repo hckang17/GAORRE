@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/LoginDataModel.dart';
-import 'package:orre_manager/Model/RestaurantTableModel.dart';
-import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/provider/Data/tableDataProvider.dart';
+import 'package:gaorre/Model/LoginDataModel.dart';
+import 'package:gaorre/Model/RestaurantTableModel.dart';
+import 'package:gaorre/provider/Data/loginDataProvider.dart';
+import 'package:gaorre/provider/Data/tableDataProvider.dart';
 import '../Widget/TablePage/ShowTableInfo.dart' as my_widget;
 
 class TableManagementScreen extends ConsumerWidget {
-
   TableManagementScreen();
 
   @override
@@ -31,7 +30,7 @@ class TableManagementScreen extends ConsumerWidget {
     return TableManagementBody();
   }
 }
-  
+
 class TableManagementBody extends ConsumerStatefulWidget {
   TableManagementBody();
 
@@ -39,7 +38,8 @@ class TableManagementBody extends ConsumerStatefulWidget {
   _TableManagementBodyState createState() => _TableManagementBodyState();
 }
 
-class _TableManagementBodyState extends ConsumerState<TableManagementBody> with AutomaticKeepAliveClientMixin {
+class _TableManagementBodyState extends ConsumerState<TableManagementBody>
+    with AutomaticKeepAliveClientMixin {
   RestaurantTable? restaurantTable;
   late LoginData? loginData;
   bool isSubscribed = false;
@@ -69,7 +69,7 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
   Widget build(BuildContext context) {
     super.build(context);
     restaurantTable = ref.watch(tableProvider);
-    
+
     if (restaurantTable == null) {
       return _LoadingScreen();
     }
@@ -100,7 +100,7 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
             SizedBox(height: 20),
             Consumer(builder: (context, ref, child) {
               List<Seat> currentSeats = ref.watch(tableProvider)!.table;
-              
+
               return LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
                   return SizedBox(
@@ -117,11 +117,17 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
                       itemBuilder: (BuildContext context, int index) {
                         return GestureDetector(
                           onTap: () async {
-                            await ref.read(tableProvider.notifier).requestTableOrderList(loginData!.storeCode, currentSeats[index].tableNumber);
-                            my_widget.showTableInfoPopup(ref, context, currentSeats[index], loginData!);
+                            await ref
+                                .read(tableProvider.notifier)
+                                .requestTableOrderList(loginData!.storeCode,
+                                    currentSeats[index].tableNumber);
+                            my_widget.showTableInfoPopup(
+                                ref, context, currentSeats[index], loginData!);
                           },
                           child: Container(
-                            color: currentSeats[index].tableStatus == 0 ? Colors.red : Colors.green,
+                            color: currentSeats[index].tableStatus == 0
+                                ? Colors.red
+                                : Colors.green,
                             child: Center(
                               child: Text(
                                 currentSeats[index].tableNumber.toString(),
@@ -169,10 +175,18 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                int tableNumber = int.tryParse(_tableNumberController.text) ?? -1;
-                int personNumber = int.tryParse(_personNumberController.text) ?? -1;
+                int tableNumber =
+                    int.tryParse(_tableNumberController.text) ?? -1;
+                int personNumber =
+                    int.tryParse(_personNumberController.text) ?? -1;
                 ref.read(tableProvider.notifier).requestAddNewTable(
-                  loginData.storeCode, tableNumber, personNumber, ref.read(loginProvider.notifier).getLoginData()!.loginToken!);
+                    loginData.storeCode,
+                    tableNumber,
+                    personNumber,
+                    ref
+                        .read(loginProvider.notifier)
+                        .getLoginData()!
+                        .loginToken!);
                 Navigator.of(context).pop();
               },
               child: Text('추가'),
@@ -210,16 +224,22 @@ class _TableManagementBodyState extends ConsumerState<TableManagementBody> with 
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                int tableNumber = int.tryParse(_tableNumberController.text) ?? -1;
+                int tableNumber =
+                    int.tryParse(_tableNumberController.text) ?? -1;
                 ref.read(tableProvider.notifier).requestDeleteTable(
-                  loginData.storeCode, tableNumber, ref.read(loginProvider.notifier).getLoginData()!.loginToken!);
+                    loginData.storeCode,
+                    tableNumber,
+                    ref
+                        .read(loginProvider.notifier)
+                        .getLoginData()!
+                        .loginToken!);
                 Navigator.of(context).pop();
               },
               child: Text('제거'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context). pop();
+                Navigator.of(context).pop();
               },
               child: Text('취소'),
             ),
