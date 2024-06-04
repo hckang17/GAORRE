@@ -108,9 +108,13 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     String? adminPhoneNumber = await HiveService.retrieveData('phoneNumber');
     String? password = await HiveService.retrieveData('password');
     if (adminPhoneNumber != null && password != null) {
-      await requestLoginData(adminPhoneNumber, password)
-          .then((value) => {print('자동 로그인 성공!! [loginProvider]')});
-      return true;
+      if(true == await requestLoginData(adminPhoneNumber, password)){
+        print('자동 로그인 성공!! [loginProvider]');
+        return true;
+      }else{
+        print('자동 로그인에 실패했습니다.');
+        return false;
+      }
     } else {
       return false;
     }
