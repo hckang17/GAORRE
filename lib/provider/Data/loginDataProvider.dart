@@ -48,6 +48,38 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     state = null;
   }
 
+  Future<bool> resetPassword(WidgetRef ref, String adminPhoneNumber, String currentPW, String newPW) async {
+    final jsonBody = json.encode({
+      "adminPhoneNumber" : adminPhoneNumber,
+      "adminPassword" : currentPW,
+      "newAdminPassword" : newPW,
+      "jwtAdmin" : state!.loginToken,
+    });
+    try {
+      final response = await HttpsService.postRequest('/StoreAdmin/login/reset', jsonBody);
+      if(response.statusCode == 200){
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        if(responseBody['status'] == '200'){
+          print("비밀번호 변경 성공!");
+          await HiveService.saveStringData('password', newPW);
+          // await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경을 성공하였습니다.", null);
+          return true;
+        }else{
+          print('비밀번호 변경 실패...');
+          await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경 실패\n에러코드 : ${responseBody['status']}", null);
+          return false;
+        }
+      }else{
+        print('resetPassword 오류 ${response.statusCode}');
+        await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경에 실패했습니다.\n에러코드 : HTTP${response.statusCode}", null);
+        return false;
+      }
+    }catch(error){
+      print('예기치 못한 에러 발생 [loginProvider - resetPassword]');
+      return false;
+    }
+  }
+
   Future<bool> loadLoginData() async {
     String? loginDataRaw = await HiveService.retrieveData('loginData');
     if (loginDataRaw == null) {
@@ -82,14 +114,6 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     } else {
       return false;
     }
-    // if(true == await loadLoginData()){
-    //   // 저장되어있는 로그인데이터가 존재할 때
-    //   print('자동 로그인 데이터가 존재합니다! [loginProvider]');
-    //   return true;
-    // }else{
-    //   print('자동 로그인을 실패하였습니다. [loginProvider]');
-    //   return false;
-    // }
   }
 
   Future<bool> requestLoginData(
