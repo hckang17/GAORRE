@@ -1,4 +1,4 @@
-# orre_manager
+# gaorre
 
 가오리 서비스(앱, 웹) 개발 브랜치
 

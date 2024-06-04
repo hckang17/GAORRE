@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
-
+import 'package:gaorre/widget/text/text_widget.dart';
 
 class TextInputWidget extends ConsumerWidget {
   final String hintText;

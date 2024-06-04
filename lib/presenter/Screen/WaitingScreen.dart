@@ -2,17 +2,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
-import 'package:orre_manager/presenter/Widget/WaitingPage/CallButton.dart';
-import 'package:orre_manager/presenter/Screen/StoreManagerScreen.dart';
-import 'package:orre_manager/presenter/Screen/TableScreen.dart';
-import 'package:orre_manager/presenter/Widget/WaitingPage/ShowWaitingLog.dart';
-import 'package:orre_manager/presenter/Widget/WaitingPage/AddWaitingScreen.dart';
-import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-import 'package:orre_manager/provider/Data/AddWaitingTimeProider.dart';
-import 'package:orre_manager/provider/Data/UserLogProvider.dart';
-import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/provider/Data/storeDataProvider.dart';
-import 'package:orre_manager/services/HIVE_service.dart';
+import 'package:gaorre/presenter/Widget/WaitingPage/CallButton.dart';
+import 'package:gaorre/presenter/Screen/StoreManagerScreen.dart';
+import 'package:gaorre/presenter/Screen/TableScreen.dart';
+import 'package:gaorre/presenter/Widget/WaitingPage/ShowWaitingLog.dart';
+import 'package:gaorre/presenter/Widget/WaitingPage/AddWaitingScreen.dart';
+import 'package:gaorre/presenter/Widget/AlertDialog.dart';
+import 'package:gaorre/provider/Data/AddWaitingTimeProider.dart';
+import 'package:gaorre/provider/Data/UserLogProvider.dart';
+import 'package:gaorre/provider/Data/loginDataProvider.dart';
+import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/services/HIVE_service.dart';
 import '../../Model/LoginDataModel.dart';
 import '../../Model/WaitingDataModel.dart';
 import '../../provider/Data/waitingDataProvider.dart';
@@ -61,15 +61,16 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
 
   @override
   Widget build(BuildContext context) {
-    waitingAvailableState = ref.watch(storeDataProvider.select((value) => value!.waitingAvailable));
+    waitingAvailableState =
+        ref.watch(storeDataProvider.select((value) => value!.waitingAvailable));
     currentWaitingData = ref.watch(waitingProvider);
     loginData = ref.watch(loginProvider);
     switchValue = waitingAvailableState == 0 ? true : false;
-    
-    if(currentWaitingData == null){
+
+    if (currentWaitingData == null) {
       return _LoadingScreen();
     }
-    
+
     return Scaffold(
       body: Center(
         child: Column(
@@ -112,19 +113,24 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                           iconOff: Icons.remove_circle_outline,
                           textSize: 16.0,
                           onChanged: (bool newState) async {
-                            if(!newState) {
+                            if (!newState) {
                               //false일 때, -> 웨이팅 안받음.
-                              await showAlertDialog(ref.context, "웨이팅 접수", "지금부터 신규 웨이팅 접수를 받지 않습니다.", null);
-                            }else{
-                              await showAlertDialog(ref.context, "웨이팅 접수", "지금부터 신규 웨이팅 접수를 받습니다!", null);
+                              await showAlertDialog(ref.context, "웨이팅 접수",
+                                  "지금부터 신규 웨이팅 접수를 받지 않습니다.", null);
+                            } else {
+                              await showAlertDialog(ref.context, "웨이팅 접수",
+                                  "지금부터 신규 웨이팅 접수를 받습니다!", null);
                             }
                           },
-                          onDoubleTap: () => null, 
+                          onDoubleTap: () => null,
                           onSwipe: () => null,
                           onTap: () async {
-                            bool success = await ref.read(storeDataProvider.notifier)
-                              .changeAvailableStatus(ref.read(loginProvider.notifier).getLoginData()!);
-                            },
+                            bool success = await ref
+                                .read(storeDataProvider.notifier)
+                                .changeAvailableStatus(ref
+                                    .read(loginProvider.notifier)
+                                    .getLoginData()!);
+                          },
                         ),
                       ],
                     ),
@@ -180,10 +186,8 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                         child: InkWell(
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) =>
-                                WaitingAddingScreen()
-                              )
-                            );
+                                builder: (BuildContext context) =>
+                                    WaitingAddingScreen()));
                           },
                           child: Image.asset(
                             'assets/image/button/waiting adding.png',
@@ -244,16 +248,18 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                             child: IconButton(
                               onPressed: () async {
                                 bool confirmation = await showConfirmDialog(
-                                  ref.context,
-                                  "대기 고객 삭제",
-                                  "${team.waitingNumber}번 고객님을 정말 웨이팅 취소(노쇼)처리 하시겠습니까?"
-                                );
-                                if(confirmation){
-                                  ref.read(waitingProvider.notifier).requestUserDelete(context, storeCode, team.waitingNumber);
+                                    ref.context,
+                                    "대기 고객 삭제",
+                                    "${team.waitingNumber}번 고객님을 정말 웨이팅 취소(노쇼)처리 하시겠습니까?");
+                                if (confirmation) {
+                                  ref
+                                      .read(waitingProvider.notifier)
+                                      .requestUserDelete(context, storeCode,
+                                          team.waitingNumber);
                                 }
                               },
                               icon:
-                                Icon(Icons.delete, color: Color(0xFFDFDFDF)),
+                                  Icon(Icons.delete, color: Color(0xFFDFDFDF)),
                               iconSize: 30,
                             ),
                           ),
@@ -263,7 +269,7 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(  
+                                Row(
                                   children: [
                                     Text(
                                       '대기번호 ${team.waitingNumber}번',
@@ -305,20 +311,22 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                             flex: 2,
                             child: Row(
                               children: [
-                                if(team.entryTime != null)
+                                if (team.entryTime != null)
                                   IconButton(
-                                    icon: Icon(Icons.check_box, color:Colors.green), // 초록색 체크박스 아이콘
+                                    icon: Icon(Icons.check_box,
+                                        color: Colors.green), // 초록색 체크박스 아이콘
                                     onPressed: () async {
-                                      print('${team.waitingNumber}번 입장처리 요청 [waitinScreen]');
+                                      print(
+                                          '${team.waitingNumber}번 입장처리 요청 [waitinScreen]');
                                       bool confirmation = await showConfirmDialog(
-                                        ref.context,
-                                        "고객 입장처리",
-                                        "${team.waitingNumber}번 고객님을 입장처리 하시겠습니까?"
-                                      );
-                                      if(confirmation){
-                                        await ref.read(waitingProvider.notifier).confirmEnterance(
-                                          ref.context, loginData!, team.waitingNumber
-                                        );
+                                          ref.context,
+                                          "고객 입장처리",
+                                          "${team.waitingNumber}번 고객님을 입장처리 하시겠습니까?");
+                                      if (confirmation) {
+                                        await ref
+                                            .read(waitingProvider.notifier)
+                                            .confirmEnterance(ref.context,
+                                                loginData!, team.waitingNumber);
                                       }
                                       // print('Checked options for ${team.waitingNumber}');
                                     },
@@ -328,8 +336,11 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                                 CallIconButton(
                                   waitingTeam: team,
                                   storeCode: storeCode,
-                                  minutesToAdd: ref.read(minutesToAddProvider.notifier).getState(),
-                                  ref: ref, phoneNumber: team.phoneNumber,
+                                  minutesToAdd: ref
+                                      .read(minutesToAddProvider.notifier)
+                                      .getState(),
+                                  ref: ref,
+                                  phoneNumber: team.phoneNumber,
                                 ),
                               ],
                             ),
@@ -348,15 +359,13 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                 },
               ),
             ),
-
-
-
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await ref.read(userLogProvider.notifier).retrieveUserLogData(ref.read(loginProvider.notifier).getLoginData()!);
+          await ref.read(userLogProvider.notifier).retrieveUserLogData(
+              ref.read(loginProvider.notifier).getLoginData()!);
           showWaitingLog(ref);
         },
         child: Icon(Icons.assignment), // 로그 확인 아이콘
@@ -364,8 +373,7 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
     );
   }
 }
-  // 이 아래부터는... LECAGY가 될 확률 높음.. 아니면 다 분리해서 디자인 해야함.
-
+// 이 아래부터는... LECAGY가 될 확률 높음.. 아니면 다 분리해서 디자인 해야함.
 
 //   Widget buildInitialScreen() {
 //     return Center(
@@ -401,7 +409,7 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
 //             }, child: Text('로그아웃')),
 //           ElevatedButton(onPressed: () {
 //             ref.read(storeDataProvider.notifier).changeAvailableStatus(loginData!);
-//             }, 
+//             },
 //             child: Text('현재 웨이팅 가능 상태 : $waitingAvailableState. 0이면 웨이팅추가가능, 1이면 웨이팅추가불가')
 //             ),
 //           Expanded(
@@ -538,7 +546,6 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
 //   }
 // }
 
-
 class _LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -551,7 +558,7 @@ class _LoadingScreen extends StatelessWidget {
 
 // // class _ErrorScreen extends StatelessWidget {
 // //   final dynamic error;
-  
+
 // //   _ErrorScreen(this.error);
 
 // //   @override
@@ -563,32 +570,31 @@ class _LoadingScreen extends StatelessWidget {
 // //   }
 // // }
 
-            ///
-            /// 이 아래에 원래 메뉴버튼을 두려고 했으나...
-            
-            // Row(
-            //   mainAxisAlignment:
-            //       MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
-            //   children: [
-            //     // ElevatedButton(
-            //     //   onPressed: () {
-            //     //     ref.read(waitingProvider.notifier).requestUserCall(
-            //     //         context,
-            //     //         currentWaitingData!.teamInfoList[0].phoneNumber,
-            //     //         currentWaitingData!.teamInfoList[0].waitingNumber,
-            //     //         storeCode,
-            //     //         minutesToAdd);
-            //     //   },
-            //     //   child: Text('손님 호출하기'),
-            //     // ),
-            //     // ElevatedButton(
-            //     //   onPressed: () {
-            //     //     Navigator.of(context).push(MaterialPageRoute(
-            //     //         builder: (BuildContext context) =>
-            //     //             TableManagementScreen()));
-            //     //   },
-            //     //   child: Text('좌석페이지'),
-            //     // ),
-            //   ],
-            // ),
+///
+/// 이 아래에 원래 메뉴버튼을 두려고 했으나...
 
+// Row(
+//   mainAxisAlignment:
+//       MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
+//   children: [
+//     // ElevatedButton(
+//     //   onPressed: () {
+//     //     ref.read(waitingProvider.notifier).requestUserCall(
+//     //         context,
+//     //         currentWaitingData!.teamInfoList[0].phoneNumber,
+//     //         currentWaitingData!.teamInfoList[0].waitingNumber,
+//     //         storeCode,
+//     //         minutesToAdd);
+//     //   },
+//     //   child: Text('손님 호출하기'),
+//     // ),
+//     // ElevatedButton(
+//     //   onPressed: () {
+//     //     Navigator.of(context).push(MaterialPageRoute(
+//     //         builder: (BuildContext context) =>
+//     //             TableManagementScreen()));
+//     //   },
+//     //   child: Text('좌석페이지'),
+//     // ),
+//   ],
+// ),

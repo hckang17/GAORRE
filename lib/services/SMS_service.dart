@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
+import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:telephony/telephony.dart';
 import 'package:flutter_sms/flutter_sms.dart';
