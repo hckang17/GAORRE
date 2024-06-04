@@ -94,8 +94,7 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP>
       case AppLifecycleState.resumed:
         // 앱이 활성 상태로 돌아왔을 때 실행할 코드
         print('앱이 resumed 상태입니다... [main.dart]');
-        if (ref.read(lastLifeCycleState) == AppLifecycleState.paused ||
-            ref.read(lastLifeCycleState) == AppLifecycleState.hidden) {
+        if (ref.read(lastLifeCycleState) == AppLifecycleState.paused) {
           ref.read(lastLifeCycleState.notifier).state =
               AppLifecycleState.resumed;
         } else {

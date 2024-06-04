@@ -1,10 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/presenter/MainScreen.dart';
+import 'package:gaorre/presenter/Widget/ManagerPage/ResetPasswordPopup.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/widget/button/text_button_widget.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:gaorre/widget/text_field/text_input_widget.dart';
 import '../../provider/Data/loginDataProvider.dart';
 
@@ -164,7 +168,19 @@ class _LoginScreenBody extends ConsumerWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 2),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 12, color:Color.fromARGB(0, 0, 0, 0)),
+                     
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) =>
+                        ResetPasswordScreen()));
+                  },
+                  child: const Text('비밀번호 재설정하기'),
+                ),
               ],
             ),
           ),

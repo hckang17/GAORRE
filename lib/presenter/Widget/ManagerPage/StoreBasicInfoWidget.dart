@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/Model/StoreDataModel.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
-import 'package:gaorre/provider/Data/AddWaitingTimeProider.dart';
+import 'package:gaorre/provider/Data/AddWaitingTimeProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
 import 'package:gaorre/widget/button/big_button_widget.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
