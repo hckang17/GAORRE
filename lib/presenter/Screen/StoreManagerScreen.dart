@@ -113,7 +113,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                       // 로그아웃 기능 사용.
                       if (await showConfirmDialog(context, "로그아웃",
                           "정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
-                        ref.read(loginProvider.notifier).logout();
+                        ref.read(loginProvider.notifier).logout(ref);
                         // 모든 subscribe와 websocket을 해제하는게 맞겠지?
                         Restart.restartApp();
                         // Navigator.pushAndRemoveUntil(

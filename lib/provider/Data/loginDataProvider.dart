@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 import 'package:hive/hive.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/services/HIVE_service.dart';
@@ -36,10 +37,12 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     }
   }
 
-  void logout() async {
+  void logout(WidgetRef ref) async {
     print('로그아웃 요청 [loginProvider]');
     HiveService.deleteData('phoneNumber');
     HiveService.deleteData('password');
+    ref.read(waitingProvider.notifier).unSubscribe(0);
+    ref.read(waitingProvider.notifier).resetState();
     state = null;
   }
 
