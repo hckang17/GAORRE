@@ -212,8 +212,8 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
           await HiveService.saveTimeData('${storeCode}_${waitingNumber}', callGuestResponse.entryTime);
           String SMScontent = SMScontentString(waitingNumber, storeName, extractEntryTimeInMinutes(callGuestResponse.entryTime));
           print(SMScontent);
-          bool result = await SendSMSService.requestSendSMS(ref.context ,phoneNumber, "[웨이팅 호출]", SMScontent);
-          if(result) await showAlertDialog(ref.context, "웨이팅 호출 SMS 전송", "성공!", null);
+          // bool result = await SendSMSService.requestSendSMS(ref.context ,phoneNumber, "[웨이팅 호출]", SMScontent);
+          // if(result) await showAlertDialog(ref.context, "웨이팅 호출 SMS 전송", "성공!", null);
           return true;
         } else {
           // 고객호출 실패
