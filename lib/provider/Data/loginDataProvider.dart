@@ -48,12 +48,11 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     state = null;
   }
 
-  Future<bool> resetPassword(WidgetRef ref, String adminPhoneNumber, String currentPW, String newPW) async {
+  Future<bool> resetPassword(WidgetRef ref, String adminPhoneNumber, String newPassword, String authCode) async {
     final jsonBody = json.encode({
       "adminPhoneNumber" : adminPhoneNumber,
-      "adminPassword" : currentPW,
-      "newAdminPassword" : newPW,
-      "jwtAdmin" : state!.loginToken,
+      "verificationCode" : authCode,
+      "newAdminPassword" : newPassword,
     });
     try {
       final response = await HttpsService.postRequest('/StoreAdmin/login/reset', jsonBody);
@@ -61,21 +60,21 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         if(responseBody['status'] == '200'){
           print("비밀번호 변경 성공!");
-          await HiveService.saveStringData('password', newPW);
+          await HiveService.saveStringData('password', newPassword);
+          await HiveService.saveStringData('phoneNumber', adminPhoneNumber);
           // await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경을 성공하였습니다.", null);
           return true;
         }else{
           print('비밀번호 변경 실패...');
-          await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경 실패\n에러코드 : ${responseBody['status']}", null);
-          return false;
+          throw Exception('${responseBody['status']}');
         }
       }else{
         print('resetPassword 오류 ${response.statusCode}');
-        await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경에 실패했습니다.\n에러코드 : HTTP${response.statusCode}", null);
-        return false;
+        throw Exception('HTTP${response.statusCode}');
       }
     }catch(error){
       print('예기치 못한 에러 발생 [loginProvider - resetPassword]');
+      await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경 실패\n에러코드:${error}", null);
       return false;
     }
   }
