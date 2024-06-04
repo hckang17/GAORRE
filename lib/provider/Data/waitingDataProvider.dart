@@ -95,6 +95,10 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     return state;
   }
 
+  void resetState() {
+    state = null;
+  }
+
   void updateState(WaitingData newState) {
     //디버그용 콘솔//
     print('WaitingData 업데이트 실행');
