@@ -7,6 +7,7 @@ import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/Menu/AddMenuPopup.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/Menu/MenuList.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/Menu/AddCategoryPopup.dart';
+import 'package:gaorre/presenter/Widget/ManagerPage/ResetPasswordPopup.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/StoreBasicInfoWidget.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
@@ -127,6 +128,15 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                       }
                     },
                   ),
+                  IconButton(
+                    icon: Icon(Icons.settings, color: Colors.white),
+                    onPressed: () async {
+                      // 세팅화면으로 전환
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) =>
+                          ResetPasswordScreen()));
+                    }
+                  )
                 ],
                 expandedHeight: 240, // 높이 설정
                 flexibleSpace: FlexibleSpaceBar(
