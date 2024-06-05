@@ -30,6 +30,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+*.lock
 
 # Symbolication related
 app.*.symbols
@@ -41,3 +42,22 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ios/ build folder
+/ios/Flutter/App.framework
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/FlutterPluginRegistrant.framework
+/ios/Flutter/FlutterPluginRegistrant.podspec
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/flutter_export_environment.sh
+/ios/Flutter/flutter_project.pbxproj
+/ios/Flutter/flutter_assets.xcassets
+/ios/Flutter/flutter_export_environment.sh
+/ios/Flutter/flutter_project.pbxproj
+/ios/Flutter/flutter_assets.xcassets
+/ios/Flutter/flutter_assets.xcassets/AppIcon.appiconset
+/ios/Flutter/flutter_assets.xcassets/LaunchImage.imageset
+/ios/Flutter/flutter_assets.xcassets/LaunchImage.imageset/Contents.json
+/ios/Flutter/flutter_assets.xcassets/LaunchImage.imageset/LaunchImage.png
+
