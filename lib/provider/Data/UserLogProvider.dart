@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/Model/LoginDataModel.dart';
 import 'package:gaorre/Model/WaitingDataModel.dart';
@@ -48,7 +47,7 @@ class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
                 30) {
           // 2분동안 heartbeat을 받지 못했다면 구독 해제 및 재구독
           print(
-              'Heartbeat not received for subscription index $i, re-subscribing...');
+              'Heartbeat not received for subscription index $i, re-subscribing... [userLogProvider]');
           unSubscribe(i);
           await subscribeToLogData(
               ref.read(loginProvider.notifier).getLoginData()!.storeCode);
@@ -62,11 +61,10 @@ class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
 
   // StompClient 인스턴스를 설정하는 메소드
   void setClient(StompClient? client) {
-    print("<WaitingProvider> 스텀프 연결 설정");
+    print("<UserLogProvider> 스텀프 연결 설정");
     _client = client; // 내부 변수에 StompClient 인스턴스 저장
     print('클라이언트 상태 : ${_client.toString()}');
   }
-
 
   void updateState(UserLogDataList newState) {
     print('유저로그 상태 업데이트. [userLogProvider - retrieveUserLogData]');
@@ -87,7 +85,8 @@ class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
         if (log != null && log.status.startsWith('called')) {
           int minutes = int.parse(log.status.split(' : ')[1]);
           DateTime statusChangedTime = DateTime.parse(log.statusChangeTime!);
-          DateTime entryTime = statusChangedTime.add(Duration(minutes: minutes));
+          DateTime krStatusChangeTime = statusChangedTime.add(const Duration(hours:-9)); // 로그로 받아온 시간은 UTC임.
+          DateTime entryTime = krStatusChangeTime.add(Duration(minutes: minutes));
 
           // WaitingTeam의 entryTime 속성 업데이트
           waitingTeam.entryTime = entryTime;
@@ -98,8 +97,37 @@ class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
     ref.read(waitingProvider.notifier).updateState(currentWaitingData!);
   }
 
+void updateWaitingTeamwithEachLog(UserLogData receivedLog){
+  // 현재 대기 데이터를 가져옴
+  WaitingData? currentWaitingData = ref.read(waitingProvider.notifier).getWaitingData();
 
-  void resetState(newState) {
+  // receivedLog의 status가 'called'로 시작하는지 확인
+  if (receivedLog.status.startsWith('called')) {
+    if (currentWaitingData != null) {
+      // 해당 waitingNumber를 가진 WaitingTeam 찾기
+      for (WaitingTeam waitingTeam in currentWaitingData.teamInfoList) {
+        if (waitingTeam.waitingNumber == receivedLog.waitingNumber) {
+          // 로그에서 분 정보 추출 및 entryTime 계산
+          int minutes = int.parse(receivedLog.status.split(' : ')[1]);
+          DateTime statusChangedTime = DateTime.parse(receivedLog.statusChangeTime!);
+          DateTime entryTime = statusChangedTime.add(Duration(minutes: minutes));
+
+          // WaitingTeam의 entryTime 업데이트
+          waitingTeam.entryTime = entryTime;
+
+          // 상태 업데이트
+          ref.read(waitingProvider.notifier).updateState(currentWaitingData);
+          break; // 일치하는 첫 번째 팀을 업데이트 한 후 루프 종료
+        }
+      }
+    }
+  } else {
+    return; // 'called'로 시작하지 않는 경우 함수 종료
+  }
+}
+
+
+  void resetState() {
     print('유저로그 상태 초기화 요청... [userLogProvider - retrieveUserLogData]');
     state = null;
   }
@@ -131,9 +159,9 @@ class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
     if (frame!.body != null) {
       print(frame.body.toString());
       Map<String, dynamic> responseData = json.decode(frame.body!);
-      UserLogDataList retrievedData = UserLogDataList.fromJson(responseData);
+      UserLogData retrievedData = UserLogData.fromJson(responseData);
       // StateNotifier를 통해 상태를 업데이트합니다.
-      updateState(retrievedData);
+      updateWaitingTeamwithEachLog(retrievedData);
     }
   }
 

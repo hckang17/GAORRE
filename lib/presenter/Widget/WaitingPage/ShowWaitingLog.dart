@@ -72,9 +72,9 @@ void showWaitingLog(WidgetRef ref) {
             // 시간에 따라 정렬
             userLogs.userLogs?.sort((a, b) => DateFormat(
                     "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-                .parse(b.statusChangeTime ?? "1970-01-01T00:00:00.000+00:00")
+                .parse(b.statusChangeTime ?? "1970-01-01T00:00:00.000+09:00")
                 .compareTo(DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(
-                    a.statusChangeTime ?? "1970-01-01T00:00:00.000+00:00")));
+                    a.statusChangeTime ?? "1970-01-01T00:00:00.000+09:00")));
 
 
 

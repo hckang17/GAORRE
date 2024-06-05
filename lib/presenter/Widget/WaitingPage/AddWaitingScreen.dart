@@ -40,11 +40,7 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
             context, "수동 웨이팅 추가", "추가 요청을 보냈습니다! 반영까지 몇초가량 소요될 수 있습니다.", null);
         Navigator.pop(context);
       } else {
-        await showAlertDialog(
-            context,
-            "수동 웨이팅 추가",
-            "수동 추가 실패했습니다. 동일한 휴대폰번호의 고객이 이미 웨이팅중이거나, 서버 문제일 수 있습니다. 본 오류가 반복되면 관리자에게 문의하세요.",
-            null);
+        await showAlertDialog(context,"수동 웨이팅 추가","수동 추가 실패했습니다. 동일한 휴대폰번호의 고객이 이미 웨이팅중이거나, 서버 문제일 수 있습니다. 본 오류가 반복되면 관리자에게 문의하세요.",null);
       }
 
       // 여기에다가 이제~ 웨이팅 수동 등록 코드 작성하기.

@@ -176,7 +176,7 @@ Future<int> reboot(WidgetRef ref) async {
     return 4; // 원인미상 에러 발생 시 4 반환
   } finally {
     print('마지막으로 각 웨이팅별 입장마감시간 정보를 가져옵니다... [Reboot]');
-    ref.read(waitingProvider.notifier).reloadEntryTime();
+    // ref.read(waitingProvider.notifier).reloadEntryTime();
     ref.read(isNowRebootState.notifier).state = false;
     return 1; // 아무 문제없음! MainScreen으로~
   }
@@ -324,7 +324,7 @@ Future<int> firstBoot(WidgetRef ref) async {
             ref.read(loginProvider.notifier).getLoginData()!.storeCode);
 
     // 웨이팅 마감 시간 정보를 로딩합니다......
-    ref.read(waitingProvider.notifier).reloadEntryTime();
+    // ref.read(waitingProvider.notifier).reloadEntryTime();
 
     if (!retrieveStoreDataResult) {
       requestStoreInfoCompleter.completeError('가게정보 수신 실패');
