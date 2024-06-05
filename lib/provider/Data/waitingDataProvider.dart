@@ -341,6 +341,14 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
+  Future<void> subscribeToLogData(int storeCode) async {
+    print('<UserLog> 구독요청 수신.');
+    if(_client == null || !_client!.connected) {
+
+    }
+    // /admin/log/{storeCode}
+  }
+
   Future<void> subscribeToWaitingData(int storeCode) async {
     print('<WaitingData> 구독요청 수신.');
     if (_client == null || !_client!.connected) {
