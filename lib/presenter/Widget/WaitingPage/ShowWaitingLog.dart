@@ -23,6 +23,8 @@ void showWaitingLog(WidgetRef ref) {
       case 'entered':
         status = '입장';
       break;
+      case 'waiting':
+        status = '대기중';
       default:
         status;
     }
@@ -47,6 +49,9 @@ void showWaitingLog(WidgetRef ref) {
       break;
       case 'entered':
         Cstatus = Colors.blue;
+      break;
+      case 'waiting':
+        Cstatus = Colors.deepPurpleAccent;
       break;
       default:
         Cstatus;
