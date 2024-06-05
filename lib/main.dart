@@ -11,12 +11,15 @@ import 'package:gaorre/presenter/Error/network_error_screen.dart';
 import 'package:gaorre/presenter/Error/websocket_error_screen.dart';
 import 'package:gaorre/presenter/Screen/StartScreen.dart';
 import 'package:gaorre/presenter/MainScreen.dart';
+import 'package:gaorre/presenter/Screen/UpdateScreen.dart';
 import 'package:gaorre/presenter/Widget/LoadingDialog.dart';
+import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
 import 'package:gaorre/provider/Network/connectivityStateNotifier.dart';
 import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
 import 'package:gaorre/services/Booting_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 final notifications = FlutterLocalNotificationsPlugin();
 late AndroidNotificationChannel channel;
@@ -24,6 +27,8 @@ late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -61,6 +66,7 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP>
     WebsocketErrorScreen(),
     NetworkCheckScreen(),
     ErrorScreen(),
+    UpdateAppScreen(),
   ];
 
   @override

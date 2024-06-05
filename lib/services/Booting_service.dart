@@ -1,7 +1,9 @@
 // 처음 부팅할 때 필요한 초기화 작업을 수행하는 Provider
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
 import 'package:gaorre/provider/Data/waitingDataProvider.dart';
@@ -9,7 +11,10 @@ import 'package:gaorre/provider/Network/connectivityStateNotifier.dart';
 import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
 import 'package:gaorre/provider/errorStateNotifier.dart';
 import 'package:gaorre/services/HIVE_service.dart';
+import 'package:gaorre/services/HTTP_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
 
 final firstBootState = StateProvider<bool>((ref) => false);
 final container = ProviderContainer(); // 로딩창...때문에...
@@ -181,6 +186,44 @@ Future<int> reboot(WidgetRef ref) async {
 }
 
 Future<int> firstBoot(WidgetRef ref) async {
+  Completer versionCheckCompleter = Completer<void>();
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  String version = packageInfo.version; // '1.0.0'
+  String buildNumber = packageInfo.buildNumber; // '1'
+  try{
+    print("버전을 체크합니다... [firstBoot]");
+    final jsonBody = json.encode({
+      "appCode" : 2, // 가오리는 무조건 2
+      "appVersion" : version
+    });
+    final response = await http.post(
+      Uri.parse('https://orre.store/api/appVersion'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonBody,
+    );
+    if(response.statusCode == 200){
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
+      if(responseBody['status'] == '200'){
+        print("현재버전이 최신버전입니다... [firstBoot]");
+        print("현재 버전... $version [firstBoot]");
+        print("최신 버전... ${responseBody['appVersion']}");
+        versionCheckCompleter.complete();
+      }else{
+        print("업데이트 버전이 있습니다...");
+        return 5;
+      }
+    }else{
+      throw 'HTTP${response.statusCode}';
+    }
+  }catch(error){
+    await showAlertDialog(ref.context, "업데이트 확인", "업데이트 확인에 실패했습니다.", null);
+    versionCheckCompleter.completeError('version_check_failed');
+  }
+
+  await versionCheckCompleter.future;
+
   try {
     // var networkStatus = ref.read(networkStateProvider);
     var stompCompleter = Completer<void>();
@@ -296,7 +339,5 @@ Future<int> firstBoot(WidgetRef ref) async {
     return 4; // 에러 발생 시 4 반환
   }
 
-  // print('마지막으로 기존 웨이팅 데이터의 입장마감시간 정보를 가져옵니다... [FirstBoot]');
-  // ref.read(firstBootState.notifier).state = true;
   return 1; // 아무 문제없음! MainScreen으로~
 }
