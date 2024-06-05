@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaorre/Model/WaitingLogDataModel.dart';
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
 import 'package:gaorre/presenter/Widget/WaitingPage/CallButton.dart';
 import 'package:gaorre/presenter/Screen/StoreManagerScreen.dart';
@@ -49,9 +50,11 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
     if (loginData != null) {
       storeCode = loginData!.storeCode;
       final waitingNotifier = ref.read(waitingProvider.notifier);
+      final userLogDataListNotifier = ref.read(userLogProvider.notifier);
       if (!isSubscribed) {
         waitingNotifier.subscribeToWaitingData(storeCode);
         waitingNotifier.sendWaitingData(storeCode);
+        userLogDataListNotifier.subscribeToLogData(storeCode);
         isSubscribed = true;
         // 마지막으로 기존에 있던 웨이팅 정보들 다시 읽어옴...
         ref.read(waitingProvider.notifier).reloadEntryTime();
@@ -316,17 +319,16 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                                     icon: Icon(Icons.check_box,
                                         color: Colors.green), // 초록색 체크박스 아이콘
                                     onPressed: () async {
-                                      print(
-                                          '${team.waitingNumber}번 입장처리 요청 [waitinScreen]');
-                                      bool confirmation = await showConfirmDialog(
-                                          ref.context,
-                                          "고객 입장처리",
-                                          "${team.waitingNumber}번 고객님을 입장처리 하시겠습니까?");
+                                      print('${team.waitingNumber}번 입장처리 요청 [waitinScreen]');
+                                      bool confirmation = await showConfirmDialog(ref.context, "고객 입장처리",
+                                        "${team.waitingNumber}번 고객님을 입장처리 하시겠습니까?");
                                       if (confirmation) {
-                                        await ref
-                                            .read(waitingProvider.notifier)
-                                            .confirmEnterance(ref.context,
-                                                loginData!, team.waitingNumber);
+                                        print('입장처리를 진행하겠습니다. [waitingScreen]');
+                                        bool result = await ref.read(waitingProvider.notifier).confirmEnterance(ref.context,
+                                          loginData!, team.waitingNumber);
+                                        if(result){
+                                          print('입장처리 성공 [WaitingScreen]');
+                                        }
                                       }
                                       // print('Checked options for ${team.waitingNumber}');
                                     },
@@ -368,7 +370,8 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
               ref.read(loginProvider.notifier).getLoginData()!);
           showWaitingLog(ref);
         },
-        child: Icon(Icons.assignment), // 로그 확인 아이콘
+        child: Icon(Icons.assignment,  color: Color(0xFF72AAD8),),
+        backgroundColor: Colors.white // 로그 확인 아이콘
       ),
     );
   }

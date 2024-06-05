@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/presenter/Screen/StoreManagerScreen.dart';
 import 'package:gaorre/presenter/Screen/WaitingScreen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Network/connectivityStateNotifier.dart'; // 경고 아이콘 사용을 위해 추가
 
 final selectedIndexProvider = StateProvider<int>((ref) {
@@ -23,8 +25,20 @@ class MainScreen extends ConsumerWidget {
       ManagementScreenWidget(),
     ];
 
+    Future<bool> _onWillPop() async {
+      bool confirm = await showConfirmDialog(ref.context, "앱 종료", "정말 앱을 종료하시겠습니까?");
+      if (confirm) {
+        if (Theme.of(ref.context).platform == TargetPlatform.android) {
+          SystemNavigator.pop(); // Android에서 앱 종료
+        } else if (Theme.of(ref.context).platform == TargetPlatform.iOS) {
+          return false;
+        }
+      }
+      return false;
+    }
+
     return WillPopScope(
-      onWillPop: () async => false, // 물리적 뒤로 가기 버튼 비활성화
+      onWillPop: _onWillPop, // 물리적 뒤로 가기 버튼 비활성화
       child: Scaffold(
         body: Column(
           children: [

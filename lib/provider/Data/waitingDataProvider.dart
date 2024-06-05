@@ -136,8 +136,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
             currentTeamInfoList.add(newTeam);
           }
         }
-      } else if (currentState.teamInfoList.length >
-          newState.teamInfoList.length) {
+      } else if (currentState.teamInfoList.length > newState.teamInfoList.length) {
         // 삭제, 착석 등으로 웨이팅 정보가 사라졌을 때.
         print('WaitingTeam 객체 삭제..');
 
@@ -155,6 +154,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
         // 삭제된 항목을 업데이트된 List에서 제거합니다.
         for (int i = deletedTeamIndexes.length - 1; i >= 0; i--) {
           currentTeamInfoList.removeAt(deletedTeamIndexes[i]);
+          // HiveService.deleteData('${ref.read(loginProvider.notifier).getLoginData()!.storeCode}_${currentTeamInfoList[i].waitingNumber}');
         }
       } else if (currentState.teamInfoList.length <
           newState.teamInfoList.length) {
@@ -341,14 +341,6 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     }
   }
 
-  Future<void> subscribeToLogData(int storeCode) async {
-    print('<UserLog> 구독요청 수신.');
-    if(_client == null || !_client!.connected) {
-
-    }
-    // /admin/log/{storeCode}
-  }
-
   Future<void> subscribeToWaitingData(int storeCode) async {
     print('<WaitingData> 구독요청 수신.');
     if (_client == null || !_client!.connected) {
@@ -400,8 +392,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     subscriptionInfo[index] = null;
   }
 
-  Future<bool> confirmEnterance(
-      BuildContext context, LoginData loginData, int waitingNumber) async {
+  Future<bool> confirmEnterance(BuildContext context, LoginData loginData, int waitingNumber) async {
     print('고객 입장 확정 여부 전송... [waitingProvider - confirmEnterance]');
     final jsonBody = json.encode({
       "storeCode": loginData.storeCode,
@@ -427,7 +418,7 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
         } else {
           print(
               '$waitingNumber번 손님 입장처리를 실패했습니다. [waitingProvider - confirmEnterance]');
-          showAlertDialog(
+          await showAlertDialog(
               context,
               '입장 확인',
               '$waitingNumber번 손님 입장처리 실패\n에러코드:[${responseBody['status']}]',

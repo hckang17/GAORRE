@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
+import 'package:gaorre/provider/Data/UserLogProvider.dart';
 import 'package:gaorre/provider/Data/tableDataProvider.dart';
 import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 import 'package:gaorre/provider/errorStateNotifier.dart';
@@ -56,12 +57,14 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
           onWebSocketError: (dynamic error) {
             print("websocket error: $error [StompClientStateNotifier]");
             ref.read(waitingProvider.notifier).setClient(null);
+            ref.read(userLogProvider.notifier).setClient(null);
             state = null;
             streamController.add(reconnectionCallback(StompStatus.ERROR));
           },
           onDisconnect: (_) {
             print('disconnected [StompClientStateNotifier]');
             ref.read(waitingProvider.notifier).setClient(null);
+            ref.read(userLogProvider.notifier).setClient(null);
             state = null;
             streamController.add(reconnectionCallback(StompStatus.ERROR));
           },
@@ -74,6 +77,7 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
             ref.read(stompState.notifier).state = StompStatus.DISCONNECTED;
             print("websocket done [StompClientStateNotifier]");
             ref.read(waitingProvider.notifier).setClient(null);
+            ref.read(userLogProvider.notifier).setClient(null);
             // ref.read(tableProvider.notifier).setClient(null); 아직은 안해도 됨.
             // 연결 끊김 시 재시도 로직
             // 여기에 만약 network off 로 인한 웹소켓끊어짐이라면? 대응해야할거같은데.
@@ -99,6 +103,7 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
     // 필요한 초기화 수행
     // 예를 들어, 여기서 다시 구독 로직을 실행
     ref.read(waitingProvider.notifier).setClient(client);
+    ref.read(userLogProvider.notifier).setClient(client);
     // ref.read(tableProvider.notifier).setClient(client);
   }
 
