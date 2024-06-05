@@ -17,6 +17,7 @@ class CallIconButton extends ConsumerWidget {
   final int minutesToAdd;
   final String phoneNumber;
   final WidgetRef ref;
+  bool isPressed = false;
 
   CallIconButton({
     required this.waitingTeam,
@@ -45,6 +46,12 @@ class CallIconButton extends ConsumerWidget {
                 ),
                 iconSize: 30,
                 onPressed: () async {
+                  if(isPressed){
+                    print("이미 CallGuest가 작동중입니다.");
+                    return;
+                  }else{
+                    isPressed = true;
+                  }
                   if (true ==
                       await ref.read(waitingProvider.notifier).requestUserCall(
                           ref,
@@ -57,6 +64,7 @@ class CallIconButton extends ConsumerWidget {
                             .notifier)
                         .pressButton(); // 상태 변경
                   }
+                  isPressed = false;
                 },
               ),
       ],
