@@ -63,13 +63,13 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                     bottomRight: Radius.circular(25),
                   ),
                 ),
-                leading: IconButton(
-                  // 왼쪽 상단 뒤로가기 아이콘
-                  icon: Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
+                // leading: IconButton(
+                //   // 왼쪽 상단 뒤로가기 아이콘
+                //   icon: Icon(Icons.arrow_back, color: Colors.white),
+                //   onPressed: () {
+                //     Navigator.pop(context);
+                //   },
+                // ),
                 actions: [
                   IconButton(
                     icon: Icon(Icons.event_busy, color: Colors.white),
