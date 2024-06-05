@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaorre/provider/Data/UserLogProvider.dart';
 import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
 import 'package:hive/hive.dart';
@@ -44,6 +45,8 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     HiveService.deleteData('password');
     ref.read(waitingProvider.notifier).unSubscribe(0);
     ref.read(waitingProvider.notifier).resetState();
+    ref.read(userLogProvider.notifier).unSubscribe(1);
+    ref.read(userLogProvider.notifier).resetState();
     ref.read(stompClientStateNotifierProvider.notifier).client = null;
     state = null;
   }

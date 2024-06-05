@@ -54,10 +54,11 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
       if (!isSubscribed) {
         waitingNotifier.subscribeToWaitingData(storeCode);
         waitingNotifier.sendWaitingData(storeCode);
-        userLogDataListNotifier.subscribeToLogData(storeCode);
         isSubscribed = true;
         // 마지막으로 기존에 있던 웨이팅 정보들 다시 읽어옴...
-        ref.read(waitingProvider.notifier).reloadEntryTime();
+        // ref.read(waitingProvider.notifier).reloadEntryTime();
+        ref.read(userLogProvider.notifier).retrieveUserLogData(loginData!);
+        userLogDataListNotifier.subscribeToLogData(storeCode);
       }
     }
   }
@@ -106,8 +107,8 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                         SizedBox(width: 10), // 간격 조절
                         LiteRollingSwitch(
                           value: switchValue,
-                          textOn: '웨이팅접수',
-                          textOff: '웨이팅미접수',
+                          textOn: '접수',
+                          textOff: '미접수',
                           colorOn: Color(0xFFE6F4FE),
                           colorOff: Color(0xFFDFDFDF),
                           textOnColor: Color(0xFF72AAD8),
@@ -338,9 +339,7 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                                 CallIconButton(
                                   waitingTeam: team,
                                   storeCode: storeCode,
-                                  minutesToAdd: ref
-                                      .read(minutesToAddProvider.notifier)
-                                      .getState(),
+                                  minutesToAdd: ref.read(minutesToAddProvider.notifier).getState(),
                                   ref: ref,
                                   phoneNumber: team.phoneNumber,
                                 ),

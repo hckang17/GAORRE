@@ -53,9 +53,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
           color: Colors.white,
           child: CustomScrollView(
             slivers: [
-              // sliver 리스트로 감싸줘야 정상적으로 작동함.
               SliverAppBar(
-                // -> 이곳에 앱바 ( 로그아웃 버튼, 영업종료 버튼은 여기에다 배치! )
                 backgroundColor: Color(0xFF72AAD8), // 배경색 설정
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
@@ -77,33 +75,18 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                       if (true ==
                           await showConfirmDialogWithConfirmText(
                               context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")) {
-                        if (true ==
-                            await ref
-                                .read(storeDataProvider.notifier)
-                                .requestCloseStore(ref)) {
-                          // 여기에 이제.. 웨이팅 가능여부가 0 ( POSSIBLE ) 이라면 1 로 변경요청도 보내야함.
-                          if (ref
-                                  .read(storeDataProvider.notifier)
-                                  .getWaitingAvailable() ==
-                              0) {
-                            print(
-                                '현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
-                            await ref
-                                .read(storeDataProvider.notifier)
-                                .changeAvailableStatus(loginData ??
-                                    ref
-                                        .read(loginProvider.notifier)
-                                        .getLoginData()!);
+                        if (true == await ref.read(storeDataProvider.notifier).requestCloseStore(ref)) {
+                          if (ref.read(storeDataProvider.notifier).getWaitingAvailable() ==0) {
+                            print('현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
+                            await ref.read(storeDataProvider.notifier).changeAvailableStatus(loginData ??
+                              ref.read(loginProvider.notifier).getLoginData()!);
                           }
-                          showAlertDialog(context, "영업 종료",
-                              "성공적으로 영업종료를 처리 완료하였습니다.", null);
+                          showAlertDialog(context, "영업 종료","성공적으로 영업종료를 처리 완료하였습니다.", null);
                         } else {
-                          showAlertDialog(
-                              context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
+                          showAlertDialog(context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
                         }
                       } else {
-                        showAlertDialog(
-                            context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
+                        showAlertDialog(context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
                       }
                     },
                   ),
@@ -112,8 +95,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                     icon: Icon(Icons.logout, color: Colors.white),
                     onPressed: () async {
                       // 로그아웃 기능 사용.
-                      if (await showConfirmDialog(context, "로그아웃",
-                          "정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
+                      if (await showConfirmDialog(context, "로그아웃","정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
                         ref.read(loginProvider.notifier).logout(ref);
                         Restart.restartApp();
                       } else {
@@ -164,16 +146,14 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                 floating: true, // 스크롤 올릴 때 축소될지 여부
                 snap: true, // 스크롤을 빨리 움직일 때 자동으로 확장/축소될지 여부
               ),
-              StoreBasicInfoWidget(), // -> 이곳에 가게 상태 (오프닝시간, 클로징시간, 브레이크타임, 호출시간 설정 )
+              StoreBasicInfoWidget(),
               MenuListWidget(),
-              // PopScope() 이 안에 SliverToBoxAdaper( child : ~ , onPopInvoked : (did))
               PopScope(
                 child: SliverToBoxAdapter(
                   child: SizedBox(height: 80),
                 ),
                 onPopInvoked: (didPop) {
                   if (didPop) {
-                    // 별도의 로직은 필요해 보이지 않음.
                   }
                 },
               ),

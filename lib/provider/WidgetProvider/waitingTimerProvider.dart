@@ -23,20 +23,12 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
   @override
   void initState() {
     super.initState();
-    var index = ref
-        .read(waitingProvider.notifier)
-        .getWaitingData()!
-        .teamInfoList
-        .indexWhere((team) => team.waitingNumber == widget.waitingNumber);
-    final entryTime = ref
-        .read(waitingProvider.notifier)
-        .getWaitingData()!
-        .teamInfoList[index]
-        .entryTime!;
+    var index = ref.read(waitingProvider.notifier).getWaitingData()!.teamInfoList.indexWhere((team) => team.waitingNumber == widget.waitingNumber);
+    final entryTime = ref.read(waitingProvider.notifier).getWaitingData()!.teamInfoList[index].entryTime!;
     _remainingTime = entryTime.difference(DateTime.now());
     _timerText = formatTime(_remainingTime);
     _imagePath = 'assets/image/timer_images/timer1.png';
-    _startTimer();
+    _startTimer(entryTime);
   }
 
   // MM:SS 형태로 포맷팅하는 함수
@@ -54,12 +46,12 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
     super.dispose();
   }
 
-  void _startTimer() {
+  void _startTimer(DateTime entryTime) {
     const oneSecond = Duration(seconds: 1);
     _timer = Timer.periodic(oneSecond, (timer) {
       if (_remainingTime.inSeconds > 0) {
         setState(() {
-          _remainingTime -= oneSecond;
+          _remainingTime = entryTime.difference(DateTime.now());
           _timerText = formatTime(_remainingTime);
           _updateImagePath();
         });
