@@ -1,18 +1,17 @@
-import 'package:flutter/cupertino.dart';
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, avoid_print, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/Model/StoreDataModel.dart';
-import 'package:gaorre/presenter/Screen/StartScreen.dart';
+import 'package:gaorre/presenter/Screen/setting_screen.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/Menu/AddMenuPopup.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/Menu/MenuList.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/Menu/AddCategoryPopup.dart';
-import 'package:gaorre/presenter/Widget/ManagerPage/ResetPasswordPopup.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/StoreBasicInfoWidget.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
-import 'package:restart_app/restart_app.dart';
 import '../../Model/LoginDataModel.dart';
 
 class ManagementScreenWidget extends ConsumerWidget {
@@ -90,26 +89,26 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                       }
                     },
                   ),
-                  IconButton(
-                    // 오른쪽 상단 로그아웃 아이콘
-                    icon: Icon(Icons.logout, color: Colors.white),
-                    onPressed: () async {
-                      // 로그아웃 기능 사용.
-                      if (await showConfirmDialog(context, "로그아웃","정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
-                        ref.read(loginProvider.notifier).logout(ref);
-                        Restart.restartApp();
-                      } else {
-                        return;
-                      }
-                    },
-                  ),
+                  // IconButton(
+                  //   // 오른쪽 상단 로그아웃 아이콘
+                  //   icon: Icon(Icons.logout, color: Colors.white),
+                  //   onPressed: () async {
+                  //     // 로그아웃 기능 사용.
+                  //     if (await showConfirmDialog(context, "로그아웃","정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
+                  //       ref.read(loginProvider.notifier).logout(ref);
+                  //       Restart.restartApp();
+                  //     } else {
+                  //       return;
+                  //     }
+                  //   },
+                  // ),
                   IconButton(
                     icon: Icon(Icons.settings, color: Colors.white),
                     onPressed: () async {
                       // 세팅화면으로 전환
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (BuildContext context) =>
-                          ResetPasswordScreen()));
+                          SettingScreen()));
                     }
                   )
                 ],

@@ -51,12 +51,14 @@ class StoreBasicInfoWidget extends ConsumerWidget {
                   child: TextWidget(
                     '영업시간',
                     textAlign: TextAlign.start,
+                    fontSize: 20,
                   )),
               Expanded(
                 flex: 4,
                 child: TextWidget(
-                  ': ${currentStoreData.openingTime} ~ ${currentStoreData.closingTime}',
+                  ': ${convertTime(currentStoreData.openingTime)}~${convertTime(currentStoreData.closingTime)}',
                   textAlign: TextAlign.start,
+                  fontSize: 20,
                 ),
               ),
               Expanded(
@@ -79,12 +81,14 @@ class StoreBasicInfoWidget extends ConsumerWidget {
                   child: TextWidget(
                     '휴식시간',
                     textAlign: TextAlign.start,
+                    fontSize: 20,
                   )),
               Expanded(
                 flex: 4,
                 child: TextWidget(
-                  ': ${currentStoreData.startBreakTime} ~ ${currentStoreData.endBreakTime}',
+                  ': ${convertTime(currentStoreData.startBreakTime!)}~${convertTime(currentStoreData.endBreakTime!)}',
                   textAlign: TextAlign.start,
+                  fontSize: 20,
                 ),
               ),
               Expanded(
@@ -107,12 +111,14 @@ class StoreBasicInfoWidget extends ConsumerWidget {
                   child: TextWidget(
                     '라스트오더',
                     textAlign: TextAlign.start,
+                    fontSize: 20,
                   )),
               Expanded(
                 flex: 4,
                 child: TextWidget(
-                  ': ${currentStoreData.lastOrderTime} 마감',
+                  ': ${convertTime(currentStoreData.lastOrderTime)} 마감',
                   textAlign: TextAlign.start,
+                  fontSize: 20,
                 ),
               ),
               Expanded(
@@ -134,6 +140,7 @@ class StoreBasicInfoWidget extends ConsumerWidget {
                   flex: 2,
                   child: TextWidget(
                     '호출마감',
+                    fontSize: 20,
                     textAlign: TextAlign.start,
                   )),
               Expanded(
@@ -141,6 +148,7 @@ class StoreBasicInfoWidget extends ConsumerWidget {
                 child: TextWidget(
                   ': ${minutesToAdd}분',
                   textAlign: TextAlign.start,
+                  fontSize: 20,
                 ),
               ),
               Expanded(
@@ -209,4 +217,13 @@ class StoreBasicInfoWidget extends ConsumerWidget {
           );
         });
   }
+}
+
+String convertTime(String time) {
+  List<String> parts = time.split(':');
+
+  String hour = parts[0];
+  String minute = parts[1];
+
+  return '$hour:$minute';
 }

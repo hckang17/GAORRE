@@ -1,14 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/presenter/MainScreen.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/ResetPasswordPopup.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
-import 'package:gaorre/widget/button/text_button_widget.dart';
-import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:gaorre/widget/text_field/text_input_widget.dart';
 import '../../provider/Data/loginDataProvider.dart';
 
