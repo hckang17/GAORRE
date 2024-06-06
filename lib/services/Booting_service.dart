@@ -215,8 +215,13 @@ Future<int> firstBoot(WidgetRef ref) async {
         print("현재 버전... $version [firstBoot]");
         print("최신 버전... ${responseBody['appVersion']}");
         versionCheckCompleter.complete();
+      }else if(responseBody['status'] == '1301' || responseBody['appEssentialUpdate'] == 0){
+        print("업데이트 버전이 있습니다...");
+        print('필수 업데이트는 아닙니다...');
+        versionCheckCompleter.complete();
       }else{
         print("업데이트 버전이 있습니다...");
+        print('필수 업데이트가 존재함으로 업데이트합니다....');
         return 5;
       }
     }else{
