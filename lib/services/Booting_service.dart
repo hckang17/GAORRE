@@ -348,6 +348,8 @@ Future<int> firstBoot(WidgetRef ref) async {
 
     await requestLogData.future;
 
+    ref.read(firstBootState.notifier).state = true;
+
   } catch (e) {
     print("에러 발생 : $e [firstBootService]");
     return 4; // 에러 발생 시 4 반환
