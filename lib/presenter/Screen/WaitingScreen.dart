@@ -42,6 +42,22 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
   bool isSubscribed = false;
   late bool switchValue;
 
+  Future<void> initData() async {
+    loginData = ref.read(loginProvider.notifier).getLoginData();
+    if (loginData != null) {
+      storeCode = loginData!.storeCode;
+      final waitingNotifier = ref.read(waitingProvider.notifier);
+      final userLogDataListNotifier = ref.read(userLogProvider.notifier);
+      if (!isSubscribed) {
+        waitingNotifier.subscribeToWaitingData(storeCode);
+        waitingNotifier.sendWaitingData(storeCode);
+        isSubscribed = true;
+        userLogDataListNotifier.subscribeToLogData(storeCode);
+        await userLogDataListNotifier.retrieveUserLogData(loginData!);
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -65,8 +81,7 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
 
   @override
   Widget build(BuildContext context) {
-    waitingAvailableState =
-        ref.watch(storeDataProvider.select((value) => value!.waitingAvailable));
+    waitingAvailableState =ref.watch(storeDataProvider.select((value) => value!.waitingAvailable));
     currentWaitingData = ref.watch(waitingProvider);
     loginData = ref.watch(loginProvider);
     switchValue = waitingAvailableState == 0 ? true : false;
@@ -373,6 +388,7 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
         backgroundColor: Colors.white // 로그 확인 아이콘
       ),
     );
+
   }
 }
 

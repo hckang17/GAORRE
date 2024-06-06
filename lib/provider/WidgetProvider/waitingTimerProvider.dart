@@ -33,10 +33,17 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
 
   // MM:SS 형태로 포맷팅하는 함수
   String formatTime(Duration d) {
+    // Duration이 음수일 경우 "OUT" 반환
+    if (d.inSeconds < 0) {
+      return "OUT";
+    }
+
+    // 두 자리 숫자로 포맷팅을 도와주는 내부 함수
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String twoDigitMinutes = twoDigits(d.inMinutes.remainder(60));
     String twoDigitSeconds = twoDigits(d.inSeconds.remainder(60));
-    print(d.toString());
+
+    // 포맷팅된 시간 문자열 반환
     return "$twoDigitMinutes:$twoDigitSeconds";
   }
 
