@@ -53,16 +53,13 @@ class CallIconButton extends ConsumerWidget {
                     isPressed = true;
                   }
                   if (true ==
-                      await ref.read(waitingProvider.notifier).requestUserCall(
-                          ref,
-                          phoneNumber,
-                          waitingTeam.waitingNumber,
-                          storeCode,
-                          minutesToAdd)) {
-                    ref
-                        .read(callButtonProvider(waitingTeam.waitingNumber)
-                            .notifier)
-                        .pressButton(); // 상태 변경
+                    await ref.read(waitingProvider.notifier).requestUserCall(
+                      ref,
+                      phoneNumber,
+                      waitingTeam.waitingNumber,
+                      storeCode,
+                      minutesToAdd)) {
+                    ref.read(callButtonProvider(waitingTeam.waitingNumber).notifier).pressButton(); // 상태 변경
                   }
                   isPressed = false;
                 },

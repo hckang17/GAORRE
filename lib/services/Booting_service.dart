@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/presenter/Widget/alertDialog.dart';
+import 'package:gaorre/provider/Data/UserLogProvider.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
 import 'package:gaorre/provider/Data/waitingDataProvider.dart';
@@ -33,6 +34,7 @@ Future<int> reboot(WidgetRef ref) async {
     var requestLoginData = Completer<void>();
     var requestStoreInfoCompleter = Completer<void>();
     var hiveInitializeCompleter = Completer<void>();
+    var requestLogData = Completer<void>();
 
     // 하이브 저장소 초기화
     print('하이브 저장소 상태를 확인합니다. [RebootService]');
@@ -171,18 +173,21 @@ Future<int> reboot(WidgetRef ref) async {
       }
     }
     await requestStoreInfoCompleter.future;
+
+    print('유저로그를 가져옵니다... [reboot service]');
+    await ref.read(userLogProvider.notifier).retrieveUserLogData(
+      ref.read(loginProvider.notifier).getLoginData()!
+    );
+    requestLogData.complete();
+    await requestLogData.future;
+
   } catch (e) {
     print("에러 발생 : $e [RebootService]");
     return 4; // 원인미상 에러 발생 시 4 반환
   } finally {
-    print('마지막으로 각 웨이팅별 입장마감시간 정보를 가져옵니다... [Reboot]');
-    // ref.read(waitingProvider.notifier).reloadEntryTime();
     ref.read(isNowRebootState.notifier).state = false;
     return 1; // 아무 문제없음! MainScreen으로~
   }
-  // print('마지막으로 각 웨이팅별 입장마감시간 정보를 가져옵니다... [Reboot]');
-  // ref.read(waitingProvider.notifier).reloadEntryTime();
-  // return 1;   // 아무 문제없음! MainScreen으로~
 }
 
 Future<int> firstBoot(WidgetRef ref) async {
@@ -231,6 +236,7 @@ Future<int> firstBoot(WidgetRef ref) async {
     var requestLoginData = Completer<void>();
     var requestStoreInfoCompleter = Completer<void>();
     var hiveInitializeCompleter = Completer<void>();
+    var requestLogData = Completer<void>();
 
     // 하이브 저장소 초기화
     print('하이브 저장소를 초기화합니다. [FIrstBootService]');
@@ -318,13 +324,7 @@ Future<int> firstBoot(WidgetRef ref) async {
 
     // 가게 정보 취득 시도
     print('가게정보 요청을 전송합니다. [FirstBootService]');
-    bool retrieveStoreDataResult = await ref
-        .read(storeDataProvider.notifier)
-        .requestStoreData(
-            ref.read(loginProvider.notifier).getLoginData()!.storeCode);
-
-    // 웨이팅 마감 시간 정보를 로딩합니다......
-    // ref.read(waitingProvider.notifier).reloadEntryTime();
+    bool retrieveStoreDataResult = await ref.read(storeDataProvider.notifier).requestStoreData(ref.read(loginProvider.notifier).getLoginData()!.storeCode);
 
     if (!retrieveStoreDataResult) {
       requestStoreInfoCompleter.completeError('가게정보 수신 실패');
@@ -334,6 +334,15 @@ Future<int> firstBoot(WidgetRef ref) async {
     }
 
     await requestStoreInfoCompleter.future;
+
+    print('유저로그를 불러옵니다... [FirstBoot]');
+    await ref.read(userLogProvider.notifier).retrieveUserLogData(
+      ref.read(loginProvider.notifier).getLoginData()!
+    );
+    requestLogData.complete();
+
+    await requestLogData.future;
+
   } catch (e) {
     print("에러 발생 : $e [firstBootService]");
     return 4; // 에러 발생 시 4 반환
