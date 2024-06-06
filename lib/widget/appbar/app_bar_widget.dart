@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:sliver_app_bar_builder/sliver_app_bar_builder.dart';
 
 class AppBarWidget extends ConsumerWidget {

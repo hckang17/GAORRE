@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/StoreDataModel.dart';
-import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-import 'package:orre_manager/provider/Data/AddWaitingTimeProider.dart';
-import 'package:orre_manager/provider/Data/storeDataProvider.dart';
-import 'package:orre_manager/widget/button/big_button_widget.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:gaorre/Model/StoreDataModel.dart';
+import 'package:gaorre/presenter/Widget/AlertDialog.dart';
+import 'package:gaorre/provider/Data/AddWaitingTimeProvider.dart';
+import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/widget/button/big_button_widget.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 
 // StoreData({
 //   required this.storeCode,

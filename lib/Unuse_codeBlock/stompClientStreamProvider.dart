@@ -2,10 +2,10 @@
 // import 'dart:async';
 
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-// import 'package:orre_manager/provider/Data/tableDataProvider.dart';
-// import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
-// import 'package:orre_manager/services/websocket_services.dart';
+// import 'package:gaorre/provider/Data/loginDataProvider.dart';
+// import 'package:gaorre/provider/Data/tableDataProvider.dart';
+// import 'package:gaorre/provider/Data/waitingDataProvider.dart';
+// import 'package:gaorre/services/websocket_services.dart';
 // import 'package:stomp_dart_client/stomp.dart';
 // import 'package:stomp_dart_client/stomp_config.dart';
 // import 'package:stomp_dart_client/stomp_frame.dart';
