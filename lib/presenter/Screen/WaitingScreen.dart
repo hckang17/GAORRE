@@ -39,6 +39,7 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
   late LoginData? loginData;
   late int waitingAvailableState;
   WaitingData? currentWaitingData;
+  UserLogDataList? currentUserLogData;
   bool isSubscribed = false;
   late bool switchValue;
 
@@ -84,6 +85,8 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
     waitingAvailableState =ref.watch(storeDataProvider.select((value) => value!.waitingAvailable));
     currentWaitingData = ref.watch(waitingProvider);
     loginData = ref.watch(loginProvider);
+    currentUserLogData = ref.watch(userLogProvider);
+    
     switchValue = waitingAvailableState == 0 ? true : false;
 
     if (currentWaitingData == null) {
