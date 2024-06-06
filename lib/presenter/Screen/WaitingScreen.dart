@@ -82,11 +82,12 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
 
   @override
   Widget build(BuildContext context) {
-    waitingAvailableState =ref.watch(storeDataProvider.select((value) => value!.waitingAvailable));
+    waitingAvailableState =
+        ref.watch(storeDataProvider.select((value) => value!.waitingAvailable));
     currentWaitingData = ref.watch(waitingProvider);
     loginData = ref.watch(loginProvider);
     currentUserLogData = ref.watch(userLogProvider);
-    
+
     switchValue = waitingAvailableState == 0 ? true : false;
 
     if (currentWaitingData == null) {
@@ -338,14 +339,19 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                                     icon: Icon(Icons.check_box,
                                         color: Colors.green), // 초록색 체크박스 아이콘
                                     onPressed: () async {
-                                      print('${team.waitingNumber}번 입장처리 요청 [waitinScreen]');
-                                      bool confirmation = await showConfirmDialog(ref.context, "고객 입장처리",
-                                        "${team.waitingNumber}번 고객님을 입장처리 하시겠습니까?");
+                                      print(
+                                          '${team.waitingNumber}번 입장처리 요청 [waitinScreen]');
+                                      bool confirmation = await showConfirmDialog(
+                                          ref.context,
+                                          "고객 입장처리",
+                                          "${team.waitingNumber}번 고객님을 입장처리 하시겠습니까?");
                                       if (confirmation) {
                                         print('입장처리를 진행하겠습니다. [waitingScreen]');
-                                        bool result = await ref.read(waitingProvider.notifier).confirmEnterance(ref.context,
-                                          loginData!, team.waitingNumber);
-                                        if(result){
+                                        bool result = await ref
+                                            .read(waitingProvider.notifier)
+                                            .confirmEnterance(ref.context,
+                                                loginData!, team.waitingNumber);
+                                        if (result) {
                                           print('입장처리 성공 [WaitingScreen]');
                                         }
                                       }
@@ -357,7 +363,9 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
                                 CallIconButton(
                                   waitingTeam: team,
                                   storeCode: storeCode,
-                                  minutesToAdd: ref.read(minutesToAddProvider.notifier).getState(),
+                                  minutesToAdd: ref
+                                      .read(minutesToAddProvider.notifier)
+                                      .getState(),
                                   ref: ref,
                                   phoneNumber: team.phoneNumber,
                                 ),
@@ -382,19 +390,20 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await ref.read(userLogProvider.notifier).retrieveUserLogData(
-              ref.read(loginProvider.notifier).getLoginData()!);
-          showWaitingLog(ref);
-        },
-        child: Icon(Icons.assignment,  color: Color(0xFF72AAD8),),
-        backgroundColor: Colors.white // 로그 확인 아이콘
-      ),
+          onPressed: () async {
+            await ref.read(userLogProvider.notifier).retrieveUserLogData(
+                ref.read(loginProvider.notifier).getLoginData()!);
+            showWaitingLog(ref);
+          },
+          child: Icon(
+            Icons.assignment,
+            color: Color(0xFF72AAD8),
+          ),
+          backgroundColor: Colors.white // 로그 확인 아이콘
+          ),
     );
-
   }
 }
-
 
 class _LoadingScreen extends StatelessWidget {
   @override

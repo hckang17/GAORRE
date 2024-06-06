@@ -44,16 +44,17 @@ class _LoadingDialogState extends State<LoadingDialog> {
   Widget build(BuildContext context) {
     final String textToShow = '로딩중입니다${"." * dotCount}';
     return Material(
+        color: Colors.transparent,
         child: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          TextWidget(textToShow),
-          SizedBox(height: 16),
-        ],
-      ),
-    ));
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              TextWidget(textToShow),
+              SizedBox(height: 16),
+            ],
+          ),
+        ));
   }
 }
