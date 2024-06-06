@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io' show Platform;
 
@@ -30,7 +31,7 @@ class UpdateAppScreen extends ConsumerWidget {
   // 플랫폼별로 앱 스토어 URL을 실행하는 함수
   void _launchURL() async {
     const urlIOS = 'https://apps.apple.com/app/idYOUR_APP_ID'; // ID확인해야함.. 뭔지모름
-    const urlAndroid = 'https://play.google.com/store/apps/details?id=com.aeiou.gaorre';
+    const urlAndroid = 'https://play.google.com/store/apps/details?id=com.aeioudev.gaorre';
     String url = Platform.isIOS ? urlIOS : urlAndroid;
 
     if (await canLaunch(url)) {
@@ -44,12 +45,12 @@ class UpdateAppScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("앱 업데이트"),
+        title: TextWidget("필수 업데이트갖 존재합니다."),
       ),
       body: Center(
         child: ElevatedButton(
           onPressed: () => showUpdateDialog(context),
-          child: Text('앱 업데이트 확인'),
+          child: TextWidget('업데이트하기'),
         ),
       ),
     );
