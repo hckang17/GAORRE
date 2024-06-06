@@ -204,7 +204,7 @@
 //                                   builder: (context) => WaitingAddingScreen()),
 //                             );
 //                           },
-//                           child: Image.asset(
+//                           child: SvgPicture.asset(
 //                               'assets/images/button/waiting adding.png'),
 //                         ),
 //                       ),
