@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, unused_import, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, unused_local_variable, avoid_print, use_build_context_synchronously, unnecessary_string_interpolations
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,22 +44,6 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
   UserLogDataList? currentUserLogData;
   bool isSubscribed = false;
   late bool switchValue;
-
-  Future<void> initData() async {
-    loginData = ref.read(loginProvider.notifier).getLoginData();
-    if (loginData != null) {
-      storeCode = loginData!.storeCode;
-      final waitingNotifier = ref.read(waitingProvider.notifier);
-      final userLogDataListNotifier = ref.read(userLogProvider.notifier);
-      if (!isSubscribed) {
-        waitingNotifier.subscribeToWaitingData(storeCode);
-        waitingNotifier.sendWaitingData(storeCode);
-        isSubscribed = true;
-        userLogDataListNotifier.subscribeToLogData(storeCode);
-        await userLogDataListNotifier.retrieveUserLogData(loginData!);
-      }
-    }
-  }
 
   @override
   void initState() {
@@ -414,46 +400,3 @@ class _LoadingScreen extends StatelessWidget {
     );
   }
 }
-
-// // class _ErrorScreen extends StatelessWidget {
-// //   final dynamic error;
-
-// //   _ErrorScreen(this.error);
-
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return Scaffold(
-// //       appBar: AppBar(title: Text('Manager screen')),
-// //       body: Center(child: Text('Error: $error')),
-// //     );
-// //   }
-// // }
-
-///
-/// 이 아래에 원래 메뉴버튼을 두려고 했으나...
-
-// Row(
-//   mainAxisAlignment:
-//       MainAxisAlignment.spaceEvenly, // 가로로 공간을 균등하게 배치합니다.
-//   children: [
-//     // ElevatedButton(
-//     //   onPressed: () {
-//     //     ref.read(waitingProvider.notifier).requestUserCall(
-//     //         context,
-//     //         currentWaitingData!.teamInfoList[0].phoneNumber,
-//     //         currentWaitingData!.teamInfoList[0].waitingNumber,
-//     //         storeCode,
-//     //         minutesToAdd);
-//     //   },
-//     //   child: Text('손님 호출하기'),
-//     // ),
-//     // ElevatedButton(
-//     //   onPressed: () {
-//     //     Navigator.of(context).push(MaterialPageRoute(
-//     //         builder: (BuildContext context) =>
-//     //             TableManagementScreen()));
-//     //   },
-//     //   child: Text('좌석페이지'),
-//     // ),
-//   ],
-// ),
