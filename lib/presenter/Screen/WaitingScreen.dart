@@ -57,7 +57,6 @@ class WaitingScreenBodyState extends ConsumerState<WaitingScreenBody> {
         isSubscribed = true;
         // 마지막으로 기존에 있던 웨이팅 정보들 다시 읽어옴...
         // ref.read(waitingProvider.notifier).reloadEntryTime();
-        ref.read(userLogProvider.notifier).retrieveUserLogData(loginData!);
         userLogDataListNotifier.subscribeToLogData(storeCode);
       }
     }

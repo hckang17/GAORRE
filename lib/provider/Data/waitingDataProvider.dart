@@ -187,11 +187,8 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       final Map<String, dynamic> responseBody =
           json.decode(utf8.decode(response.bodyBytes));
       try {
-        CallWaitingTeam callGuestResponse =
-            CallWaitingTeam.fromJson(responseBody);
-        if (callGuestResponse.storeCode ==
-            storeCode) //고객호출 성공시! 이때, storeCode가 같은지로 확인함.
-        {
+        CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseBody);
+        if (callGuestResponse.storeCode == storeCode){
           String formattedTime = extractEntryTime(callGuestResponse.entryTime);
           WaitingData? currentState = state;
           // WaitingTeam의 entryTime을 업데이트
