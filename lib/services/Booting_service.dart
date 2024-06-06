@@ -17,6 +17,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 
+import '../main.dart';
+
 final firstBootState = StateProvider<bool>((ref) => false);
 final container = ProviderContainer(); // 로딩창...때문에...
 final isNowRebootState = StateProvider<bool>((ref) => false);
@@ -312,6 +314,11 @@ Future<int> firstBoot(WidgetRef ref) async {
     var permissionStatus = await Permission.sms.status;
     if (!permissionStatus.isGranted) {
       await Permission.sms.request();
+    }
+
+    var notificationPermissionStatus = await Permission.notification.status;
+    if(!notificationPermissionStatus.isGranted) {
+      await Permission.notification.request();
     }
 
     // 자동로그인 시도

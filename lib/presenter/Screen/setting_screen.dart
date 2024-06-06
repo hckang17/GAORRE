@@ -2,18 +2,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gaorre/Model/StoreDataModel.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/ResetPasswordPopup.dart';
 import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/provider/PushNotificationProvider.dart';
 import 'package:gaorre/widget/appbar/static_app_bar_widget.dart';
 import 'package:gaorre/widget/background/waveform_background_widget.dart';
 import 'package:gaorre/widget/button/big_button_widget.dart';
 import 'package:gaorre/widget/button/text_button_widget.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:restart_app/restart_app.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SettingScreen extends ConsumerWidget {
   @override
@@ -24,7 +26,7 @@ class SettingScreen extends ConsumerWidget {
     return WaveformBackgroundWidget(
       child: Scaffold(
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(0.25),
+          preferredSize: Size.fromHeight(0.25.sh),
           child: StaticAppBarWidget(
             title: '설정',
             leading: IconButton(
@@ -59,7 +61,7 @@ class SettingScreen extends ConsumerWidget {
                           TextWidget(
                             '만나서 반갑습니다. :)',
                             fontFamily: 'Dovemayo_gothic',
-                            fontSize: 12,
+                            fontSize: 15,
                           ),
                         ],
                       ),
@@ -70,13 +72,16 @@ class SettingScreen extends ConsumerWidget {
                         height: 10,
                       ),
                       BigButtonWidget(
-                        onPressed: () {},
+                        onPressed: () async {;
+                          print('푸쉬알림 상태를 변경합니다');
+                          openAppSettings();
+                        },
                         backgroundColor: Color(0xFFDFDFDF),
                         minimumSize: Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15.0),
                         ),
-                        text: '푸쉬 알림 설정하기',
+                        text: '푸쉬알림 설정하기',
                         textColor: Colors.black,
                       ),
                       SizedBox(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 
 class WaveformBackgroundWidget extends ConsumerWidget {
   final Color backgroundColor;
@@ -15,15 +16,15 @@ class WaveformBackgroundWidget extends ConsumerWidget {
         Container(
           color: backgroundColor,
         ),
-        Image.asset(
-          "assets/image/waveform/wave_shadow.png",
-          width: MediaQuery.sizeOf(context).width,
-          fit: BoxFit.cover,
+        SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave_shadow.svg",
+            width: MediaQuery.of(context).size.width,
+            fit: BoxFit.cover,
         ),
-        Image.asset(
-          "assets/image/waveform/wave.png",
-          width: MediaQuery.sizeOf(context).width,
-          fit: BoxFit.cover,
+        SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave.svg",
+            width: MediaQuery.of(context).size.width,
+            fit: BoxFit.cover,
         ),
         child,
       ],
