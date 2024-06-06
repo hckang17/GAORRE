@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "orre_manager" "\0"
+            VALUE "FileDescription", "gaorre" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "orre_manager" "\0"
+            VALUE "InternalName", "gaorre" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "orre_manager.exe" "\0"
-            VALUE "ProductName", "orre_manager" "\0"
+            VALUE "OriginalFilename", "gaorre.exe" "\0"
+            VALUE "ProductName", "gaorre" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -1,8 +1,8 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:orre_manager/widget/button/text_button_widget.dart';
-// import 'package:orre_manager/widget/text/text_widget.dart';
+// import 'package:gaorre/widget/button/text_button_widget.dart';
+// import 'package:gaorre/widget/text/text_widget.dart';
 
 // void showEditCategoryDialog(BuildContext context) {
 //   showDialog(

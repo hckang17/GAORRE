@@ -5,25 +5,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/firebase_options.dart';
-import 'package:orre_manager/presenter/Error/error_screen.dart';
-import 'package:orre_manager/presenter/Error/network_error_screen.dart';
-import 'package:orre_manager/presenter/Error/websocket_error_screen.dart';
-import 'package:orre_manager/presenter/Screen/StartScreen.dart';
-import 'package:orre_manager/presenter/MainScreen.dart';
-import 'package:orre_manager/presenter/Widget/LoadingDialog.dart';
-import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/provider/Data/storeDataProvider.dart';
-import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart';
-import 'package:orre_manager/provider/Network/stompClientStateNotifier.dart';
-import 'package:orre_manager/services/Booting_service.dart';
+import 'package:gaorre/firebase_options.dart';
+import 'package:gaorre/presenter/Error/error_screen.dart';
+import 'package:gaorre/presenter/Error/network_error_screen.dart';
+import 'package:gaorre/presenter/Error/websocket_error_screen.dart';
+import 'package:gaorre/presenter/Screen/StartScreen.dart';
+import 'package:gaorre/presenter/MainScreen.dart';
+import 'package:gaorre/presenter/Screen/UpdateScreen.dart';
+import 'package:gaorre/presenter/Widget/LoadingDialog.dart';
+import 'package:gaorre/provider/Data/loginDataProvider.dart';
+import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/provider/Network/connectivityStateNotifier.dart';
+import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
+import 'package:gaorre/services/Booting_service.dart';
 
 final notifications = FlutterLocalNotificationsPlugin();
 late AndroidNotificationChannel channel;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
-
-void main() async  {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
@@ -35,7 +35,7 @@ void main() async  {
 
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp]); // 화면 방향을 세로로 고정
-  
+
   runApp(
     ProviderScope(
       child: MaterialApp(
@@ -46,20 +46,24 @@ void main() async  {
 }
 
 final initStateProvider = StateProvider<int>((ref) => 3);
+final lastLifeCycleState =
+    StateProvider<AppLifecycleState>((ref) => AppLifecycleState.inactive);
 
 class GAORRE_APP extends ConsumerStatefulWidget {
   @override
   _GAORRE_APPState createState() => _GAORRE_APPState();
 }
 
-class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObserver {
+class _GAORRE_APPState extends ConsumerState<GAORRE_APP>
+    with WidgetsBindingObserver {
   List<Widget> nextScreen = [
-      StartScreen(),
-      MainScreen(),
-      WebsocketErrorScreen(),
-      NetworkCheckScreen(),
-      ErrorScreen(),
-  ];  
+    StartScreen(),
+    MainScreen(),
+    WebsocketErrorScreen(),
+    NetworkCheckScreen(),
+    ErrorScreen(),
+    UpdateAppScreen(),
+  ];
 
   @override
   void initState() {
@@ -80,45 +84,58 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObse
     switch (state) {
       case AppLifecycleState.inactive:
         // 앱이 비활성 상태일 때 실행할 코드
-        print('앱이 비활성화 상태입니다... [main.dart]');
+        print('앱이 inactive 상태입니다... [main.dart]');
+        ref.read(lastLifeCycleState.notifier).state =
+            AppLifecycleState.inactive;
         break;
       case AppLifecycleState.paused:
         // 앱이 일시 정지 상태일 때 실행할 코드
-        print('앱이 일시정지 상태입니다... [main.dart]');
+        print('앱이 paused 상태입니다... [main.dart]');
+        ref.read(lastLifeCycleState.notifier).state = AppLifecycleState.paused;
         break;
       case AppLifecycleState.resumed:
         // 앱이 활성 상태로 돌아왔을 때 실행할 코드
-        print('앱이 활성화 상태입니다... [main.dart]');
-        _executeReboot(ref);
+        print('앱이 resumed 상태입니다... [main.dart]');
+        if (ref.read(lastLifeCycleState) == AppLifecycleState.paused) {
+          ref.read(lastLifeCycleState.notifier).state =
+              AppLifecycleState.resumed;
+        } else {
+          ref.read(lastLifeCycleState.notifier).state =
+              AppLifecycleState.resumed;
+          _executeReboot(ref);
+        }
         break;
       case AppLifecycleState.detached:
         // 앱이 종료 상태일 때 실행할 코드
-        print('앱이 종료된 상태입니다... [main.dart]');
+        print('앱이 detached 상태입니다... [main.dart]');
+        ref.read(lastLifeCycleState.notifier).state =
+            AppLifecycleState.detached;
         break;
       case AppLifecycleState.hidden:
         // TODO: Handle this case.
-        print('앱이 숨겨진 상태입니다... [main.dart]');
+        print('앱이 hidden 상태입니다... [main.dart]');
+        ref.read(lastLifeCycleState.notifier).state = AppLifecycleState.hidden;
     }
   }
 
-
   void _executeReboot(WidgetRef ref) async {
     print("백그라운드 -> 포그라운드 돌아옴.... [main.dart - executeReboot]");
+
+    if (ref.read(isNowRebootState) == true) {
+      print('이미 Reboot이 실행중입니다... [executeReboot]');
+      return;
+    }
     // 반투명 로딩 스크린 표시
     showLoadingDialog(context);
 
     int rebootState = await reboot(ref);
-    Navigator.pop(context);  // 로딩 스크린 제거
-    if(rebootState == -1){
+    Navigator.pop(context); // 로딩 스크린 제거
+    if (rebootState == -1) {
       print('아무것도 하지 않습니다 [_executeReboot]');
       return;
-    }else if (rebootState != 1) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-        builder: (BuildContext context) =>
-          nextScreen[rebootState]
-        )
-      );
+    } else if (rebootState != 1) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => nextScreen[rebootState]));
     }
   }
 
@@ -153,7 +170,6 @@ class _GAORRE_APPState extends ConsumerState<GAORRE_APP> with WidgetsBindingObse
   }
 }
 
-
 class NetworkCheckScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -173,12 +189,12 @@ class StompCheckScreen extends ConsumerWidget {
       return UserInfoCheckWidget();
     } else {
       // STOMP 연결 실패
-      print("STOMP 연결 실패, WebsocketErrorScreen() 호출 [StompCheckScreen - main.dart]");
+      print(
+          "STOMP 연결 실패, WebsocketErrorScreen() 호출 [StompCheckScreen - main.dart]");
       return WebsocketErrorScreen();
     }
   }
 }
-
 
 class UserInfoCheckWidget extends ConsumerWidget {
   @override
@@ -211,8 +227,7 @@ class StoreDataCheckWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder<bool>(
       future: ref.watch(storeDataProvider.notifier).requestStoreData(
-        ref.read(loginProvider.notifier).getLoginData()!.storeCode
-      ),
+          ref.read(loginProvider.notifier).getLoginData()!.storeCode),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.data == true) {

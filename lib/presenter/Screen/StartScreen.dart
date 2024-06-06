@@ -57,7 +57,7 @@ class StartScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "원격 줄서기 원격 주문 서비스",
+                  "원격 웨이팅 접수 서비스(점주)",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Dovemayo_gothic',

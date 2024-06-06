@@ -1,8 +1,8 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:orre_manager/Model/MenuDataModel.dart';
-// import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-// import 'package:orre_manager/provider/Data/storeDataProvider.dart';
+// import 'package:gaorre/Model/MenuDataModel.dart';
+// import 'package:gaorre/provider/Data/loginDataProvider.dart';
+// import 'package:gaorre/provider/Data/storeDataProvider.dart';
 
 // import 'package:flutter/material.dart';
 // import 'package:flutter/widgets.dart';

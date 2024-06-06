@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/Error/network_error_screen.dart';
-import 'package:orre_manager/presenter/Error/websocket_error_screen.dart';
-import 'package:orre_manager/presenter/MainScreen.dart';
-import 'package:orre_manager/provider/errorStateNotifier.dart';
+import 'package:gaorre/presenter/Error/network_error_screen.dart';
+import 'package:gaorre/presenter/Error/websocket_error_screen.dart';
+import 'package:gaorre/presenter/MainScreen.dart';
+import 'package:gaorre/provider/errorStateNotifier.dart';
 
 class ErrorScreen extends ConsumerWidget {
   @override

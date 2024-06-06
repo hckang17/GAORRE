@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
+import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 
 class TimerWidget extends ConsumerStatefulWidget {
   final int minutesToAdd;
@@ -28,14 +28,22 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
     _remainingTime = entryTime.difference(DateTime.now());
     _timerText = formatTime(_remainingTime);
     _imagePath = 'assets/image/timer_images/timer1.png';
-    _startTimer();
+    _startTimer(entryTime);
   }
 
   // MM:SS 형태로 포맷팅하는 함수
   String formatTime(Duration d) {
+    // Duration이 음수일 경우 "OUT" 반환
+    if (d.inSeconds < 0) {
+      return "OUT";
+    }
+
+    // 두 자리 숫자로 포맷팅을 도와주는 내부 함수
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String twoDigitMinutes = twoDigits(d.inMinutes.remainder(60));
     String twoDigitSeconds = twoDigits(d.inSeconds.remainder(60));
+
+    // 포맷팅된 시간 문자열 반환
     return "$twoDigitMinutes:$twoDigitSeconds";
   }
 
@@ -45,12 +53,12 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
     super.dispose();
   }
 
-  void _startTimer() {
+  void _startTimer(DateTime entryTime) {
     const oneSecond = Duration(seconds: 1);
     _timer = Timer.periodic(oneSecond, (timer) {
       if (_remainingTime.inSeconds > 0) {
         setState(() {
-          _remainingTime -= oneSecond;
+          _remainingTime = entryTime.difference(DateTime.now());
           _timerText = formatTime(_remainingTime);
           _updateImagePath();
         });
