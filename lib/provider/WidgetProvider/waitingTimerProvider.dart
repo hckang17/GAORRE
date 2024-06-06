@@ -23,8 +23,16 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
   @override
   void initState() {
     super.initState();
-    var index = ref.read(waitingProvider.notifier).getWaitingData()!.teamInfoList.indexWhere((team) => team.waitingNumber == widget.waitingNumber);
-    final entryTime = ref.read(waitingProvider.notifier).getWaitingData()!.teamInfoList[index].entryTime!;
+    var index = ref
+        .read(waitingProvider.notifier)
+        .getWaitingData()!
+        .teamInfoList
+        .indexWhere((team) => team.waitingNumber == widget.waitingNumber);
+    final entryTime = ref
+        .read(waitingProvider.notifier)
+        .getWaitingData()!
+        .teamInfoList[index]
+        .entryTime!;
     _remainingTime = entryTime.difference(DateTime.now());
     _timerText = formatTime(_remainingTime);
     _imagePath = 'assets/image/timer_images/timer1.png';

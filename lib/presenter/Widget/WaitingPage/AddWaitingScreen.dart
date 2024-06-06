@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/waitingDataProvider.dart';
@@ -40,7 +41,11 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
             context, "수동 웨이팅 추가", "추가 요청을 보냈습니다! 반영까지 몇초가량 소요될 수 있습니다.", null);
         Navigator.pop(context);
       } else {
-        await showAlertDialog(context,"수동 웨이팅 추가","수동 추가 실패했습니다. 동일한 휴대폰번호의 고객이 이미 웨이팅중이거나, 서버 문제일 수 있습니다. 본 오류가 반복되면 관리자에게 문의하세요.",null);
+        await showAlertDialog(
+            context,
+            "수동 웨이팅 추가",
+            "수동 추가 실패했습니다. 동일한 휴대폰번호의 고객이 이미 웨이팅중이거나, 서버 문제일 수 있습니다. 본 오류가 반복되면 관리자에게 문의하세요.",
+            null);
       }
 
       // 여기에다가 이제~ 웨이팅 수동 등록 코드 작성하기.
@@ -55,13 +60,13 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Image.asset(
-            "assets/image/waveform/wave_shadow.png",
+          SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave_shadow.svg",
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.cover,
           ),
-          Image.asset(
-            "assets/image/waveform/wave.png",
+          SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave.svg",
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.cover,
           ),

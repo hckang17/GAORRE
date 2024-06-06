@@ -11,6 +11,7 @@ import 'package:gaorre/widget/button/text_button_widget.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:gaorre/widget/text_field/text_input_widget.dart';
 import '../../provider/Data/loginDataProvider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 final isObscureProvider = StateProvider<bool>((ref) => true);
 final loginButtonEnabledProvider = StateProvider<bool>((ref) => true);
@@ -80,13 +81,13 @@ class _LoginScreenBody extends ConsumerWidget {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Image.asset(
-            "assets/image/waveform/wave_shadow.png",
+          SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave_shadow.svg",
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.cover,
           ),
-          Image.asset(
-            "assets/image/waveform/wave.png",
+          SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave.svg",
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.cover,
           ),
@@ -171,13 +172,13 @@ class _LoginScreenBody extends ConsumerWidget {
                 SizedBox(height: 2),
                 TextButton(
                   style: TextButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 12, color:Color.fromARGB(0, 0, 0, 0)),
-                     
+                    textStyle: const TextStyle(
+                        fontSize: 12, color: Color.fromARGB(0, 0, 0, 0)),
                   ),
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                        ResetPasswordScreen()));
+                        builder: (BuildContext context) =>
+                            ResetPasswordScreen()));
                   },
                   child: const Text('비밀번호 재설정하기'),
                 ),
