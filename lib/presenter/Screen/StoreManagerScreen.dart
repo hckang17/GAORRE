@@ -89,19 +89,6 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                       }
                     },
                   ),
-                  // IconButton(
-                  //   // 오른쪽 상단 로그아웃 아이콘
-                  //   icon: Icon(Icons.logout, color: Colors.white),
-                  //   onPressed: () async {
-                  //     // 로그아웃 기능 사용.
-                  //     if (await showConfirmDialog(context, "로그아웃","정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
-                  //       ref.read(loginProvider.notifier).logout(ref);
-                  //       Restart.restartApp();
-                  //     } else {
-                  //       return;
-                  //     }
-                  //   },
-                  // ),
                   IconButton(
                     icon: Icon(Icons.settings, color: Colors.white),
                     onPressed: () async {
@@ -164,6 +151,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
             bottom: 80.0,
             right: 10.0,
             child: FloatingActionButton(
+              heroTag: "addCategoryButton",
               onPressed: () {
                 showAddCategoryDialog(
                     ref, null, null, currentStoreData!.menuCategories, []);
@@ -178,6 +166,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
             bottom: 10.0,
             right: 10.0,
             child: FloatingActionButton(
+              heroTag: "addMenuButton",
               onPressed: () {
                 showAddMenuModal(context, currentStoreData!.menuCategories,
                     currentStoreData!.menuInfo);

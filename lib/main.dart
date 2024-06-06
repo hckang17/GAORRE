@@ -1,3 +1,7 @@
+// ignore_for_file: unused_local_variable, library_private_types_in_public_api, use_key_in_widget_constructors, camel_case_types
+
+import 'dart:async';
+
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -5,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gaorre/firebase_options.dart';
 import 'package:gaorre/presenter/Error/error_screen.dart';
 import 'package:gaorre/presenter/Error/network_error_screen.dart';
@@ -31,15 +36,24 @@ void main() async {
   );
 
   initializeFirebaseMessaging(); // Firebase 메시징 초기화
-  requestPermission(); // 권한 요청
+  await requestPermission(); // 권한 요청
 
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp]); // 화면 방향을 세로로 고정
 
   runApp(
     ProviderScope(
-      child: MaterialApp(
-        home: GAORRE_APP(),
+      child: Builder(
+        builder: (context) {
+          ScreenUtil.init(
+            context,
+            designSize: Size(360, 800),
+            minTextAdapt: true,
+          );
+          return MaterialApp(
+            home: GAORRE_APP(),
+          );
+        },
       ),
     ),
   );
@@ -326,9 +340,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Handling a background message ${message.messageId}');
 }
 
-void requestPermission() async {
+Future<void> requestPermission() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-
+  print('FCMTOken알림 허용 요청이 접수되었습니다. [requestPermission]');
   NotificationSettings settings = await messaging.requestPermission(
     alert: true,
     badge: true,
@@ -338,8 +352,8 @@ void requestPermission() async {
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     print('유저가 권한을 허가하였습니다. User granted permission [requestPermission]');
   } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-    print('User granted provisional permission');
+    print('User granted provisional permission [requestPermission]');
   } else {
-    print('User declined or has not accepted permission');
+    print('User declined or has not accepted permission [requestPermission]');
   }
 }
