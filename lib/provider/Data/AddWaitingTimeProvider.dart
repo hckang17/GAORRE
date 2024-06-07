@@ -4,7 +4,7 @@ import 'dart:async';
 
 final minutesToAddProvider =
     StateNotifierProvider<minutesToAddNotifier, int>((ref) {
-  return minutesToAddNotifier(1); // 초기 상태를 null로 설정합니다.
+  return minutesToAddNotifier(10); // 초기 상태를 10으로 설정합니다.
 });
 
 // StateNotifier를 확장하여 UserLogDataList 객체를 관리하는 클래스를 정의합니다.
