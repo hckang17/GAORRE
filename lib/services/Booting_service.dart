@@ -311,11 +311,13 @@ Future<int> firstBoot(WidgetRef ref) async {
     } // STOMP초기화가 완료되었다면 다음 초기화 작업 수행...
 
     // SMS 권한 요청 확인
+    print('SMS권한을 요청합니다 [FirstBoot]');
     var permissionStatus = await Permission.sms.status;
     if (!permissionStatus.isGranted) {
       await Permission.sms.request();
     }
 
+    print('알림전송 권한을 요청합니다 [FirstBoot]');
     var notificationPermissionStatus = await Permission.notification.status;
     if(!notificationPermissionStatus.isGranted) {
       await Permission.notification.request();
