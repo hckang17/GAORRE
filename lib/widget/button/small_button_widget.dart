@@ -7,6 +7,7 @@ class SmallButtonWidget extends ConsumerWidget {
   final Function onPressed;
   final Size minSize;
   final Size maxSize;
+  final Color color;
 
   const SmallButtonWidget({
     Key? key,
@@ -14,6 +15,7 @@ class SmallButtonWidget extends ConsumerWidget {
     required this.onPressed,
     this.minSize = const Size(50, 50),
     this.maxSize = const Size(double.infinity, 50),
+    this.color = const Color(0xFF72AAD8),
   }) : super(key: key);
 
   @override
@@ -29,7 +31,7 @@ class SmallButtonWidget extends ConsumerWidget {
       ),
       style: ElevatedButton.styleFrom(
         padding: EdgeInsets.symmetric(vertical: 10),
-        backgroundColor: Color(0xFF72AAD8),
+        backgroundColor: color,
         maximumSize: maxSize,
         minimumSize: minSize,
         shape: RoundedRectangleBorder(
