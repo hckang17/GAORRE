@@ -167,7 +167,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
       "price": price,
       "singleMenuCode": categoryKey.toUpperCase(),
       "introduce": description,
-      "jwtAdmin": loginData!.loginToken,
+      "jwtAdmin": loginData.loginToken,
     }));
     // print(jsonBody.toString());
     // HTTP 요청 생성
