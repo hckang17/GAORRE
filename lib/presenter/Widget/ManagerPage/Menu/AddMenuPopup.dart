@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaorre/widget/button/image_edit_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gaorre/Model/LoginDataModel.dart';
 import 'package:gaorre/Model/MenuDataModel.dart';
@@ -70,133 +71,84 @@ class _AddMenuModalState extends ConsumerState<AddMenuModal> {
         key: _formKey,
         child: Wrap(
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  if (ref.watch(imageBytesProvider) != null)
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: Image.memory(
-                            ref.watch(imageBytesProvider)!,
-                            width: 200,
-                            height: 200,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 16,
-                          right: 8,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color:
-                                  Colors.white, // Set background color to white
-                              shape: BoxShape
-                                  .circle, // Make the container circular
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.photo_camera,
-                                color:
-                                    Color(0xFF72AAD8), // Set icon color to blue
-                              ),
-                              onPressed: () async {
-                                final pickedFile = await picker.pickImage(
-                                    source: ImageSource.gallery);
-                                if (pickedFile != null) {
-                                  Uint8List fileBytes =
-                                      await pickedFile.readAsBytes();
-                                  ref
-                                      .read(imageBytesProvider.notifier)
-                                      .setState(fileBytes);
-                                }
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: '메뉴 이름',
-                      hintText: '메뉴 이름을 입력하세요',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '메뉴 이름을 입력해주세요.';
-                      }
-                      return null;
+            Stack(
+              alignment: Alignment.topLeft,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 8.0),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
                     },
+                    icon: Container(
+                      decoration: BoxDecoration(
+                        color: Color(0xFF72AAD8),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Icon(Icons.close, color: Colors.white),
+                      padding: EdgeInsets.all(8),
+                    ),
                   ),
-                  SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: selectedCategoryKey,
-                    decoration: InputDecoration(
-                      labelText: '메뉴 카테고리',
-                      border: OutlineInputBorder(),
+                ),
+                if (ref.watch(imageBytesProvider) != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Center(
+                      child: ImageEditButton(),
                     ),
-                    items: widget.currentMenuCategory?.entries
-                        .where((entry) => entry.value != null)
-                        .map((entry) {
-                      return DropdownMenuItem<String>(
-                        value: entry.key,
-                        child: Text(entry.value!),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        selectedCategoryKey = newValue;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '카테고리를 선택해주세요.';
-                      }
-                      return null;
-                    },
                   ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: descriptionController,
-                    decoration: InputDecoration(
-                      labelText: '메뉴 설명',
-                      hintText: '메뉴에 대한 설명을 입력하세요',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '메뉴 설명을 입력해주세요.';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: priceController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: '가격',
-                      hintText: '가격을 입력하세요',
-                      border: OutlineInputBorder(),
-                    ),
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '가격을 입력해주세요.';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  BigButtonWidget(
-                    text: '메뉴추가하기',
-                    textColor: Colors.white,
+                // Center(
+                //   child: Stack(
+                //     alignment: Alignment.bottomRight,
+                //     children: [
+                //       Padding(
+                //         padding: const EdgeInsets.only(top: 16.0),
+                //         child: Image.memory(
+                //           ref.watch(imageBytesProvider)!,
+                //           width: 200,
+                //           height: 200,
+                //           fit: BoxFit.cover,
+                //         ),
+                //       ),
+                //       Positioned(
+                //         bottom: 16,
+                //         right: 8,
+                //         child: Container(
+                //           decoration: BoxDecoration(
+                //             color:
+                //                 Colors.white, // Set background color to white
+                //             shape: BoxShape
+                //                 .circle, // Make the container circular
+                //           ),
+                //           child: IconButton(
+                //             icon: Icon(
+                //               Icons.photo_camera,
+                //               color:
+                //                   Color(0xFF72AAD8), // Set icon color to blue
+                //             ),
+                //             onPressed: () async {
+                //               final pickedFile = await picker.pickImage(
+                //                   source: ImageSource.gallery);
+                //               if (pickedFile != null) {
+                //                 Uint8List fileBytes =
+                //                     await pickedFile.readAsBytes();
+                //                 ref
+                //                     .read(imageBytesProvider.notifier)
+                //                     .setState(fileBytes);
+                //               }
+                //             },
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: SmallButtonWidget(
+                    minSize: Size(60, 40),
+                    text: '추가',
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         String menuCode = _generateMenuCode(
@@ -234,7 +186,89 @@ class _AddMenuModalState extends ConsumerState<AddMenuModal> {
                         }
                       }
                     },
-                  )
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedCategoryKey,
+                    decoration: InputDecoration(
+                      labelText: '메뉴 카테고리',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: widget.currentMenuCategory?.entries
+                        .where((entry) => entry.value != null)
+                        .map((entry) {
+                      return DropdownMenuItem<String>(
+                        value: entry.key,
+                        child: Text(entry.value!),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedCategoryKey = newValue;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '카테고리를 선택해주세요.';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: '메뉴 이름',
+                      hintText: '메뉴 이름을 입력하세요',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '메뉴 이름을 입력해주세요.';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    controller: descriptionController,
+                    decoration: InputDecoration(
+                      labelText: '메뉴 설명',
+                      hintText: '메뉴에 대한 설명을 입력하세요',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '메뉴 설명을 입력해주세요.';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    controller: priceController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: '가격',
+                      hintText: '가격을 입력하세요',
+                      border: OutlineInputBorder(),
+                    ),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '가격을 입력해주세요.';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
                 ],
               ),
             ),
@@ -247,7 +281,7 @@ class _AddMenuModalState extends ConsumerState<AddMenuModal> {
   String _generateMenuCode(String? categoryKey, List<Menu>? menuList) {
     if (categoryKey == null || menuList == null) return '';
     int highestNumber = 0;
-    String categoryPrefix = categoryKey?.toUpperCase() ?? '';
+    String categoryPrefix = categoryKey.toUpperCase();
     menuList?.forEach((menu) {
       if (menu.menuCode.startsWith(categoryPrefix) &&
           menu.menuCode.length > categoryPrefix.length) {

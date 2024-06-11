@@ -5,6 +5,7 @@ import 'package:gaorre/Model/MenuDataModel.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/widget/button/image_edit_widget.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
 
 void showModifyMenuModal(BuildContext context, Menu menu) {
@@ -60,16 +61,44 @@ class _ModifyMenuModalState extends ConsumerState<ModifyMenuModal> {
         key: _formKey,
         child: Wrap(
           children: <Widget>[
+            Stack(
+              alignment: Alignment.topLeft,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 8.0),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Container(
+                      decoration: BoxDecoration(
+                        color: Color(0xFF72AAD8),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Icon(Icons.close, color: Colors.white),
+                      padding: EdgeInsets.all(8),
+                    ),
+                  ),
+                ),
+                if (widget.menu.menuImageURL.isNotEmpty)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      // child: Image.network(
+                      //   widget.menu.menuImageURL,
+                      //   width: 200,
+                      //   height: 200,
+                      //   fit: BoxFit.cover,
+                      // ),
+                      child: ImageEditButton(menu: widget.menu),
+                    ),
+                  ),
+              ],
+            ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  if (widget.menu.menuImageURL.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Image.network(widget.menu.menuImageURL,
-                          width: 200, height: 200, fit: BoxFit.cover),
-                    ),
                   SizedBox(height: 16),
                   Row(
                     children: [
@@ -178,7 +207,7 @@ class _ModifyMenuModalState extends ConsumerState<ModifyMenuModal> {
                         child: ElevatedButton(
                           onPressed: () async {
                             if (await showConfirmDialog(ref.context, "메뉴 삭제",
-                                "정말로 ${nameController.text}메뉴를 삭제하시겠습니까?")) {
+                                "정말로 \"${nameController.text}\" 메뉴를 삭제하시겠습니까?")) {
                               if (await ref
                                       .read(storeDataProvider.notifier)
                                       .removeMenu(
@@ -196,7 +225,7 @@ class _ModifyMenuModalState extends ConsumerState<ModifyMenuModal> {
                           child: TextWidget(
                             '메뉴 삭제하기',
                             fontSize: 16,
-                            color: Color(0xFF999999),
+                            color: Colors.red,
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFDFDFDF),

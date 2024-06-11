@@ -5,6 +5,8 @@ import 'package:gaorre/Model/MenuDataModel.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/widget/button/pop_button_widget.dart';
+import 'package:gaorre/widget/button/small_button_widget.dart';
 import 'package:gaorre/widget/button/text_button_widget.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
 
@@ -48,6 +50,7 @@ class AddCategoryForm extends ConsumerWidget {
       padding: const EdgeInsets.all(20.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextWidget('카테고리 추가'),
           SizedBox(height: 20),
@@ -141,9 +144,19 @@ class _AddCategoryFieldsState extends ConsumerState<AddCategoryFields> {
           ),
           SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButtonWidget(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                text: '취소',
+                textColor: Colors.grey,
+                fontSize: 20,
+              ),
+              SizedBox(width: 8),
+              SmallButtonWidget(
+                minSize: Size(70, 30),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     print(
