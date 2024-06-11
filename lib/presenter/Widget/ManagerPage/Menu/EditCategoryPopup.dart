@@ -5,6 +5,8 @@ import 'package:gaorre/Model/MenuDataModel.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/widget/button/pop_button_widget.dart';
+import 'package:gaorre/widget/button/small_button_widget.dart';
 import 'package:gaorre/widget/button/text_button_widget.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
 
@@ -48,8 +50,15 @@ class EditCategoryForm extends ConsumerWidget {
       padding: const EdgeInsets.all(20.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget('카테고리 수정'),
+          Row(
+            children: [
+              TextWidget('카테고리 수정'),
+              Spacer(),
+              PopButtonWidget(),
+            ],
+          ),
           SizedBox(height: 20),
           EditCategoryFields(
               menuCategoryKey: menuCategoryKey,
@@ -129,9 +138,10 @@ class _EditCategoryFieldsState extends ConsumerState<EditCategoryFields> {
           ),
           SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              TextButtonWidget(
+              SmallButtonWidget(
+                minSize: Size(70, 30),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     print(
@@ -149,8 +159,11 @@ class _EditCategoryFieldsState extends ConsumerState<EditCategoryFields> {
                   }
                 },
                 text: '수정',
+                color: Color(0xFF72AAD8),
               ),
-              TextButtonWidget(
+              SizedBox(width: 8),
+              SmallButtonWidget(
+                minSize: Size(70, 30),
                 onPressed: () async {
                   print('카테고리 삭제: ${menuCategoryKey}');
                   print(menus.toString());
@@ -177,6 +190,7 @@ class _EditCategoryFieldsState extends ConsumerState<EditCategoryFields> {
                   }
                 },
                 text: '삭제',
+                color: Colors.red,
               ),
             ],
           )

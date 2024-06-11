@@ -74,30 +74,43 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                       if (true ==
                           await showConfirmDialogWithConfirmText(
                               context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")) {
-                        if (true == await ref.read(storeDataProvider.notifier).requestCloseStore(ref)) {
-                          if (ref.read(storeDataProvider.notifier).getWaitingAvailable() ==0) {
-                            print('현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
-                            await ref.read(storeDataProvider.notifier).changeAvailableStatus(loginData ??
-                              ref.read(loginProvider.notifier).getLoginData()!);
+                        if (true ==
+                            await ref
+                                .read(storeDataProvider.notifier)
+                                .requestCloseStore(ref)) {
+                          if (ref
+                                  .read(storeDataProvider.notifier)
+                                  .getWaitingAvailable() ==
+                              0) {
+                            print(
+                                '현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
+                            await ref
+                                .read(storeDataProvider.notifier)
+                                .changeAvailableStatus(loginData ??
+                                    ref
+                                        .read(loginProvider.notifier)
+                                        .getLoginData()!);
                           }
-                          showAlertDialog(context, "영업 종료","성공적으로 영업종료를 처리 완료하였습니다.", null);
+                          showAlertDialog(context, "영업 종료",
+                              "성공적으로 영업종료를 처리 완료하였습니다.", null);
                         } else {
-                          showAlertDialog(context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
+                          showAlertDialog(
+                              context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
                         }
                       } else {
-                        showAlertDialog(context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
+                        showAlertDialog(
+                            context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
                       }
                     },
                   ),
                   IconButton(
-                    icon: Icon(Icons.settings, color: Colors.white),
-                    onPressed: () async {
-                      // 세팅화면으로 전환
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) =>
-                          SettingScreen()));
-                    }
-                  )
+                      icon: Icon(Icons.settings, color: Colors.white),
+                      onPressed: () async {
+                        // 세팅화면으로 전환
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                SettingScreen()));
+                      })
                 ],
                 expandedHeight: 240, // 높이 설정
                 flexibleSpace: FlexibleSpaceBar(
@@ -139,8 +152,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                   child: SizedBox(height: 80),
                 ),
                 onPopInvoked: (didPop) {
-                  if (didPop) {
-                  }
+                  if (didPop) {}
                 },
               ),
             ],
