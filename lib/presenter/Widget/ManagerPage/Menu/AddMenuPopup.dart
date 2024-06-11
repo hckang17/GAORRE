@@ -78,6 +78,7 @@ class _AddMenuModalState extends ConsumerState<AddMenuModal> {
                   padding: const EdgeInsets.only(top: 8.0, left: 8.0),
                   child: IconButton(
                     onPressed: () {
+                      ref.read(imageBytesProvider.notifier).resetState();
                       Navigator.pop(context);
                     },
                     icon: Container(
@@ -97,52 +98,6 @@ class _AddMenuModalState extends ConsumerState<AddMenuModal> {
                       child: ImageEditButton(),
                     ),
                   ),
-                // Center(
-                //   child: Stack(
-                //     alignment: Alignment.bottomRight,
-                //     children: [
-                //       Padding(
-                //         padding: const EdgeInsets.only(top: 16.0),
-                //         child: Image.memory(
-                //           ref.watch(imageBytesProvider)!,
-                //           width: 200,
-                //           height: 200,
-                //           fit: BoxFit.cover,
-                //         ),
-                //       ),
-                //       Positioned(
-                //         bottom: 16,
-                //         right: 8,
-                //         child: Container(
-                //           decoration: BoxDecoration(
-                //             color:
-                //                 Colors.white, // Set background color to white
-                //             shape: BoxShape
-                //                 .circle, // Make the container circular
-                //           ),
-                //           child: IconButton(
-                //             icon: Icon(
-                //               Icons.photo_camera,
-                //               color:
-                //                   Color(0xFF72AAD8), // Set icon color to blue
-                //             ),
-                //             onPressed: () async {
-                //               final pickedFile = await picker.pickImage(
-                //                   source: ImageSource.gallery);
-                //               if (pickedFile != null) {
-                //                 Uint8List fileBytes =
-                //                     await pickedFile.readAsBytes();
-                //                 ref
-                //                     .read(imageBytesProvider.notifier)
-                //                     .setState(fileBytes);
-                //               }
-                //             },
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
                 Positioned(
                   top: 16,
                   right: 16,

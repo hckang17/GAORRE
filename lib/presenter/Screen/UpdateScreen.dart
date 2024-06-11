@@ -12,15 +12,11 @@ class UpdateAppScreen extends ConsumerWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("업데이트 확인"),
-          content: Text("새로운 버전이 있습니다! 스토어에서 업데이트를 진행해주세요."),
+          content: Text("필수 업데이트가 있습니다!\n스토어에서 업데이트를 진행해주세요."),
           actions: <Widget>[
             TextButton(
               child: Text('업데이트하기'),
               onPressed: () => _launchURL(),
-            ),
-            TextButton(
-              child: Text('닫기'),
-              onPressed: () => Navigator.of(context).pop(),
             ),
           ],
         );
@@ -30,7 +26,7 @@ class UpdateAppScreen extends ConsumerWidget {
 
   // 플랫폼별로 앱 스토어 URL을 실행하는 함수
   void _launchURL() async {
-    const urlIOS = 'https://apps.apple.com/app/idYOUR_APP_ID'; // ID확인해야함.. 뭔지모름
+    const urlIOS = 'https://apps.apple.com/kr/app/%EA%B0%80%EC%98%A4%EB%A6%AC/id6503666279'; // ID확인해야함.. 뭔지모름
     const urlAndroid = 'https://play.google.com/store/apps/details?id=com.aeioudev.gaorre';
     String url = Platform.isIOS ? urlIOS : urlAndroid;
 

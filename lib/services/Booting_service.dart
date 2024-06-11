@@ -132,10 +132,10 @@ Future<int> reboot(WidgetRef ref) async {
     } // STOMP초기화가 완료되었다면 다음 초기화 작업 수행...
 
     // SMS 권한 요청 확인
-    var permissionStatus = await Permission.sms.status;
-    if (!permissionStatus.isGranted) {
-      await Permission.sms.request();
-    }
+    // var permissionStatus = await Permission.sms.status;
+    // if (!permissionStatus.isGranted) {
+    //   await Permission.sms.request();
+    // }
 
     // 로그인 정보 확인
     print('로그인 정보 확인... [RebootService]');
