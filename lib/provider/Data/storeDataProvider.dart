@@ -216,6 +216,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
   // 메뉴 수정 메서드
   FutureOr<bool> modifyMenu(
       BuildContext context,
+      Uint8List imageBytes,
       LoginData loginData,
       String originMenu,
       String menuName,
@@ -224,7 +225,10 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
       String introduce,
       int recommend) async {
     print('메뉴 변경 신청... [storeDataProvider - modifyMenu]');
-    final jsonBody = json.encode({
+
+    // 이미지 전송을 위해 이미지 이름을 변경합니다.
+    String imageName = '$menuCode.jpg';
+    final jsonBody = utf8.encode(json.encode({
       'storeCode': loginData.storeCode,
       'menuCode': menuCode,
       'menu': originMenu,
@@ -233,42 +237,83 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
       'price': price,
       'introduce': introduce,
       'recommend': recommend,
-    });
-    try {
-      final response = await HttpsService.postRequest(
-          '/StoreAdmin/menu/s3/modify', jsonBody);
+      'singleMenuCode': menuCode[0],
+    }));
+
+    var request = http.MultipartRequest('POST',
+        Uri.parse('https://orre.store/api/admin/StoreAdmin/menu/s3/modify'));
+
+    // 이미지 파일 추가
+    request.files.add(
+      http.MultipartFile(
+        'file',
+        http.ByteStream.fromBytes(imageBytes),
+        imageBytes.length,
+        filename: imageName,
+      ),
+    );
+
+    request.files.add(http.MultipartFile.fromBytes('request', jsonBody,
+        contentType: MediaType(
+            'application', 'json') // JSON 데이터의 컨텐트 타입을 application/json으로 명시
+        ));
+
+        try {
+      var response = await request.send();
       if (response.statusCode == 200) {
-        //HTTP는 정상수신되었을 때
-        final responseBody = json.decode(utf8.decode(response.bodyBytes));
-        if (responseBody['status'] == "200") {
-          // 메뉴 수정 완료
-          print('메뉴 수정 완료!');
-          await showAlertDialog(
-              context, "메뉴 변경", "메뉴명 : $menuName 변경 성공!", null);
-          await requestStoreData(loginData.storeCode);
-          return true;
-        } else {
-          // 메뉴 수정 실패
-          print('메뉴 수정 실패. status = ${responseBody['status']}');
-          await showAlertDialog(
-              context,
-              "메뉴 변경",
-              "메뉴명 : $menuName 변경 실패...\n에러코드:[${responseBody['status']}]",
-              null);
-          await requestStoreData(loginData.storeCode);
-          return false;
-        }
+        // HTTP가 정상적으로 요청되었을 때
+        print('메뉴 변경 요청 성공하였습니다.');
+        await showAlertDialog(context, "메뉴수정", "메뉴수정 성공!", null);
+        requestStoreData(loginData!.storeCode);
+        return true;
       } else {
-        //HTTP부터 정상수신 되지 않았을 때
-        print('HTTP 에러 : status code <${response.statusCode}>');
-        await showAlertDialog(context, "메뉴 변경",
-            "메뉴명 : $menuName 변경 실패... \n에러코드:HTTP${response.statusCode}", null);
+        // 요청이 실패하면 처리
+        await showAlertDialog(
+            context, "메뉴수정", "메뉴수정 실패.. 에러코드:[${response.statusCode}]", null);
+        print(
+            '메뉴 추가 요청이 실패하였습니다. 상태 코드: ${response.statusCode} [storeDataProvider - addMenu]');
         return false;
       }
-    } catch (error) {
-      print('에러발생 : $error');
+    } catch (e) {
+      // 요청에 실패한 경우 예외 처리
+      print('메뉴 추가 요청 중 오류가 발생하였습니다: $e');
       return false;
     }
+    // try {
+    //   var response = await request.send();
+    //   if (response.statusCode == 200) {
+    //     //HTTP는 정상수신되었을 때
+    //     final responseBody = response.stream
+    //     final responseBody = json.decode(response.stream);
+    //     if (responseBody['status'] == "200") {
+    //       // 메뉴 수정 완료
+    //       print('메뉴 수정 완료!');
+    //       await showAlertDialog(
+    //           context, "메뉴 변경", "메뉴명 : $menuName 변경 성공!", null);
+    //       await requestStoreData(loginData.storeCode);
+    //       return true;
+    //     } else {
+    //       // 메뉴 수정 실패
+    //       print('메뉴 수정 실패. status = ${responseBody['status']}');
+    //       await showAlertDialog(
+    //           context,
+    //           "메뉴 변경",
+    //           "메뉴명 : $menuName 변경 실패...\n에러코드:[${responseBody['status']}]",
+    //           null);
+    //       await requestStoreData(loginData.storeCode);
+    //       return false;
+    //     }
+    //   } else {
+    //     //HTTP부터 정상수신 되지 않았을 때
+    //     print('HTTP 에러 : status code <${response.statusCode}>');
+    //     await showAlertDialog(context, "메뉴 변경",
+    //         "메뉴명 : $menuName 변경 실패... \n에러코드:HTTP${response.statusCode}", null);
+    //     return false;
+    //   }
+    // } catch (error) {
+    //   print('에러발생 : $error');
+    //   return false;
+    // }
   }
 
   // 메뉴 삭제 메서드

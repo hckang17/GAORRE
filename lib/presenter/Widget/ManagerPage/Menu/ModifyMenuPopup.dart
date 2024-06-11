@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/Model/MenuDataModel.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
+import 'package:gaorre/provider/Data/imageDataProvider.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
 import 'package:gaorre/widget/button/image_edit_widget.dart';
@@ -68,6 +69,7 @@ class _ModifyMenuModalState extends ConsumerState<ModifyMenuModal> {
                   padding: const EdgeInsets.only(top: 8.0, left: 8.0),
                   child: IconButton(
                     onPressed: () {
+                      ref.read(imageBytesProvider.notifier).resetState();
                       Navigator.pop(context);
                     },
                     icon: Container(
@@ -81,15 +83,10 @@ class _ModifyMenuModalState extends ConsumerState<ModifyMenuModal> {
                   ),
                 ),
                 if (widget.menu.menuImageURL.isNotEmpty)
+                  if(ref.watch(imageBytesProvider) != null)
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 16.0),
-                      // child: Image.network(
-                      //   widget.menu.menuImageURL,
-                      //   width: 200,
-                      //   height: 200,
-                      //   fit: BoxFit.cover,
-                      // ),
                       child: ImageEditButton(menu: widget.menu),
                     ),
                   ),
@@ -174,11 +171,21 @@ class _ModifyMenuModalState extends ConsumerState<ModifyMenuModal> {
                             if (_formKey.currentState!.validate()) {
                               print(
                                   '메뉴 수정: ${nameController.text}, ${descriptionController.text}, ${priceController.text}, 카테고리: ${originalMenuCode[0]}, 코드: $originalMenuCode');
+                              Uint8List? imageBytes =
+                                  ref.read(imageBytesProvider.notifier).getState();
+                              if (imageBytes == null) {
+                                print('입력된 이미지가 없어 기본 이미지로 대체합니다.');
+                                ByteData bytes = await rootBundle
+                                    .load('lib/Assets/Image/Duck_with_bell.png');
+                                imageBytes = bytes.buffer.asUint8List();
+                              }
+                              
                               if (true ==
                                       await ref
                                           .read(storeDataProvider.notifier)
                                           .modifyMenu(
                                               context,
+                                              imageBytes,
                                               ref
                                                   .read(loginProvider.notifier)
                                                   .getLoginData()!,
