@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/presenter/Screen/StoreManagerScreen.dart';
 import 'package:gaorre/presenter/Screen/WaitingScreen.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Network/connectivityStateNotifier.dart'; // 경고 아이콘 사용을 위해 추가
@@ -16,6 +15,7 @@ class MainScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(selectedIndexProvider);
+    // ignore: unused_local_variable
     final networkStatus = ref.watch(networkStateProvider);
     final connectStatus = ref.watch(connectNotifierProvider);
 
@@ -26,7 +26,8 @@ class MainScreen extends ConsumerWidget {
     ];
 
     Future<bool> _onWillPop() async {
-      bool confirm = await showConfirmDialog(ref.context, "앱 종료", "정말 앱을 종료하시겠습니까?");
+      bool confirm =
+          await showConfirmDialog(ref.context, "앱 종료", "정말 앱을 종료하시겠습니까?");
       if (confirm) {
         if (Theme.of(ref.context).platform == TargetPlatform.android) {
           SystemNavigator.pop(); // Android에서 앱 종료

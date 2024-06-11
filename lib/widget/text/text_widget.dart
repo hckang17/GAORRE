@@ -26,13 +26,13 @@ class TextWidget extends ConsumerWidget {
     this.fontFamily = 'Dovemayo_gothic',
     this.textAlign = TextAlign.center,
     this.fontWeight = FontWeight.normal,
-    this.softWrap = false,
+    this.softWrap = true,
     this.shadows = const [],
     this.wordSpacing = 0,
     this.letterSpacing = 0,
     this.padding = const EdgeInsets.all(0),
     this.overflow = TextOverflow.clip,
-    this.maxLines = 1,
+    this.maxLines = 2,
   }) : super(key: key);
 
   @override
