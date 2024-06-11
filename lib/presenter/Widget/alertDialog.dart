@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gaorre/widget/popup/confirm_popup.dart';
 import 'package:gaorre/widget/popup/popup.dart';
+import 'package:gaorre/widget/popup/select_popup.dart';
 
 Future<void> showAlertDialog(BuildContext context, String title, String content,
     Function? effect) async {
@@ -27,6 +28,23 @@ Future<bool> showConfirmDialog(
             );
           }) ??
       false; // 사용자가 대화상자 밖을 클릭하여 대화상자를 닫은 경우 false를 반환
+}
+
+/// [showSelectDialog] 함수에서 사용자가 firstBtnText를 선택시 1, secondBtnText를 선택시 2를, 아무것도 선택하지 않았을 시에는 0을 반환한다.
+Future<int> showSelectDialog(
+    BuildContext context, String title, String content, String firstBtnText, String secondBtnText) async {
+  return await showDialog<int>(
+          context: context,
+          builder: (BuildContext context) {
+            return CustomSelectDialog(
+              context: context,
+              title: title,
+              text: content,
+              firstButtonText: firstBtnText,  
+              secondButtonText: secondBtnText,
+            );
+          }) ??
+      0; // 사용자가 대화상자 밖을 클릭하여 대화상자를 닫은 경우 false를 반환
 }
 
 Future<bool> showConfirmDialogWithConfirmText(

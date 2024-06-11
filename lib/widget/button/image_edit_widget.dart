@@ -1,23 +1,69 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Data/imageDataProvider.dart';
-import 'package:gaorre/provider/Data/storeDataProvider.dart';
-
 import '../../Model/MenuDataModel.dart';
+import 'package:image_picker/image_picker.dart';
+
 
 // ignore: must_be_immutable
-class ImageEditButton extends ConsumerWidget {
+class ImageEditButton extends ConsumerStatefulWidget {
   Menu? menu;
   ImageEditButton({this.menu});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _ImageEditButtonState createState() => _ImageEditButtonState();
+}
+
+class _ImageEditButtonState extends ConsumerState<ImageEditButton> {
+  late String? imageURL;
+  bool isImageChanged = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    if(widget.menu != null){
+      imageURL = widget.menu!.menuImageURL;
+    }else{
+      imageURL = null;
+    }
+    isImageChanged = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final tempImg = ref.watch(imageBytesProvider);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: InkWell(
-        onTap: () {
-          print("test");
+        onTap: () async {
+          // print("test");
+          final ImagePicker picker = ImagePicker();
+          var result = await showSelectDialog(context, "이미지 선택", "이미지를 어디서 가져올까요?", "신규촬영", "앨범에서");
+          switch (result) {
+            case 0:
+              return;
+            case 1:
+              final pickedFile = await picker.pickImage(source: ImageSource.camera);
+              if (pickedFile != null) {
+                Uint8List fileBytes = await pickedFile.readAsBytes();
+                ref.read(imageBytesProvider.notifier).setState(fileBytes);
+                isImageChanged = true;
+              }
+              break;
+            case 2:
+              final pickedFile = await picker.pickImage(
+                  source: ImageSource.gallery);
+              if (pickedFile != null) {
+                Uint8List fileBytes = await pickedFile.readAsBytes();
+                ref.read(imageBytesProvider.notifier).setState(fileBytes);
+                isImageChanged = true;
+              }
+              break;
+            default:
+              print("알수없는 에러가 발생하였습니다. [ImageEditButton]");
+          }
         },
         borderRadius: BorderRadius.circular(30),
         child: Container(
@@ -42,23 +88,31 @@ class ImageEditButton extends ConsumerWidget {
                   height: 180,
                   child: Consumer(
                     builder: (context, watch, child) {
-                      if (menu != null) {
-                        return Image.network(
-                          menu!.menuImageURL,
-                          width: 180,
-                          height: 180,
-                          fit: BoxFit.cover,
-                        );
-                      }
-                      if (tempImg != null && menu == null) {
+                      if(isImageChanged){
                         return Image.memory(
-                          tempImg,
+                          tempImg!,
                           width: 180,
                           height: 180,
                           fit: BoxFit.cover,
                         );
+                      }else{
+                        if (imageURL != null) {
+                          return Image.network(
+                            imageURL!,
+                            width: 180,
+                            height: 180,
+                            fit: BoxFit.cover,
+                          );
+                        }else if (tempImg != null){
+                          return Image.memory(
+                            tempImg,
+                            width: 180,
+                            height: 180,
+                            fit: BoxFit.cover,
+                          );
+                        }
+                        return Container();
                       }
-                      return Container();
                     },
                   ),
                 ),
@@ -87,4 +141,5 @@ class ImageEditButton extends ConsumerWidget {
       ),
     );
   }
+
 }
