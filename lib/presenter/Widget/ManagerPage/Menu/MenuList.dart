@@ -10,6 +10,7 @@ import 'package:gaorre/widget/text/text_widget.dart';
 class MenuListWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print("MenuListWidget build");
     final storeData = ref.watch(storeDataProvider);
 
     if (storeData?.menuInfo == null || storeData?.menuCategories == null) {
@@ -18,7 +19,7 @@ class MenuListWidget extends ConsumerWidget {
     }
 
     Map<String, List<Menu>> categorizedMenus = {};
-    storeData!.menuCategories!.forEach((key, value) {
+    storeData!.menuCategories.forEach((key, value) {
       if (value != null) {
         categorizedMenus[key] = [];
       }
@@ -143,22 +144,28 @@ class StoreMenuTileWidget extends ConsumerWidget {
                 SizedBox(
                   width: 20,
                 ),
-                CachedNetworkImage(
-                  imageUrl: menu.menuImageURL,
-                  imageBuilder: (context, imageProvider) => Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
+                Consumer(
+                  builder: (context, ref, child) {
+                    // TODO : 이미지가 바로 안 바뀌는 버그 수정해야 함
+                    return CachedNetworkImage(
+                      imageUrl: menu.menuImageURL,
+                      imageBuilder: (context, imageProvider) => Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
-                  placeholder: (context, url) => CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => Icon(Icons.error),
+                      placeholder: (context, url) =>
+                          CircularProgressIndicator(),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                    );
+                  },
                 ),
               ],
             ),

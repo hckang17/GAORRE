@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,9 +8,7 @@ import 'package:gaorre/Model/MenuDataModel.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/imageDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
-import 'package:gaorre/widget/button/big_button_widget.dart';
 import 'package:gaorre/widget/button/small_button_widget.dart';
-import 'package:gaorre/widget/button/text_button_widget.dart';
 
 void showAddMenuModal(BuildContext context,
     Map<String, dynamic>? currentMenuCategory, List<Menu>? currentMenuList) {
@@ -64,6 +61,7 @@ class _AddMenuModalState extends ConsumerState<AddMenuModal> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final ImagePicker picker = ImagePicker();
 
     return Padding(
@@ -238,7 +236,7 @@ class _AddMenuModalState extends ConsumerState<AddMenuModal> {
     if (categoryKey == null || menuList == null) return '';
     int highestNumber = 0;
     String categoryPrefix = categoryKey.toUpperCase();
-    menuList?.forEach((menu) {
+    for (var menu in menuList) {
       if (menu.menuCode.startsWith(categoryPrefix) &&
           menu.menuCode.length > categoryPrefix.length) {
         int currentNumber =
@@ -247,7 +245,7 @@ class _AddMenuModalState extends ConsumerState<AddMenuModal> {
           highestNumber = currentNumber;
         }
       }
-    });
+    }
     return '$categoryPrefix${(highestNumber + 1).toString().padLeft(3, '0')}';
   }
 }
