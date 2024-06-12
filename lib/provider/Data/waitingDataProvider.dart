@@ -9,7 +9,6 @@ import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
 import 'package:gaorre/services/HIVE_service.dart';
 import 'package:gaorre/services/HTTP_service.dart';
-import 'package:gaorre/services/SMS_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
@@ -22,6 +21,7 @@ final waitingProvider =
 // StateNotifier를 확장하여 WaitingInfo 객체를 관리하는 클래스를 정의합니다.
 class WaitingDataNotifier extends StateNotifier<WaitingData?> {
   StompClient? _client; // StompClient 인스턴스를 저장할 내부 변수 추가
+  // ignore: unused_field
   Timer? _heartbeatTimer; // 하트비트 타이머..
   WaitingDataNotifier(this.ref) : super(null) {
     _startHeartbeatCheck();
@@ -69,8 +69,6 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     _client = client; // 내부 변수에 StompClient 인스턴스 저장
     print('클라이언트 상태 : ${_client.toString()}');
   }
-
-
 
   void loadWaitingData() async {
     print('[WatingData] 데이터 로딩');
@@ -121,14 +119,17 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
               status: newTeam.status,
               phoneNumber: newTeam.phoneNumber,
               personNumber: newTeam.personNumber,
-              entryTime: newTeam.entryTime ?? currentTeamInfoList[existingTeamIndex].entryTime, // entryTime입력이 없을 경우에만 새 entryTime을 적용합니다.
+              entryTime: newTeam.entryTime ??
+                  currentTeamInfoList[existingTeamIndex]
+                      .entryTime, // entryTime입력이 없을 경우에만 새 entryTime을 적용합니다.
             );
           } else {
             // 기존 대기 Team목록에 없는 경우 새로운 항목으로 추가합니다.
             currentTeamInfoList.add(newTeam);
           }
         }
-      } else if (currentState.teamInfoList.length > newState.teamInfoList.length) {
+      } else if (currentState.teamInfoList.length >
+          newState.teamInfoList.length) {
         // 삭제, 착석 등으로 웨이팅 정보가 사라졌을 때.
         print('WaitingTeam 객체 삭제..');
 
@@ -187,8 +188,9 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       final Map<String, dynamic> responseBody =
           json.decode(utf8.decode(response.bodyBytes));
       try {
-        CallWaitingTeam callGuestResponse = CallWaitingTeam.fromJson(responseBody);
-        if (callGuestResponse.storeCode == storeCode){
+        CallWaitingTeam callGuestResponse =
+            CallWaitingTeam.fromJson(responseBody);
+        if (callGuestResponse.storeCode == storeCode) {
           String formattedTime = extractEntryTime(callGuestResponse.entryTime);
           WaitingData? currentState = state;
           // WaitingTeam의 entryTime을 업데이트
@@ -202,7 +204,8 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
           await showAlertDialog(ref.context, '$waitingNumber번 고객 호출',
               '입장 마감 시간 : $formattedTime', null);
           // 차후 활용을 위해 formattedTime을 저장해 둠. 차후, 노쇼처리 하게 되면 지울거임.
-          String SMScontent = SMScontentString(waitingNumber, storeName, extractEntryTimeInMinutes(callGuestResponse.entryTime));
+          String SMScontent = SMScontentString(waitingNumber, storeName,
+              extractEntryTimeInMinutes(callGuestResponse.entryTime));
           print(SMScontent);
           // bool result = await SendSMSService.requestSendSMS(ref.context ,phoneNumber, "[웨이팅 호출]", SMScontent);
           // if(result) await showAlertDialog(ref.context, "웨이팅 호출 SMS 전송", "성공!", null);
@@ -236,20 +239,24 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       "noShowUserCode": noShowWaitingNumber,
     });
     try {
-      final response =await HttpsService.postRequest('/StoreAdmin/noShow', jsonBody);
+      final response =
+          await HttpsService.postRequest('/StoreAdmin/noShow', jsonBody);
       if (response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         if (responseBody['success'] == true) {
           print('성공적으로 $noShowWaitingNumber번 손님을 웨이팅취소했습니다.');
-          await showAlertDialog(context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 완료', null);
+          await showAlertDialog(
+              context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 완료', null);
           print('...웨이팅 리스트 정보를 새로 요청합니다.');
           sendWaitingData(storeCode);
         } else {
           print('$noShowWaitingNumber번 손님 웨이팅취소를 실패했습니다.');
-          showAlertDialog(context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 실패', null);
+          showAlertDialog(
+              context, '웨이팅 취소', '$noShowWaitingNumber번 손님 웨이팅해제 실패', null);
         }
       } else {
-        throw Exception('Server responded with status code: ${response.statusCode}');
+        throw Exception(
+            'Server responded with status code: ${response.statusCode}');
       }
     } catch (e) {
       print('오류 발생, 재시도합니다: $e');
@@ -346,7 +353,8 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
     subscriptionInfo[index] = null;
   }
 
-  Future<bool> confirmEnterance(BuildContext context, LoginData loginData, int waitingNumber) async {
+  Future<bool> confirmEnterance(
+      BuildContext context, LoginData loginData, int waitingNumber) async {
     print('고객 입장 확정 여부 전송... [waitingProvider - confirmEnterance]');
     final jsonBody = json.encode({
       "storeCode": loginData.storeCode,
@@ -359,18 +367,27 @@ class WaitingDataNotifier extends StateNotifier<WaitingData?> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         if (responseBody['status'] == "200") {
-          print('성공적으로 $waitingNumber번 손님을 입장시켰습니다.. [waitingProvider - confirmEnterance]');
-          await showAlertDialog(context, '입장 확인', '$waitingNumber번 손님 입장처리 완료', null);
-          print('...웨이팅 리스트 정보를 새로 요청합니다. [waitingProvider - confirmEnterance]');
+          print(
+              '성공적으로 $waitingNumber번 손님을 입장시켰습니다.. [waitingProvider - confirmEnterance]');
+          await showAlertDialog(
+              context, '입장 확인', '$waitingNumber번 손님 입장처리 완료', null);
+          print(
+              '...웨이팅 리스트 정보를 새로 요청합니다. [waitingProvider - confirmEnterance]');
           sendWaitingData(loginData.storeCode);
           return true;
         } else {
-          print('$waitingNumber번 손님 입장처리를 실패했습니다. [waitingProvider - confirmEnterance]');
-          await showAlertDialog(context,'입장 확인','$waitingNumber번 손님 입장처리 실패\n에러코드:[${responseBody['status']}]',null);
+          print(
+              '$waitingNumber번 손님 입장처리를 실패했습니다. [waitingProvider - confirmEnterance]');
+          await showAlertDialog(
+              context,
+              '입장 확인',
+              '$waitingNumber번 손님 입장처리 실패\n에러코드:[${responseBody['status']}]',
+              null);
           return false;
         }
       } else {
-        throw Exception('Server responded with status code: ${response.statusCode} [waitingProvider - confirmEnterance]');
+        throw Exception(
+            'Server responded with status code: ${response.statusCode} [waitingProvider - confirmEnterance]');
       }
     } catch (e) {
       print('오류 발생, 재시도합니다: $e [waitingProvider - confirmEnterance]');

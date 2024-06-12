@@ -23,6 +23,7 @@ class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
 
   StompClient? _client; // StompClient 인스턴스를 저장할 내부 변수 추가
   final Ref ref;
+  // ignore: unused_field
   Timer? _heartbeatTimer; // 하트비트 타이머..
   List<DateTime?> lastHeartbeatReceived = [
     null,
@@ -72,60 +73,65 @@ class UserLogDataListNotifier extends StateNotifier<UserLogDataList?> {
     updateWaitingTeamwithLog();
   }
 
-  void updateWaitingTeamwithLog(){
-    WaitingData? currentWaitingData = ref.read(waitingProvider.notifier).getWaitingData();
-    
+  void updateWaitingTeamwithLog() {
+    WaitingData? currentWaitingData =
+        ref.read(waitingProvider.notifier).getWaitingData();
+
     if (currentWaitingData != null) {
       for (WaitingTeam waitingTeam in currentWaitingData.teamInfoList) {
         // 대기번호로 로그 리스트에서 해당 대기번호를 가진 로그 찾기
         UserLogData? log = state!.userLogs?.firstWhere(
           (log) => log.waitingNumber == waitingTeam.waitingNumber,
         );
-        
+
         if (log != null && log.status.startsWith('called')) {
           int minutes = int.parse(log.status.split(' : ')[1]);
           DateTime statusChangedTime = DateTime.parse(log.statusChangeTime!);
-          DateTime krStatusChangeTime = statusChangedTime.add(const Duration(hours:-9)); // 로그로 받아온 시간은 UTC임.
-          DateTime entryTime = krStatusChangeTime.add(Duration(minutes: minutes));
+          DateTime krStatusChangeTime = statusChangedTime
+              .add(const Duration(hours: -9)); // 로그로 받아온 시간은 UTC임.
+          DateTime entryTime =
+              krStatusChangeTime.add(Duration(minutes: minutes));
 
           // WaitingTeam의 entryTime 속성 업데이트
           waitingTeam.entryTime = entryTime;
         }
       }
     }
-    
+
     ref.read(waitingProvider.notifier).updateState(currentWaitingData!);
   }
 
-void updateWaitingTeamwithEachLog(UserLogData receivedLog){
-  // 현재 대기 데이터를 가져옴
-  WaitingData? currentWaitingData = ref.read(waitingProvider.notifier).getWaitingData();
+  void updateWaitingTeamwithEachLog(UserLogData receivedLog) {
+    // 현재 대기 데이터를 가져옴
+    WaitingData? currentWaitingData =
+        ref.read(waitingProvider.notifier).getWaitingData();
 
-  // receivedLog의 status가 'called'로 시작하는지 확인
-  if (receivedLog.status.startsWith('called')) {
-    if (currentWaitingData != null) {
-      // 해당 waitingNumber를 가진 WaitingTeam 찾기
-      for (WaitingTeam waitingTeam in currentWaitingData.teamInfoList) {
-        if (waitingTeam.waitingNumber == receivedLog.waitingNumber) {
-          // 로그에서 분 정보 추출 및 entryTime 계산
-          int minutes = int.parse(receivedLog.status.split(' : ')[1]);
-          DateTime statusChangedTime = DateTime.parse(receivedLog.statusChangeTime!);
-          DateTime entryTime = statusChangedTime.add(Duration(minutes: minutes));
+    // receivedLog의 status가 'called'로 시작하는지 확인
+    if (receivedLog.status.startsWith('called')) {
+      if (currentWaitingData != null) {
+        // 해당 waitingNumber를 가진 WaitingTeam 찾기
+        for (WaitingTeam waitingTeam in currentWaitingData.teamInfoList) {
+          if (waitingTeam.waitingNumber == receivedLog.waitingNumber) {
+            // 로그에서 분 정보 추출 및 entryTime 계산
+            int minutes = int.parse(receivedLog.status.split(' : ')[1]);
+            DateTime statusChangedTime =
+                DateTime.parse(receivedLog.statusChangeTime!);
+            DateTime entryTime =
+                statusChangedTime.add(Duration(minutes: minutes));
 
-          // WaitingTeam의 entryTime 업데이트
-          waitingTeam.entryTime = entryTime;
+            // WaitingTeam의 entryTime 업데이트
+            waitingTeam.entryTime = entryTime;
 
-          // 상태 업데이트
-          ref.read(waitingProvider.notifier).updateState(currentWaitingData);
-          break; // 일치하는 첫 번째 팀을 업데이트 한 후 루프 종료
+            // 상태 업데이트
+            ref.read(waitingProvider.notifier).updateState(currentWaitingData);
+            break; // 일치하는 첫 번째 팀을 업데이트 한 후 루프 종료
+          }
         }
       }
+    } else {
+      return; // 'called'로 시작하지 않는 경우 함수 종료
     }
-  } else {
-    return; // 'called'로 시작하지 않는 경우 함수 종료
   }
-}
-
 
   void resetState() {
     print('유저로그 상태 초기화 요청... [userLogProvider - retrieveUserLogData]');
@@ -134,7 +140,7 @@ void updateWaitingTeamwithEachLog(UserLogData receivedLog){
 
   Future<void> subscribeToLogData(int storeCode) async {
     print('<UserLog> 구독요청 수신.');
-    if(_client == null || !_client!.connected) {
+    if (_client == null || !_client!.connected) {
       print(
           'STOMP가 연결되어 있지 않습니다. Subscription aborted. [logDataProvider - subscribeToLogData]');
       await Future.delayed(Duration(seconds: 5));
@@ -154,9 +160,9 @@ void updateWaitingTeamwithEachLog(UserLogData receivedLog){
     print('LogData Subscription 객체: ${subscriptionInfo[1].toString()}');
   }
 
-  void userLogData_CallBack(StompFrame frame){
+  void userLogData_CallBack(StompFrame frame) {
     print('<UserLogData> 메세지 수신. 다음은 수신된 메세지입니다.');
-    if (frame!.body != null) {
+    if (frame.body != null) {
       print(frame.body.toString());
       Map<String, dynamic> responseData = json.decode(frame.body!);
       UserLogData retrievedData = UserLogData.fromJson(responseData);

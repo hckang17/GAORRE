@@ -3,26 +3,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:gaorre/provider/Data/UserLogProvider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 void showWaitingLog(WidgetRef ref) {
-  String toKRStatus(String status){
-    if(status.startsWith('called')){
+  String toKRStatus(String status) {
+    if (status.startsWith('called')) {
       status = 'called';
     }
     switch (status) {
       case 'called':
         status = '호출됨';
-      break;
+        break;
       case 'store canceled':
         status = '가게취소';
-      break;
+        break;
       case 'user canceled':
         status = '유저취소';
-      break;
+        break;
       case 'entered':
         status = '입장';
-      break;
+        break;
       case 'waiting':
         status = '대기중';
       default:
@@ -33,32 +32,32 @@ void showWaitingLog(WidgetRef ref) {
 
   Color Cstatus = Colors.black;
 
-  Color statusColor(String status){
-    if(status.startsWith('called')){
+  Color statusColor(String status) {
+    if (status.startsWith('called')) {
       status = 'called';
     }
     switch (status) {
       case 'called':
         Cstatus = Colors.green;
-      break;
+        break;
       case 'store canceled':
         Cstatus = Colors.orange;
-      break;
+        break;
       case 'user canceled':
         Cstatus = Color.fromARGB(255, 255, 43, 43);
-      break;
+        break;
       case 'entered':
         Cstatus = Colors.blue;
-      break;
+        break;
       case 'waiting':
         Cstatus = Colors.deepPurpleAccent;
-      break;
+        break;
       default:
         Cstatus;
     }
     return Cstatus;
   }
-  
+
   showModalBottomSheet(
       context: ref.context,
       builder: (BuildContext context) {
@@ -76,19 +75,17 @@ void showWaitingLog(WidgetRef ref) {
                 .compareTo(DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(
                     a.statusChangeTime ?? "1970-01-01T00:00:00.000+09:00")));
 
-
-
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 32, bottom: 32),
+                  padding: const EdgeInsets.only(
+                      left: 16, right: 16, top: 32, bottom: 32),
                   child: TextWidget(
                     '웨이팅리스트 변동 내역',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF72AAD8),
-                    
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF72AAD8),
                   ),
                 ),
                 Expanded(
@@ -96,42 +93,63 @@ void showWaitingLog(WidgetRef ref) {
                     itemCount: userLogs.userLogs?.length ?? 0,
                     itemBuilder: (context, index) {
                       final log = userLogs.userLogs![index];
-                      return Padding(padding: EdgeInsets.all(16), 
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-
-                        children: [
-                          TextWidget('${log.waitingNumber} 번 손님',fontSize: 18, fontWeight: FontWeight.bold,),
-                          SizedBox(height: 8,),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 2, 
-                                child: TextWidget('연락처 : ${log.userPhoneNumber}', fontSize: 16,textAlign: TextAlign.start,)
-                              ),
-                              Expanded(
-                                flex: 1, 
-                                child: TextWidget('일행 수 : ${log.personNumber} 명', fontSize: 16,textAlign: TextAlign.right,)
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start, 
-                            crossAxisAlignment: CrossAxisAlignment.start, 
-                            children: [
-                              TextWidget('최종 상태: ', fontSize: 16,textAlign: TextAlign.start,),
-                              TextWidget('${toKRStatus(log.status)}', fontSize: 16,color: statusColor(log.status), textAlign: TextAlign.start,),
-                            ],),
-                          Divider(
+                      return Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextWidget(
+                              '${log.waitingNumber} 번 손님',
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                    flex: 2,
+                                    child: TextWidget(
+                                      '연락처 : ${log.userPhoneNumber}',
+                                      fontSize: 16,
+                                      textAlign: TextAlign.start,
+                                    )),
+                                Expanded(
+                                    flex: 1,
+                                    child: TextWidget(
+                                      '일행 수 : ${log.personNumber} 명',
+                                      fontSize: 16,
+                                      textAlign: TextAlign.right,
+                                    )),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextWidget(
+                                  '최종 상태: ',
+                                  fontSize: 16,
+                                  textAlign: TextAlign.start,
+                                ),
+                                TextWidget(
+                                  '${toKRStatus(log.status)}',
+                                  fontSize: 16,
+                                  color: statusColor(log.status),
+                                  textAlign: TextAlign.start,
+                                ),
+                              ],
+                            ),
+                            Divider(
                               color: Color(0xFFDFDFDF),
                               thickness: 1,
                             ),
-                        ],
-                        
-                      ),
+                          ],
+                        ),
                       );
                       // ListTile(
                       //   title: Text(
