@@ -77,36 +77,6 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                   IconButton(
                     icon: Icon(Icons.event_busy, color: Colors.white),
                     onPressed: () async {
-                      // if (true ==
-                      //     await showConfirmDialogWithConfirmText(
-                      //         context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")) {
-                      //   if (true ==
-                      //       await ref
-                      //           .read(storeDataProvider.notifier)
-                      //           .requestCloseStore(ref)) {
-                      //     if (ref
-                      //             .read(storeDataProvider.notifier)
-                      //             .getWaitingAvailable() ==
-                      //         0) {
-                      //       print(
-                      //           '현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
-                      //       await ref
-                      //           .read(storeDataProvider.notifier)
-                      //           .changeAvailableStatus(loginData ??
-                      //               ref
-                      //                   .read(loginProvider.notifier)
-                      //                   .getLoginData()!);
-                      //     }
-                      //     showAlertDialog(context, "영업 종료",
-                      //         "성공적으로 영업종료를 처리 완료하였습니다.", null);
-                      //   } else {
-                      //     showAlertDialog(
-                      //         context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
-                      //   }
-                      // } else {
-                      //   showAlertDialog(
-                      //       context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
-                      // }
                       final String confirmText = "GAORRE";
                       showDialog(
                         context: context,
