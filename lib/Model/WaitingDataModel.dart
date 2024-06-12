@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class WaitingData {
   final int storeCode;
   final List<WaitingTeam> teamInfoList;
@@ -13,7 +11,8 @@ class WaitingData {
 
   factory WaitingData.fromJson(Map<String, dynamic> json) {
     var teamInfoList = json['teamInfoList'] as List;
-    List<WaitingTeam> teams = teamInfoList.map((teamJson) => WaitingTeam.fromJson(teamJson)).toList();
+    List<WaitingTeam> teams =
+        teamInfoList.map((teamJson) => WaitingTeam.fromJson(teamJson)).toList();
 
     return WaitingData(
       storeCode: json['storeCode'],
@@ -32,15 +31,15 @@ class WaitingData {
 }
 
 class WaitingTeam {
-  final int waitingNumber;  // 대기번호
-  final int status;         // 대기상태
-  final String phoneNumber; 
+  final int waitingNumber; // 대기번호
+  final int status; // 대기상태
+  final String phoneNumber;
   final int personNumber;
-  DateTime? entryTime;        // nullable
+  DateTime? entryTime; // nullable
 
   WaitingTeam({
-    required this.waitingNumber,  // 
-    required this.status,   
+    required this.waitingNumber, //
+    required this.status,
     required this.phoneNumber,
     required this.personNumber,
     this.entryTime,

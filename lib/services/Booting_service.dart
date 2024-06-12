@@ -7,17 +7,12 @@ import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Data/UserLogProvider.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
-import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 import 'package:gaorre/provider/Network/connectivityStateNotifier.dart';
 import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
-import 'package:gaorre/provider/errorStateNotifier.dart';
 import 'package:gaorre/services/HIVE_service.dart';
-import 'package:gaorre/services/HTTP_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
-
-import '../main.dart';
 
 final firstBootState = StateProvider<bool>((ref) => false);
 final container = ProviderContainer(); // 로딩창...때문에...
@@ -177,12 +172,11 @@ Future<int> reboot(WidgetRef ref) async {
     await requestStoreInfoCompleter.future;
 
     print('유저로그를 가져옵니다... [reboot service]');
-    await ref.read(userLogProvider.notifier).retrieveUserLogData(
-      ref.read(loginProvider.notifier).getLoginData()!
-    );
+    await ref
+        .read(userLogProvider.notifier)
+        .retrieveUserLogData(ref.read(loginProvider.notifier).getLoginData()!);
     requestLogData.complete();
     await requestLogData.future;
-
   } catch (e) {
     print("에러 발생 : $e [RebootService]");
     return 4; // 원인미상 에러 발생 시 4 반환
@@ -196,12 +190,13 @@ Future<int> firstBoot(WidgetRef ref) async {
   Completer versionCheckCompleter = Completer<void>();
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   String version = packageInfo.version; // '1.0.0'
+  // ignore: unused_local_variable
   String buildNumber = packageInfo.buildNumber; // '1'
-  try{
+  try {
     print("버전을 체크합니다... [firstBoot]");
     final jsonBody = json.encode({
-      "appCode" : 2, // 가오리는 무조건 2
-      "appVersion" : version
+      "appCode": 2, // 가오리는 무조건 2
+      "appVersion": version
     });
     final response = await http.post(
       Uri.parse('https://orre.store/api/appVersion'),
@@ -210,26 +205,27 @@ Future<int> firstBoot(WidgetRef ref) async {
       },
       body: jsonBody,
     );
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if(responseBody['status'] == '200'){
+      if (responseBody['status'] == '200') {
         print("현재버전이 최신버전입니다... [firstBoot]");
         print("현재 버전... $version [firstBoot]");
         print("최신 버전... ${responseBody['appVersion']}");
         versionCheckCompleter.complete();
-      }else if(responseBody['status'] == '1301' || responseBody['appEssentialUpdate'] == 0){
+      } else if (responseBody['status'] == '1301' ||
+          responseBody['appEssentialUpdate'] == 0) {
         print("업데이트 버전이 있습니다...");
         print('필수 업데이트는 아닙니다...');
         versionCheckCompleter.complete();
-      }else{
+      } else {
         print("업데이트 버전이 있습니다...");
         print('필수 업데이트가 존재함으로 업데이트합니다....');
         return 5;
       }
-    }else{
+    } else {
       throw 'HTTP${response.statusCode}';
     }
-  }catch(error){
+  } catch (error) {
     await showAlertDialog(ref.context, "업데이트 확인", "업데이트 확인에 실패했습니다.", null);
     versionCheckCompleter.completeError('version_check_failed');
   }
@@ -269,6 +265,7 @@ Future<int> firstBoot(WidgetRef ref) async {
     });
 
     // 10초 후에 타임아웃을 설정하여 네트워크 연결이 없으면 에러를 반환합니다.
+    // ignore: unused_local_variable
     final networkTimeout = Future.delayed(const Duration(seconds: 10), () {
       if (!networkCompleter.isCompleted) {
         print("네트워크 연결이 확인되지 않았습니다. [firstBootService]");
@@ -319,7 +316,7 @@ Future<int> firstBoot(WidgetRef ref) async {
 
     print('알림전송 권한을 요청합니다 [FirstBoot]');
     var notificationPermissionStatus = await Permission.notification.status;
-    if(!notificationPermissionStatus.isGranted) {
+    if (!notificationPermissionStatus.isGranted) {
       await Permission.notification.request();
     }
 
@@ -338,7 +335,10 @@ Future<int> firstBoot(WidgetRef ref) async {
 
     // 가게 정보 취득 시도
     print('가게정보 요청을 전송합니다. [FirstBootService]');
-    bool retrieveStoreDataResult = await ref.read(storeDataProvider.notifier).requestStoreData(ref.read(loginProvider.notifier).getLoginData()!.storeCode);
+    bool retrieveStoreDataResult = await ref
+        .read(storeDataProvider.notifier)
+        .requestStoreData(
+            ref.read(loginProvider.notifier).getLoginData()!.storeCode);
 
     if (!retrieveStoreDataResult) {
       requestStoreInfoCompleter.completeError('가게정보 수신 실패');
@@ -350,15 +350,14 @@ Future<int> firstBoot(WidgetRef ref) async {
     await requestStoreInfoCompleter.future;
 
     print('유저로그를 불러옵니다... [FirstBoot]');
-    await ref.read(userLogProvider.notifier).retrieveUserLogData(
-      ref.read(loginProvider.notifier).getLoginData()!
-    );
+    await ref
+        .read(userLogProvider.notifier)
+        .retrieveUserLogData(ref.read(loginProvider.notifier).getLoginData()!);
     requestLogData.complete();
 
     await requestLogData.future;
 
     ref.read(firstBootState.notifier).state = true;
-
   } catch (e) {
     print("에러 발생 : $e [firstBootService]");
     return 4; // 에러 발생 시 4 반환

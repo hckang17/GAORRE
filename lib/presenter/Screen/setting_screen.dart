@@ -7,7 +7,6 @@ import 'package:gaorre/presenter/Widget/ManagerPage/ResetPasswordPopup.dart';
 import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
-import 'package:gaorre/provider/PushNotificationProvider.dart';
 import 'package:gaorre/widget/appbar/static_app_bar_widget.dart';
 import 'package:gaorre/widget/background/waveform_background_widget.dart';
 import 'package:gaorre/widget/button/big_button_widget.dart';
@@ -20,7 +19,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class SettingScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final StoreData storeData = ref.read(storeDataProvider.notifier).getStoreData()!;
+    final StoreData storeData =
+        ref.read(storeDataProvider.notifier).getStoreData()!;
     String storeName = storeData.storeName;
 
     return WaveformBackgroundWidget(
@@ -72,7 +72,8 @@ class SettingScreen extends ConsumerWidget {
                         height: 10,
                       ),
                       BigButtonWidget(
-                        onPressed: () async {;
+                        onPressed: () async {
+                          ;
                           print('푸쉬알림 상태를 변경합니다');
                           openAppSettings();
                         },
@@ -90,10 +91,9 @@ class SettingScreen extends ConsumerWidget {
                       BigButtonWidget(
                         onPressed: () {
                           Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    ResetPasswordScreen()));
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ResetPasswordScreen()));
                         },
                         backgroundColor: Color(0xFFDFDFDF),
                         minimumSize: Size(double.infinity, 50),
@@ -115,7 +115,8 @@ class SettingScreen extends ConsumerWidget {
                             textColor: Color(0xFFDFDFDF),
                             onPressed: () async {
                               // 로그아웃 기능 사용.
-                              if (await showConfirmDialog(context, "로그아웃","정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
+                              if (await showConfirmDialog(context, "로그아웃",
+                                  "정말 로그아웃 하시겠습니까? 로그아웃 이후에는 앱을 다시 시작합니다.")) {
                                 ref.read(loginProvider.notifier).logout(ref);
                                 Restart.restartApp();
                               } else {
@@ -135,11 +136,11 @@ class SettingScreen extends ConsumerWidget {
                             fontSize: 16,
                             textColor: Color(0xFFDFDFDF),
                             onPressed: () {
-                              showAlertDialog(ref.context, 
-                                "회원탈퇴",
-                                "회원탈퇴는 관리자에게 문의해주세요.\n연락처 : 010-3546-3360",
-                                null
-                              );
+                              showAlertDialog(
+                                  ref.context,
+                                  "회원탈퇴",
+                                  "회원탈퇴는 관리자에게 문의해주세요.\n연락처 : 010-3546-3360",
+                                  null);
                             },
                           ),
                         ],
