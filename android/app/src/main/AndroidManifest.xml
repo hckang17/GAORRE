@@ -17,7 +17,7 @@
     <!-- <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/> -->
     <!-- 미디어 오디오 읽기 권한: 앱이 사용자의 기기에서 오디오 파일을 읽는 것을 허용합니다. -->
 
-    <!-- <uses-permission android:name="android.permission.CAMERA"/> -->
+    <uses-permission android:name="android.permission.CAMERA"/>
     <!-- 카메라 사용 권한: 앱이 사용자의 기기에서 카메라를 사용하는 것을 허용합니다. -->
 
     <!-- <uses-permission android:name="android.permission.SEND_SMS"/>
@@ -51,7 +51,7 @@
     <!-- 통화 리디렉션 서비스 바인딩 권한: 앱이 전화 리디렉션 서비스를 바인딩하는 것을 허용합니다. -->
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>    
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/> -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
