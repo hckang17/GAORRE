@@ -320,6 +320,12 @@ Future<int> firstBoot(WidgetRef ref) async {
       await Permission.notification.request();
     }
 
+    print('카메라 접근권한을 요청합니다 [FirstBoot]');
+    var cameraPermissionStatus = await Permission.camera.status;
+    if(!cameraPermissionStatus.isGranted){
+      await Permission.camera.request();
+    }
+
     // 자동로그인 시도
     bool autoLoginResult =
         await ref.read(loginProvider.notifier).requestAutoLogin();
