@@ -51,6 +51,7 @@ class _AddMenuModalState extends ConsumerState<AddMenuModal> {
     descriptionController = TextEditingController();
     priceController = TextEditingController();
     loginData = ref.read(loginProvider);
+    ref.read(imageBytesProvider.notifier).resetState();
   }
 
   @override
