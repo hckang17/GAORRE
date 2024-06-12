@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gaorre/widget/button/pop_button_widget.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
 
 // 사용법 : 원하는 텍스트만 사용하여 팝업을 생성하시면 됩니다^^
@@ -16,7 +15,12 @@ class CustomSelectDialog extends StatelessWidget {
   final String secondButtonText;
   final BuildContext context;
 
-  CustomSelectDialog({required this.context, required this.title, required this.text, required this.firstButtonText, required this.secondButtonText});
+  CustomSelectDialog(
+      {required this.context,
+      required this.title,
+      required this.text,
+      required this.firstButtonText,
+      required this.secondButtonText});
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +52,10 @@ class CustomSelectDialog extends StatelessWidget {
               ),
               child: Icon(Icons.close, color: Colors.white),
               padding: EdgeInsets.all(8),
-              
             ),
           ),
-          ],
-        ),
+        ],
+      ),
       // title: Text(
       //   title,
       //   style: TextStyle(
@@ -76,27 +79,33 @@ class CustomSelectDialog extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Expanded(
-              child : ElevatedButton(
-                onPressed: () async {Navigator.of(context).pop(1);},  // firstBtnText버튼 선택하면 1 배출
+              child: ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop(1);
+                }, // firstBtnText버튼 선택하면 1 배출
                 child: TextWidget(
-                            firstButtonText,
-                            fontSize: 16,
-                            color: Color(0xFF72AAD8),
-                          ),
-                ),),
-                SizedBox(width: 8),
-                Expanded(child : ElevatedButton(
-                onPressed: () async {Navigator.of(context).pop(2);},   // secondBtnText버튼 선택하면 2 배출
+                  firstButtonText,
+                  fontSize: 16,
+                  color: Color(0xFF72AAD8),
+                ),
+              ),
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop(2);
+                }, // secondBtnText버튼 선택하면 2 배출
                 child: TextWidget(
-                            secondButtonText,
-                            fontSize: 16,
-                             color: Color(0xFF72AAD8),
-                          ),
-                ),),
+                  secondButtonText,
+                  fontSize: 16,
+                  color: Color(0xFF72AAD8),
+                ),
+              ),
+            ),
           ],
         ),
       ],
     );
   }
 }
-

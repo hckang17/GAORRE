@@ -2,15 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gaorre/Model/LoginDataModel.dart';
 import 'package:gaorre/Model/MenuDataModel.dart';
-import 'package:gaorre/Model/RestaurantTableModel.dart';
 import 'package:gaorre/Model/StoreDataModel.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
-import 'package:gaorre/services/HIVE_service.dart';
 import 'package:gaorre/services/HTTP_service.dart';
 import 'package:http/http.dart' as http;
 // ignore: depend_on_referenced_packages
@@ -196,7 +196,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
         // HTTP가 정상적으로 요청되었을 때
         print('메뉴 추가 요청이 성공하였습니다.');
         await showAlertDialog(context, "메뉴 추가", "메뉴추가 성공!", null);
-        requestStoreData(loginData!.storeCode);
+        requestStoreData(loginData.storeCode);
         return true;
       } else {
         // 요청이 실패하면 처리
@@ -258,13 +258,14 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
             'application', 'json') // JSON 데이터의 컨텐트 타입을 application/json으로 명시
         ));
 
-        try {
+    try {
       var response = await request.send();
       if (response.statusCode == 200) {
         // HTTP가 정상적으로 요청되었을 때
         print('메뉴 변경 요청 성공하였습니다.');
+        await refreshImage();
+        await requestStoreData(loginData.storeCode);
         await showAlertDialog(context, "메뉴수정", "메뉴수정 성공!", null);
-        requestStoreData(loginData!.storeCode);
         return true;
       } else {
         // 요청이 실패하면 처리
@@ -355,6 +356,20 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
     }
   }
 
+  Future<bool> refreshImage() async {
+    // CacheNetworkImage의 캐시 모두 삭제
+    if (state?.menuInfo == null) {
+      print('메뉴정보가 없어서 이미지 캐시 삭제를 진행하지 않습니다.');
+      return false;
+    }
+    print('메뉴정보가 있어서 이미지 캐시 삭제를 진행합니다.');
+    for (Menu menu in state!.menuInfo as List<Menu>) {
+      print("메뉴 이미지 URL : ${menu.menuImageURL}");
+      await CachedNetworkImage.evictFromCache(menu.menuImageURL);
+    }
+    return true;
+  }
+
   // 카테고리 추가/수정/삭제 메서드.   카테고리명이 비어있으면 삭제요청임.
   FutureOr<bool> editCategory(
       BuildContext context,
@@ -381,7 +396,7 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
         if (responseBody['status'] == "200") {
           print('카테고리 등록/수정 성공!');
-          requestStoreData(loginData.storeCode!);
+          requestStoreData(loginData.storeCode);
           await showAlertDialog(context, "카테고리 등록/수정", "성공!", null);
           return true;
         } else {
@@ -421,8 +436,8 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
             responseBody['status'] == "6402") {
           // 폐점성공
           print('영업종료처리 성공 [storeDataProvider - closeStore]');
-          await showAlertDialog(ref.context, "영업종료", "성공", null);
-          await HiveService.clearAllData();
+          // await showAlertDialog(ref.context, "영업종료", "성공", null);
+          // await HiveService.clearAllData();
           return true;
         } else {
           print('영업종료처리 실패 [storeDataProvider - closeStore]');
@@ -432,8 +447,8 @@ class StoreDataNotifier extends StateNotifier<StoreData?> {
         }
       } else {
         print('HTTP statusCode not 200 [storeDataProvider - closeStore]');
-        await showAlertDialog(
-            ref.context, "영업종료", "실패\n에러코드:[${response.statusCode}]", null);
+        // await showAlertDialog(
+        //     ref.context, "영업종료", "실패\n에러코드:[${response.statusCode}]", null);
         return false;
       }
     } catch (error) {

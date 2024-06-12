@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gaorre/Model/StoreDataModel.dart';
 import 'package:gaorre/presenter/Screen/setting_screen.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
@@ -11,8 +12,12 @@ import 'package:gaorre/presenter/Widget/ManagerPage/Menu/AddCategoryPopup.dart';
 import 'package:gaorre/presenter/Widget/ManagerPage/StoreBasicInfoWidget.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
 import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/widget/popup/custom_popup_widget.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
 import '../../Model/LoginDataModel.dart';
+
+final textEditProvider =
+    StateProvider<TextEditingController>((ref) => TextEditingController());
 
 class ManagementScreenWidget extends ConsumerWidget {
   ManagementScreenWidget();
@@ -47,6 +52,7 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
   @override
   Widget build(BuildContext context) {
     currentStoreData = ref.watch(storeDataProvider);
+    final controller = ref.watch(textEditProvider);
     return Scaffold(
       body: Container(
           color: Colors.white,
@@ -71,46 +77,145 @@ class _ManagementScreenBodyState extends ConsumerState<ManagementScreenBody> {
                   IconButton(
                     icon: Icon(Icons.event_busy, color: Colors.white),
                     onPressed: () async {
-                      if (true ==
-                          await showConfirmDialogWithConfirmText(
-                              context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")) {
-                        if (true ==
-                            await ref
-                                .read(storeDataProvider.notifier)
-                                .requestCloseStore(ref)) {
-                          if (ref
-                                  .read(storeDataProvider.notifier)
-                                  .getWaitingAvailable() ==
-                              0) {
-                            print(
-                                '현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
-                            await ref
-                                .read(storeDataProvider.notifier)
-                                .changeAvailableStatus(loginData ??
-                                    ref
-                                        .read(loginProvider.notifier)
-                                        .getLoginData()!);
-                          }
-                          showAlertDialog(context, "영업 종료",
-                              "성공적으로 영업종료를 처리 완료하였습니다.", null);
-                        } else {
-                          showAlertDialog(
-                              context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
-                        }
-                      } else {
-                        showAlertDialog(
-                            context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
-                      }
+                      // if (true ==
+                      //     await showConfirmDialogWithConfirmText(
+                      //         context, "영업 종료", "영업 종료를 진행하면 모든 웨이팅을 취소합니다.")) {
+                      //   if (true ==
+                      //       await ref
+                      //           .read(storeDataProvider.notifier)
+                      //           .requestCloseStore(ref)) {
+                      //     if (ref
+                      //             .read(storeDataProvider.notifier)
+                      //             .getWaitingAvailable() ==
+                      //         0) {
+                      //       print(
+                      //           '현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
+                      //       await ref
+                      //           .read(storeDataProvider.notifier)
+                      //           .changeAvailableStatus(loginData ??
+                      //               ref
+                      //                   .read(loginProvider.notifier)
+                      //                   .getLoginData()!);
+                      //     }
+                      //     showAlertDialog(context, "영업 종료",
+                      //         "성공적으로 영업종료를 처리 완료하였습니다.", null);
+                      //   } else {
+                      //     showAlertDialog(
+                      //         context, "영업 종료", "영업종료를 처리를 실패하였습니다.", null);
+                      //   }
+                      // } else {
+                      //   showAlertDialog(
+                      //       context, "영업 종료", "인증문자를 정확히 입력해주세요.", null);
+                      // }
+                      final String confirmText = "GAORRE";
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return CustomPopupDialog(
+                            isCloseBtn: false,
+                            title: "영업 종료",
+                            content: Column(
+                              children: [
+                                TextWidget(
+                                  "정말로 진행하시려면 검증문자 입력창에 \'$confirmText\'를 정확히 입력해주세요.",
+                                  fontSize: 16.sp,
+                                ),
+                                SizedBox(height: 8.h),
+                                TextField(
+                                  controller: controller,
+                                  decoration: InputDecoration(
+                                    hintText: "검증문자를 입력하세요",
+                                    hintStyle: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontFamily: "Dovemayo_gothic",
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Color(0xFF72AAD8),
+                                      ),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Color(0xFF72AAD8),
+                                      ),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontFamily: "Dovemayo_gothic",
+                                  ),
+                                  cursorColor: Color(0xFF72AAD8),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                            mainBtnText: "영업 종료",
+                            mainBtnFunc: () async {
+                              if (controller.text == confirmText) {
+                                final isTrue = await ref
+                                    .read(storeDataProvider.notifier)
+                                    .requestCloseStore(ref);
+
+                                final waitingAvailable = ref
+                                    .watch(storeDataProvider.notifier)
+                                    .getWaitingAvailable();
+
+                                print("waitingAvailable: $waitingAvailable");
+                                print("isTrue: $isTrue");
+                                if (isTrue) {
+                                  final userInfo = ref
+                                      .read(loginProvider.notifier)
+                                      .getLoginData();
+
+                                  if (userInfo == null) {
+                                    // TODO: 로그인 정보가 없을 때 처리
+                                    return;
+                                  } else {
+                                    bool done = true;
+                                    if (waitingAvailable == 0) {
+                                      print(
+                                          '현재 웨이팅 접수 상태가 "가능"임으로 "불가능"으로 변경합니다. [StoreManagerScreen - close] ');
+                                      done = await ref
+                                          .read(storeDataProvider.notifier)
+                                          .changeAvailableStatus(userInfo);
+                                    }
+                                    await showAlertDialog(
+                                        context,
+                                        "영업 종료",
+                                        done
+                                            ? "성공적으로 영업종료를 처리 완료하였습니다."
+                                            : "영업종료를 처리를 실패하였습니다.",
+                                        null);
+
+                                    print("test");
+                                    Navigator.pop(context);
+                                  }
+                                }
+                              } else {
+                                showAlertDialog(context, "영업 종료",
+                                    "인증문자를 정확히 입력해주세요.", null);
+                              }
+                            },
+                            mainBtnColor: Colors.red,
+                            subBtnText: "취소",
+                            subBtnFunc: () {
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      );
                     },
                   ),
                   IconButton(
-                      icon: Icon(Icons.settings, color: Colors.white),
-                      onPressed: () async {
-                        // 세팅화면으로 전환
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                SettingScreen()));
-                      })
+                    icon: Icon(Icons.settings, color: Colors.white),
+                    onPressed: () async {
+                      // 세팅화면으로 전환
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (BuildContext context) => SettingScreen()));
+                    },
+                  ),
                 ],
                 expandedHeight: 240, // 높이 설정
                 flexibleSpace: FlexibleSpaceBar(
