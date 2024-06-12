@@ -6,7 +6,6 @@ import 'package:gaorre/Model/GuestDataModel.dart';
 import 'package:gaorre/Model/LoginDataModel.dart';
 import 'package:gaorre/Model/OrderListModel.dart';
 import 'package:gaorre/Model/RestaurantTableModel.dart';
-import 'package:http/http.dart' as http;
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/services/HIVE_service.dart';
 import 'package:gaorre/services/HTTP_service.dart';
@@ -224,7 +223,7 @@ class RestaurantTableNotifier extends StateNotifier<RestaurantTable?> {
           destination: '/topic/admin/table/unlock/$storeCode',
           callback: (StompFrame frame) {
             print('<UnlockTableData> 메세지 수신.');
-            print(frame!.body.toString());
+            print(frame.body.toString());
             Map<String, dynamic> responseData = json.decode(frame.body!);
 
             // Check if 'waitingNumber' exists in the response data

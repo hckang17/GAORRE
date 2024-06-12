@@ -2,13 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gaorre/presenter/Widget/alertDialog.dart';
 import 'package:gaorre/provider/Data/loginDataProvider.dart';
-import 'package:gaorre/provider/Data/waitingDataProvider.dart';
-import 'package:gaorre/services/HIVE_service.dart';
 import 'package:gaorre/services/HTTP_service.dart';
 
 final requestAuthCodeButtonStateProvider = StateProvider((ref) => true);

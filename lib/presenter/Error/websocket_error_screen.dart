@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gaorre/presenter/Error/ServerErrorScreen.dart';
-import 'package:gaorre/provider/Network/connectivityStateNotifier.dart';
 import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
 import 'package:gaorre/widget/text/text_widget.dart';
 

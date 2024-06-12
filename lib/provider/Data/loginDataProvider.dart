@@ -2,12 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gaorre/provider/Data/UserLogProvider.dart';
 import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
-import 'package:hive/hive.dart';
 import 'package:gaorre/presenter/Widget/AlertDialog.dart';
 import 'package:gaorre/services/HIVE_service.dart';
 import 'package:gaorre/services/HTTP_service.dart';
@@ -51,33 +49,36 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     state = null;
   }
 
-  Future<bool> resetPassword(WidgetRef ref, String adminPhoneNumber, String newPassword, String authCode) async {
+  Future<bool> resetPassword(WidgetRef ref, String adminPhoneNumber,
+      String newPassword, String authCode) async {
     final jsonBody = json.encode({
-      "adminPhoneNumber" : adminPhoneNumber,
-      "verificationCode" : authCode,
-      "newAdminPassword" : newPassword,
+      "adminPhoneNumber": adminPhoneNumber,
+      "verificationCode": authCode,
+      "newAdminPassword": newPassword,
     });
     try {
-      final response = await HttpsService.postRequest('/StoreAdmin/login/reset', jsonBody);
-      if(response.statusCode == 200){
+      final response =
+          await HttpsService.postRequest('/StoreAdmin/login/reset', jsonBody);
+      if (response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
-        if(responseBody['status'] == '200'){
+        if (responseBody['status'] == '200') {
           print("비밀번호 변경 성공!");
           await HiveService.saveStringData('password', newPassword);
           await HiveService.saveStringData('phoneNumber', adminPhoneNumber);
           // await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경을 성공하였습니다.", null);
           return true;
-        }else{
+        } else {
           print('비밀번호 변경 실패...');
           throw Exception('${responseBody['status']}');
         }
-      }else{
+      } else {
         print('resetPassword 오류 ${response.statusCode}');
         throw Exception('HTTP${response.statusCode}');
       }
-    }catch(error){
+    } catch (error) {
       print('예기치 못한 에러 발생 [loginProvider - resetPassword]');
-      await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경 실패\n에러코드:${error}", null);
+      await showAlertDialog(
+          ref.context, "비밀번호 변경", "비밀번호 변경 실패\n에러코드:${error}", null);
       return false;
     }
   }
@@ -110,10 +111,10 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     String? adminPhoneNumber = await HiveService.retrieveData('phoneNumber');
     String? password = await HiveService.retrieveData('password');
     if (adminPhoneNumber != null && password != null) {
-      if(true == await requestLoginData(adminPhoneNumber, password)){
+      if (true == await requestLoginData(adminPhoneNumber, password)) {
         print('자동 로그인 성공!! [loginProvider]');
         return true;
-      }else{
+      } else {
         print('자동 로그인에 실패했습니다.');
         return false;
       }

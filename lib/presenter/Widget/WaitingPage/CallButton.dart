@@ -5,12 +5,7 @@ import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 import 'package:gaorre/provider/WidgetProvider/CallButtonProvider.dart';
 import 'package:gaorre/provider/WidgetProvider/WaitingTimerProvider.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gaorre/provider/Data/waitingDataProvider.dart';
-import 'package:gaorre/provider/WidgetProvider/CallButtonProvider.dart';
-import 'package:gaorre/provider/WidgetProvider/WaitingTimerProvider.dart';
-
+// ignore: must_be_immutable
 class CallIconButton extends ConsumerWidget {
   final WaitingTeam waitingTeam;
   final int storeCode;
@@ -46,20 +41,23 @@ class CallIconButton extends ConsumerWidget {
                 ),
                 iconSize: 30,
                 onPressed: () async {
-                  if(isPressed){
+                  if (isPressed) {
                     print("이미 CallGuest가 작동중입니다.");
                     return;
-                  }else{
+                  } else {
                     isPressed = true;
                   }
                   if (true ==
-                    await ref.read(waitingProvider.notifier).requestUserCall(
-                      ref,
-                      phoneNumber,
-                      waitingTeam.waitingNumber,
-                      storeCode,
-                      minutesToAdd)) {
-                    ref.read(callButtonProvider(waitingTeam.waitingNumber).notifier).pressButton(); // 상태 변경
+                      await ref.read(waitingProvider.notifier).requestUserCall(
+                          ref,
+                          phoneNumber,
+                          waitingTeam.waitingNumber,
+                          storeCode,
+                          minutesToAdd)) {
+                    ref
+                        .read(callButtonProvider(waitingTeam.waitingNumber)
+                            .notifier)
+                        .pressButton(); // 상태 변경
                   }
                   isPressed = false;
                 },

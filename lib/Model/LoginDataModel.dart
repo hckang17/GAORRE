@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class LoginData {
   String? status;
   final int storeCode;
