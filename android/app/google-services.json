@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "787119170758",
+    "project_id": "gaorre-97b39",
+    "storage_bucket": "gaorre-97b39.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:787119170758:android:17f95cbb6bdc4e0eea23c7",
+        "android_client_info": {
+          "package_name": "com.aeioudev.gaorre"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAluXqBRmdI00pVU5SENLgF2WnLVlO-bds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

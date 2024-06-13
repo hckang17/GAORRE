@@ -1,15 +1,77 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.aeiou.gaorre">
+    
+    <uses-permission android:name="android.permission.INTERNET"/>
+    
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- 외부 저장소에 쓰기 권한: 앱이 사용자의 외부 저장소(예: SD 카드)에 데이터를 쓰는 것을 허용합니다. -->
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- 외부 저장소 읽기 권한: 앱이 사용자의 외부 저장소에 저장된 데이터를 읽는 것을 허용합니다. -->
+
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- 미디어 이미지 읽기 권한: 앱이 사용자의 기기에서 이미지 파일을 읽는 것을 허용합니다. -->
+
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+    <!-- 미디어 비디오 읽기 권한: 앱이 사용자의 기기에서 비디오 파일을 읽는 것을 허용합니다. -->
+
+    <!-- <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/> -->
+    <!-- 미디어 오디오 읽기 권한: 앱이 사용자의 기기에서 오디오 파일을 읽는 것을 허용합니다. -->
+
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- 카메라 사용 권한: 앱이 사용자의 기기에서 카메라를 사용하는 것을 허용합니다. -->
+
+    <!-- <uses-permission android:name="android.permission.SEND_SMS"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.READ_SMS"/> -->
+
+    <!-- <uses-permission android:name="android.permission.RECEIVE_WAP_PUSH"/> -->
+    <!-- WAP 푸시 메시지 수신 권한: 앱이 WAP 푸시 메시지를 수신하는 것을 허용합니다. -->
+
+    <!-- <uses-permission android:name="android.permission.RECEIVE_MMS"/> -->
+    <!-- MMS 수신 권한: 앱이 멀티미디어 메시지 서비스를 수신하는 것을 허용합니다. -->
+
+    <!-- <uses-permission android:name="android.permission.READ_PHONE_STATE"/> -->
+    <!-- 전화 상태 읽기 권한: 앱이 사용자의 전화 상태(예: 전화 번호, 현재 네트워크 정보 등)를 읽는 것을 허용합니다. -->
+
+    <!-- <uses-permission android:name="android.permission.CALL_PHONE"/> -->
+
+    <!-- <uses-permission android:name="android.permission.ADD_VOICEMAIL"/> -->
+    <!-- 음성 메일 추가 권한: 앱이 사용자의 음성 메일을 추가하는 것을 허용합니다. -->
+
+    <!-- <uses-permission android:name="android.permission.USE_SIP"/> -->
+    <!-- SIP 사용 권한: 앱이 SIP(Session Initiation Protocol)를 사용하는 것을 허용합니다. -->
+
+    <!-- <uses-permission android:name="android.permission.READ_CALL_LOG"/> -->
+    <!-- 통화 기록 읽기 권한: 앱이 사용자의 통화 기록을 읽는 것을 허용합니다. -->
+
+    <!-- <uses-permission android:name="android.permission.WRITE_CALL_LOG"/> -->
+    <!-- 통화 기록 쓰기 권한: 앱이 사용자의 통화 기록을 쓰는 것을 허용합니다. -->
+
+    <!-- <uses-permission android:name="android.permission.BIND_CALL_REDIRECTION_SERVICE"/> -->
+    <!-- 통화 리디렉션 서비스 바인딩 권한: 앱이 전화 리디렉션 서비스를 바인딩하는 것을 허용합니다. -->
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>    
+    <!-- <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/> -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    
     <application
-        android:label="orre_manager"
+        android:label="가오리"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
+            android:enableOnBackInvokedCallback="true"
             android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
@@ -18,10 +80,17 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
-              />
+            />
+            <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="high_importance_channel" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="FLUTTER_NOTIFICATION_CLICK" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
