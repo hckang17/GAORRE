@@ -3,7 +3,7 @@ key.properties
 google-services.json
 gaorre_key.jks
 firebase.json
-
+android/fastlane/fastlane-service-account.json
 
 # Miscellaneous
 *.class
