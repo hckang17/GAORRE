@@ -1,3 +1,10 @@
+# 암호화되지 않은 파일들을 무시합니다.
+key.properties
+google-services.json
+gaorre_key.jks
+firebase.json
+
+
 # Miscellaneous
 *.class
 *.log
