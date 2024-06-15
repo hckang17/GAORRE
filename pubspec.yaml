@@ -1,5 +1,5 @@
-name: orre_manager
-description: "A new Flutter project."
+name: gaorre
+description: "a service which helps user(store master) to manage their Waiting queue and information for."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.17+17
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -61,6 +61,17 @@ dependencies:
   fluttertoast: ^8.2.5
   font_awesome_flutter: ^10.7.0
   cached_network_image: ^3.3.1
+  firebase_messaging: ^14.9.3
+  flutter_local_notifications: ^17.1.2
+  firebase_analytics: ^10.10.6
+  firebase_core: ^2.31.1
+  restart_app: ^1.2.1
+  flutter_screenutil: ^5.9.3
+  package_info_plus: ^8.0.0
+  url_launcher: ^6.3.0
+  flutter_svg: ^2.0.10+1
+  youtube_player_iframe: ^5.1.2
+  flutter_countdown_timer: ^4.1.0
 
 flutter_icons:
   android: true
@@ -101,8 +112,8 @@ flutter:
     - assets/image/Duck_with_bell.png
     - assets/image/gaorre.png
     - assets/image/logo/gaorre.png
-    - assets/image/waveform/wave_shadow.png
-    - assets/image/waveform/wave.png
+    - assets/image/waveform/gaorre_wave_shadow.svg
+    - assets/image/waveform/gaorre_wave.svg
     - assets/image/button/waiting adding.png
     - assets/image/timer_images/timer1.png
     - assets/image/timer_images/timer2.png

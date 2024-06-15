@@ -1,6 +1,5 @@
 import 'dart:collection';
-import 'dart:convert';
-import 'package:orre_manager/Model/MenuDataModel.dart'; // 이 경로는 실제 프로젝트의 구조에 따라 조정하세요.
+import 'package:gaorre/Model/MenuDataModel.dart'; // 이 경로는 실제 프로젝트의 구조에 따라 조정하세요.
 
 class StoreData {
   final int storeCode;
@@ -15,7 +14,7 @@ class StoreData {
   final String lastOrderTime;
   String? startBreakTime;
   String? endBreakTime;
-  final Map<String, String?> menuCategories;  // String 대신 String? 사용
+  final Map<String, String?> menuCategories; // String 대신 String? 사용
   List<Menu>? menuInfo;
 
   StoreData({
@@ -37,15 +36,17 @@ class StoreData {
 
   factory StoreData.fromJson(Map<String, dynamic> json) {
     List<Menu> menuList = (json['menuInfo'] as List)
-      .map((menuJson) => Menu.fromJson(menuJson))
-      .toList();
-    Map<String, String?> categoriesMap = LinkedHashMap(); // LinkedHashMap으로 선언합니다.
-    List<String> keys = json['menuCategories'].keys.toList()..sort(); // 키를 정렬합니다.
+        .map((menuJson) => Menu.fromJson(menuJson))
+        .toList();
+    Map<String, String?> categoriesMap =
+        LinkedHashMap(); // LinkedHashMap으로 선언합니다.
+    List<String> keys = json['menuCategories'].keys.toList()
+      ..sort(); // 키를 정렬합니다.
 
     for (var key in keys) {
       var value = json['menuCategories'][key];
       if (value is! int) {
-        categoriesMap[key] = value; 
+        categoriesMap[key] = value;
       }
     }
 
@@ -62,7 +63,7 @@ class StoreData {
       lastOrderTime: json['lastOrderTime'] ?? '22:30:00',
       startBreakTime: json['startBreakTime'] ?? '21:00:00',
       endBreakTime: json['endBreakTime'] ?? '21:10:00',
-      menuCategories: categoriesMap, 
+      menuCategories: categoriesMap,
       menuInfo: menuList,
     );
   }

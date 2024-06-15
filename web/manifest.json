@@ -1,6 +1,6 @@
 {
-    "name": "orre_manager",
-    "short_name": "orre_manager",
+    "name": "gaorre",
+    "short_name": "gaorre",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,7 +1,7 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart';
-import 'package:orre_manager/provider/Network/stompClientStateNotifier.dart';
-import 'package:orre_manager/provider/errorStateNotifier.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:gaorre/provider/Network/connectivityStateNotifier.dart';
+// import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
+// import 'package:gaorre/provider/errorStateNotifier.dart';
 
 // final websocketRefreshServiceProvider = Provider<WebsocketRefreshService>((ref) {
 //   return WebsocketRefreshService(ref);

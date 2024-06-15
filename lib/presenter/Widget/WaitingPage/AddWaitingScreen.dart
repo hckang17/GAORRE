@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gaorre/presenter/Widget/alertDialog.dart';
+import 'package:gaorre/provider/Data/loginDataProvider.dart';
+import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 
 class WaitingAddingScreen extends ConsumerStatefulWidget {
   @override
@@ -32,17 +32,23 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
       // 예: ref.read(yourProvider.notifier).someAction();
       int waitingCount = int.parse(_personCountController.text);
       bool result = await ref.read(waitingProvider.notifier).addWaitingTeam(
-        ref.context, ref.read(loginProvider.notifier).getLoginData()!,
-        _phoneController.text, waitingCount
-      );
-      if(result){
-        await showAlertDialog(context, "수동 웨이팅 추가", "추가 요청을 보냈습니다! 반영까지 몇초가량 소요될 수 있습니다.", null);
+          ref.context,
+          ref.read(loginProvider.notifier).getLoginData()!,
+          _phoneController.text,
+          waitingCount);
+      if (result) {
+        await showAlertDialog(
+            context, "수동 웨이팅 추가", "추가 요청을 보냈습니다! 반영까지 몇초가량 소요될 수 있습니다.", null);
         Navigator.pop(context);
-      }else{
-        await showAlertDialog(context, "수동 웨이팅 추가", "수동 추가 실패했습니다. 동일한 휴대폰번호의 고객이 이미 웨이팅중이거나, 서버 문제일 수 있습니다. 본 오류가 반복되면 관리자에게 문의하세요.", null);
+      } else {
+        await showAlertDialog(
+            context,
+            "수동 웨이팅 추가",
+            "수동 추가 실패했습니다. 동일한 휴대폰번호의 고객이 이미 웨이팅중이거나, 서버 문제일 수 있습니다. 본 오류가 반복되면 관리자에게 문의하세요.",
+            null);
       }
 
-      // 여기에다가 이제~ 웨이팅 수동 등록 코드 작성하기. 
+      // 여기에다가 이제~ 웨이팅 수동 등록 코드 작성하기.
 
       return;
     }
@@ -54,13 +60,13 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Image.asset(
-            "assets/image/waveform/wave_shadow.png",
+          SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave_shadow.svg",
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.cover,
           ),
-          Image.asset(
-            "assets/image/waveform/wave.png",
+          SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave.svg",
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.cover,
           ),
@@ -71,7 +77,8 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.7, // 전화번호 입력창 크기 조정
+                    width: MediaQuery.of(context).size.width *
+                        0.7, // 전화번호 입력창 크기 조정
                     child: TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
@@ -96,7 +103,9 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
                         LengthLimitingTextInputFormatter(11),
                       ],
                       validator: (value) {
-                        if (value == null || value.isEmpty || value.length != 11) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            value.length != 11) {
                           return '정확히 11자리 전화번호를 입력해주세요.';
                         }
                         return null;
@@ -105,7 +114,8 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
                   ),
                   SizedBox(height: 20),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.7, // 인원 수 입력창 크기 조정
+                    width: MediaQuery.of(context).size.width *
+                        0.7, // 인원 수 입력창 크기 조정
                     child: TextFormField(
                       controller: _personCountController,
                       keyboardType: TextInputType.number,
@@ -123,7 +133,8 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
                           fontSize: 20,
                           color: Color(0xFFD9D9D9),
                         ),
-                        prefixIcon: Icon(Icons.people, color: Color(0xFF77AAD8)),
+                        prefixIcon:
+                            Icon(Icons.people, color: Color(0xFF77AAD8)),
                       ),
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
@@ -140,7 +151,9 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () async {_submitForm();},
+                    onPressed: () async {
+                      _submitForm();
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF72AAD8),
                       shape: RoundedRectangleBorder(
@@ -155,6 +168,26 @@ class _WaitingAddingScreenState extends ConsumerState<WaitingAddingScreen> {
                         fontFamily: 'Dovemayo_gothic',
                         fontSize: 24,
                         color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      minimumSize:
+                          Size(MediaQuery.of(context).size.width * 0.7, 60),
+                    ),
+                    child: Text(
+                      "닫기",
+                      style: TextStyle(
+                        fontFamily: 'Dovemayo_gothic',
+                        fontSize: 24,
+                        color: Colors.white,
                       ),
                     ),
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'LoginScreen.dart';
 
 void main() {
@@ -22,13 +23,13 @@ class StartScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Image.asset(
-            "assets/image/waveform/wave_shadow.png",
+          SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave_shadow.svg",
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.cover,
           ),
-          Image.asset(
-            "assets/image/waveform/wave.png",
+          SvgPicture.asset(
+            "assets/image/waveform/gaorre_wave.svg",
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.cover,
           ),
@@ -51,13 +52,12 @@ class StartScreen extends StatelessWidget {
                   child: CircleAvatar(
                     radius: MediaQuery.of(context).size.width * 0.25,
                     backgroundColor: Color(0xFFE6F4FE),
-                    backgroundImage:
-                        AssetImage("assets/image/logo/gaorre.png"),
+                    backgroundImage: AssetImage("assets/image/logo/gaorre.png"),
                   ),
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "원격 줄서기 원격 주문 서비스",
+                  "원격 웨이팅 접수 서비스(점주)",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'Dovemayo_gothic',

@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive/hive.dart';
-import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-// import 'package:orre_manager/Coding_references/login.dart';
-import 'package:orre_manager/services/HIVE_service.dart';
-import 'package:orre_manager/services/HTTP_service.dart';
+import 'package:gaorre/provider/Data/UserLogProvider.dart';
+import 'package:gaorre/provider/Data/waitingDataProvider.dart';
+import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
+import 'package:gaorre/presenter/Widget/AlertDialog.dart';
+import 'package:gaorre/services/HIVE_service.dart';
+import 'package:gaorre/services/HTTP_service.dart';
 import '../../Model/LoginDataModel.dart';
 
 // LoginInfo 객체를 관리하는 프로바이더를 정의합니다.
@@ -18,17 +19,16 @@ final loginProvider =
 
 // StateNotifier를 확장하여 LoginInfo 객체를 관리하는 클래스를 정의합니다.
 class LoginDataNotifier extends StateNotifier<LoginData?> {
-
   LoginDataNotifier(LoginData? initialState) : super(initialState);
 
   void saveLoginData() async {
     // _storage.write(key: 'userID', value: adminPhoneNumber);
     try {
       LoginData? currentState = state;
-      if(currentState != null){
+      if (currentState != null) {
         await HiveService.saveData('loginData', currentState.toJson());
         print('[saveLoginData] 성공! [loginProvider]');
-      }else{
+      } else {
         print('[saveLoginData] null값은 저장하지 않습니다. [loginProvider]');
         return;
       }
@@ -37,32 +37,67 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     }
   }
 
-  void logout() async {
+  void logout(WidgetRef ref) async {
     print('로그아웃 요청 [loginProvider]');
-    HiveService.clearAllData().then(
-      (value) => {
-        if(value) {
-          state = null
+    HiveService.deleteData('phoneNumber');
+    HiveService.deleteData('password');
+    ref.read(waitingProvider.notifier).unSubscribe(0);
+    ref.read(waitingProvider.notifier).resetState();
+    ref.read(userLogProvider.notifier).unSubscribe(1);
+    ref.read(userLogProvider.notifier).resetState();
+    ref.read(stompClientStateNotifierProvider.notifier).client = null;
+    state = null;
+  }
+
+  Future<bool> resetPassword(WidgetRef ref, String adminPhoneNumber,
+      String newPassword, String authCode) async {
+    final jsonBody = json.encode({
+      "adminPhoneNumber": adminPhoneNumber,
+      "verificationCode": authCode,
+      "newAdminPassword": newPassword,
+    });
+    try {
+      final response =
+          await HttpsService.postRequest('/StoreAdmin/login/reset', jsonBody);
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(utf8.decode(response.bodyBytes));
+        if (responseBody['status'] == '200') {
+          print("비밀번호 변경 성공!");
+          await HiveService.saveStringData('password', newPassword);
+          await HiveService.saveStringData('phoneNumber', adminPhoneNumber);
+          // await showAlertDialog(ref.context, "비밀번호 변경", "비밀번호 변경을 성공하였습니다.", null);
+          return true;
+        } else {
+          print('비밀번호 변경 실패...');
+          throw Exception('${responseBody['status']}');
         }
+      } else {
+        print('resetPassword 오류 ${response.statusCode}');
+        throw Exception('HTTP${response.statusCode}');
       }
-    );
+    } catch (error) {
+      print('예기치 못한 에러 발생 [loginProvider - resetPassword]');
+      await showAlertDialog(
+          ref.context, "비밀번호 변경", "비밀번호 변경 실패\n에러코드:${error}", null);
+      return false;
+    }
   }
 
   Future<bool> loadLoginData() async {
     String? loginDataRaw = await HiveService.retrieveData('loginData');
-    if(loginDataRaw == null){
+    if (loginDataRaw == null) {
       updateState(null);
       return false;
     } else {
       Map<String, dynamic> loginDataJson = jsonDecode(loginDataRaw);
       LoginData newloginData = LoginData.fromJson(loginDataJson);
       updateState(newloginData);
-      
+
       return true;
     }
   }
 
-  void updateState(LoginData? newLoginData){
+  void updateState(LoginData? newLoginData) {
     state = newLoginData;
     saveLoginData();
   }
@@ -75,47 +110,49 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
     print('[자동 로그인 요청...] [loginProvider]');
     String? adminPhoneNumber = await HiveService.retrieveData('phoneNumber');
     String? password = await HiveService.retrieveData('password');
-    if(adminPhoneNumber != null && password != null){
-      await requestLoginData(adminPhoneNumber, password).then((value) => {
-        print('자동 로그인 성공!! [loginProvider]')
-      });
-      return true;
-    }else{
+    if (adminPhoneNumber != null && password != null) {
+      if (true == await requestLoginData(adminPhoneNumber, password)) {
+        print('자동 로그인 성공!! [loginProvider]');
+        return true;
+      } else {
+        print('자동 로그인에 실패했습니다.');
+        return false;
+      }
+    } else {
       return false;
     }
-    // if(true == await loadLoginData()){
-    //   // 저장되어있는 로그인데이터가 존재할 때
-    //   print('자동 로그인 데이터가 존재합니다! [loginProvider]');
-    //   return true;
-    // }else{
-    //   print('자동 로그인을 실패하였습니다. [loginProvider]');
-    //   return false;
-    // }
   }
 
-  Future<bool> requestLoginData(String? adminPhoneNumber, String? password) async {
+  Future<bool> requestLoginData(
+      String? adminPhoneNumber, String? password) async {
     print('[로그인 요청...] [loginProvider]');
-    if(adminPhoneNumber == null || password == null){
-      print('아이디 혹은 비밀번호가 공백입니다. 자동로그인을 실패했습니다. 로그인 화면으로 이동합니다. [loginProvider]');
+    if (adminPhoneNumber == null || password == null) {
+      print(
+          '아이디 혹은 비밀번호가 공백입니다. 자동로그인을 실패했습니다. 로그인 화면으로 이동합니다. [loginProvider]');
       return false;
     }
+    String? token = await FirebaseMessaging.instance.getToken();
+    print(
+        "FCMtoken : ${token ?? 'token NULL!'} [loginProvider - requestLoginData]");
     try {
       final jsonBody = json.encode({
         "adminPhoneNumber": adminPhoneNumber,
         "adminPassword": password,
+        "adminFcmToken": token,
       });
-      final response = await HttpsService.postRequest('/StoreAdmin/login', jsonBody);
-      if(response.statusCode == 200){
+      final response =
+          await HttpsService.postRequest('/StoreAdmin/login', jsonBody);
+      if (response.statusCode == 200) {
         final responseBody = json.decode(utf8.decode(response.bodyBytes));
-        if(responseBody['status'] == "success"){
+        if (responseBody['status'] == "200") {
           print('로그인 성공 [loginProvider]');
           print(responseBody.toString());
-            // 자동로그인을 위한 데이터 저장
-          await HiveService.saveStringData('phoneNumber', adminPhoneNumber).then((value) => {
-            HiveService.saveStringData('password', password).then((value) => {
-              print('[자동로그인을 위한 데이터 저장 성공]')
-            })
-          });
+          // 자동로그인을 위한 데이터 저장
+          await HiveService.saveStringData('phoneNumber', adminPhoneNumber)
+              .then((value) => {
+                    HiveService.saveStringData('password', password)
+                        .then((value) => {print('[자동로그인을 위한 데이터 저장 성공]')})
+                  });
           LoginData? loginResponse = LoginData.fromJson(responseBody);
           updateState(loginResponse);
           return true;
@@ -128,15 +165,13 @@ class LoginDataNotifier extends StateNotifier<LoginData?> {
         print(response.body);
         return false;
       }
-    } catch(error) {
+    } catch (error) {
       print('에러 발생 $error [loginProvider]');
       return false;
     }
   }
-
-  
-
 }
+
 // Legacy
 class LoginProviderLegacy {
   // StompClient 인스턴스를 설정하는 메소드
@@ -144,7 +179,6 @@ class LoginProviderLegacy {
   //   print("<LoginProvider> 스텀프 연결 설정");
   //   _client = client; // 내부 변수에 StompClient 인스턴스 저장
   // }
-
 
   //   void subscribeToLoginData(BuildContext context, String adminPhoneNumber) {
   //   if (nowSubscribe != null) {

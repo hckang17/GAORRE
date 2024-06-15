@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-import 'package:orre_manager/provider/Network/connectivityStateNotifier.dart';
-import 'package:orre_manager/provider/Network/stompClientStateNotifier.dart';
-import 'package:orre_manager/widget/button/text_button_widget.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:gaorre/provider/Network/connectivityStateNotifier.dart';
+import 'package:gaorre/provider/Network/stompClientStateNotifier.dart';
+import 'package:gaorre/widget/button/text_button_widget.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 
 class NetworkErrorScreen extends ConsumerWidget {
   @override
@@ -17,9 +16,11 @@ class NetworkErrorScreen extends ConsumerWidget {
             TextWidget('네트워크 정보를 불러오는데 실패했습니다.'),
             TextButtonWidget(
               onPressed: () {
-                if(ref.read(networkStateProvider)){
+                if (ref.read(networkStateProvider)) {
                   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                    ref.refresh(stompClientStateNotifierProvider.notifier).configureClient();
+                    ref
+                        .refresh(stompClientStateNotifierProvider.notifier)
+                        .configureClient();
                   });
                 }
                 // ref.read(networkStateProvider).listen((event) {

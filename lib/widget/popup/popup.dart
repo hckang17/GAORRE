@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 // 사용법 : 원하는 텍스트만 사용하여 팝업을 생성하시면 됩니다^^
 // showDialog (

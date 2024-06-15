@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:sliver_app_bar_builder/sliver_app_bar_builder.dart';
 
 class AppBarWidget extends ConsumerWidget {
@@ -64,13 +65,13 @@ class AppBarWidget extends ConsumerWidget {
                 blendMode: BlendMode.dstIn,
                 child: Stack(
                   children: [
-                    Image.asset(
-                      "assets/images/waveform/wave_shadow.png",
+                    SvgPicture.asset(
+                      "assets/images/waveform/gaorre_wave_shadow.svg",
                       width: MediaQuery.of(context).size.width,
                       fit: BoxFit.cover,
                     ),
-                    Image.asset(
-                      "assets/images/waveform/wave.png",
+                    SvgPicture.asset(
+                      "assets/images/waveform/gaorre_wave.svg",
                       width: MediaQuery.of(context).size.width,
                       fit: BoxFit.cover,
                     ),

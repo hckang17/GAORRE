@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
-
+import 'package:gaorre/widget/text/text_widget.dart';
 
 class TextInputWidget extends ConsumerWidget {
   final String hintText;
@@ -21,6 +20,7 @@ class TextInputWidget extends ConsumerWidget {
   final int minLength;
   final int? maxLength;
   final bool isRequired;
+  final bool autoFocus;
 
   TextInputWidget({
     required this.hintText,
@@ -39,6 +39,7 @@ class TextInputWidget extends ConsumerWidget {
     this.minLength = 0,
     this.maxLength,
     this.isRequired = false,
+    this.autoFocus = false,
   });
 
   @override
@@ -74,7 +75,7 @@ class TextInputWidget extends ConsumerWidget {
                     (autofillHints?.contains(AutofillHints.password) == true)),
             controller: controller, // TextField에 TextEditingController를 연결
             autofillHints: autofillHints,
-            autofocus: true,
+            autofocus: autoFocus,
             focusNode: focusNode,
             keyboardType: type,
             obscureText: isObscure,
@@ -153,7 +154,7 @@ String? errorTextWidget(
   }
   if (isPassword) {
     if (!RegExp(pattern).hasMatch(text)) {
-      return '영문, 숫자, 특수문자를 포함해주세요.';
+      return '비밀번호를 입력해주세요'; // 원래는 - 영문, 숫자, 특수문자를 포함해주세요.
     }
   }
   return null;

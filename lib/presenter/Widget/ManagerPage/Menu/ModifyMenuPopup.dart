@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/Model/MenuDataModel.dart';
-import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-import 'package:orre_manager/provider/Data/loginDataProvider.dart';
-import 'package:orre_manager/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/Model/MenuDataModel.dart';
+import 'package:gaorre/presenter/Widget/AlertDialog.dart';
+import 'package:gaorre/provider/Data/imageDataProvider.dart';
+import 'package:gaorre/provider/Data/loginDataProvider.dart';
+import 'package:gaorre/provider/Data/storeDataProvider.dart';
+import 'package:gaorre/widget/button/image_edit_widget.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 
 void showModifyMenuModal(BuildContext context, Menu menu) {
   showModalBottomSheet(
@@ -59,24 +62,60 @@ class _ModifyMenuModalState extends ConsumerState<ModifyMenuModal> {
         key: _formKey,
         child: Wrap(
           children: <Widget>[
+            Stack(
+              alignment: Alignment.topLeft,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 8.0),
+                  child: IconButton(
+                    onPressed: () {
+                      ref.read(imageBytesProvider.notifier).resetState();
+                      Navigator.pop(context);
+                    },
+                    icon: Container(
+                      decoration: BoxDecoration(
+                        color: Color(0xFF72AAD8),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Icon(Icons.close, color: Colors.white),
+                      padding: EdgeInsets.all(8),
+                    ),
+                  ),
+                ),
+                if (widget.menu.menuImageURL.isNotEmpty)
+                  if(ref.watch(imageBytesProvider) != null)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: ImageEditButton(menu: widget.menu),
+                    ),
+                  ),
+              ],
+            ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  if (widget.menu.menuImageURL.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Image.network(widget.menu.menuImageURL, width: 100, height: 100, fit: BoxFit.cover),
-                    ),
                   SizedBox(height: 16),
-                  CheckboxListTile(
-                    title: Text("추천메뉴 등록"),
-                    value: isRecommended,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        isRecommended = value ?? false;
-                      });
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextWidget(
+                          "추천메뉴 등록",
+                          textAlign: TextAlign.end,
+                        ),
+                      ),
+                      Checkbox(
+                        value: isRecommended,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            isRecommended = value ?? false;
+                          });
+                        },
+                        activeColor: Color(0xFF72AAD8),
+                        checkColor: Colors.white,
+                      ),
+                    ],
                   ),
                   SizedBox(height: 16),
                   TextFormField(
@@ -130,32 +169,73 @@ class _ModifyMenuModalState extends ConsumerState<ModifyMenuModal> {
                         child: ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
-                              print('메뉴 수정: ${nameController.text}, ${descriptionController.text}, ${priceController.text}, 카테고리: ${originalMenuCode[0]}, 코드: $originalMenuCode');
-                              if(true == await ref.read(storeDataProvider.notifier).modifyMenu(
-                                context, ref.read(loginProvider.notifier).getLoginData()!,
-                                widget.menu.menuName
-                                ,nameController.text, originalMenuCode,
-                                int.parse(priceController.text),
-                                descriptionController.text, isRecommended ? 1 : 0) //여기에 recommend추가
-                              ){ Navigator.pop(context);}
+                              print(
+                                  '메뉴 수정: ${nameController.text}, ${descriptionController.text}, ${priceController.text}, 카테고리: ${originalMenuCode[0]}, 코드: $originalMenuCode');
+                              Uint8List? imageBytes =
+                                  ref.read(imageBytesProvider.notifier).getState();
+                              if (imageBytes == null) {
+                                print('입력된 이미지가 없어 기본 이미지로 대체합니다.');
+                                ByteData bytes = await rootBundle
+                                    .load('lib/Assets/Image/Duck_with_bell.png');
+                                imageBytes = bytes.buffer.asUint8List();
+                              }
+                              
+                              if (true ==
+                                      await ref
+                                          .read(storeDataProvider.notifier)
+                                          .modifyMenu(
+                                              context,
+                                              imageBytes,
+                                              ref
+                                                  .read(loginProvider.notifier)
+                                                  .getLoginData()!,
+                                              widget.menu.menuName,
+                                              nameController.text,
+                                              originalMenuCode,
+                                              int.parse(priceController.text),
+                                              descriptionController.text,
+                                              isRecommended
+                                                  ? 1
+                                                  : 0) //여기에 recommend추가
+                                  ) {
+                                Navigator.pop(context);
+                              }
                             }
                           },
-                          child: Text('메뉴 수정하기'),
+                          child: TextWidget(
+                            '메뉴 수정하기',
+                            fontSize: 16,
+                            color: Color(0xFF72AAD8),
+                          ),
                         ),
                       ),
                       SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () async {
-                            if(await showConfirmDialog(ref.context, "메뉴 삭제", "정말로 ${nameController.text}메뉴를 삭제하시겠습니까?")){
-                              if (await ref.read(storeDataProvider.notifier).removeMenu(context, originalMenuCode, nameController.text, ref.read(loginProvider.notifier).getLoginData()) == true){
+                            if (await showConfirmDialog(ref.context, "메뉴 삭제",
+                                "정말로 \"${nameController.text}\" 메뉴를 삭제하시겠습니까?")) {
+                              if (await ref
+                                      .read(storeDataProvider.notifier)
+                                      .removeMenu(
+                                          context,
+                                          originalMenuCode,
+                                          nameController.text,
+                                          ref
+                                              .read(loginProvider.notifier)
+                                              .getLoginData()) ==
+                                  true) {
                                 Navigator.pop(context);
                               }
                             }
                           },
-                          child: Text('메뉴 삭제하기'),
+                          child: TextWidget(
+                            '메뉴 삭제하기',
+                            fontSize: 16,
+                            color: Colors.red,
+                          ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
+                            backgroundColor: Color(0xFFDFDFDF),
                           ),
                         ),
                       ),

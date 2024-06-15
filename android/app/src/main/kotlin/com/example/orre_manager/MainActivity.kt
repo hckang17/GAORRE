@@ -1,4 +1,4 @@
-package com.example.orre_manager
+package com.aeioudev.gaorre
 
 import io.flutter.embedding.android.FlutterActivity
 

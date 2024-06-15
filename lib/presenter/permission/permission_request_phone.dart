@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/widget/button/small_button_widget.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:gaorre/widget/button/small_button_widget.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PermissionRequestPhoneScreen extends ConsumerStatefulWidget {
@@ -24,7 +24,7 @@ class _PermissionRequestPhoneScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextWidget("전화 권한이 필요한 이유 안내하는 내용"),
+            TextWidget("웨이팅 고객 호출시에 메세지를 전송하는 기능이 포함되어 있습니다. 권한을 거부하시면 메세지가 전송되지 않아요."),
             SizedBox(height: 16),
             SmallButtonWidget(
               text: "권한 부여하기",

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/widget/text/text_widget.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 
 class BigButtonWidget extends ConsumerWidget {
   final String text;
@@ -14,7 +14,7 @@ class BigButtonWidget extends ConsumerWidget {
     Key? key,
     required this.text,
     required this.onPressed,
-    this.backgroundColor = const Color(0xFFFFB74D),
+    this.backgroundColor = const Color(0xFF72AAD8),
     this.textColor = Colors.black,
     this.minimumSize = const Size(double.infinity, 50),
     this.shape = const RoundedRectangleBorder(

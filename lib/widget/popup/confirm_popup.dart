@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:gaorre/widget/text/text_widget.dart';
 
 // 사용법 : 원하는 텍스트만 사용하여 팝업을 생성하시면 됩니다^^
 // showDialog (
@@ -41,55 +42,34 @@ class CustomConfirmDialog extends StatelessWidget {
             color: Color.fromARGB(255, 83, 107, 118)),
       ),
       actions: <Widget>[
-        Container(
-          width: double.infinity,
-          child: TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.0),
-                color: Color(0xFF72AAD8),
-              ),
-              padding: EdgeInsets.symmetric(vertical: 10),
-              alignment: Alignment.center,
-              child: Text(
-                '확인',
-                style: TextStyle(
-                  fontFamily: 'Dovemayo_gothic',
-                  fontSize: 20,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Container(
-          width: double.infinity,
-          child: TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.0),
-                color: Color.fromARGB(255, 255, 58, 104),
-              ),
-              padding: EdgeInsets.symmetric(vertical: 10),
-              alignment: Alignment.center,
-              child: Text(
-                '취소',
-                style: TextStyle(
-                  fontFamily: 'Dovemayo_gothic',
-                  fontSize: 20,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child : ElevatedButton(
+                onPressed: () async {Navigator.of(context).pop(false);},
+                child: TextWidget(
+                            '취소',
+                            fontSize: 16,
+                            color: Color(0xFF999999),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFDFDFDF),
+                          ),
+                ),),
+                SizedBox(width: 8),
+                Expanded(child : ElevatedButton(
+                onPressed: () async {Navigator.of(context).pop(true);},
+                child: TextWidget(
+                            '확인',
+                            fontSize: 16,
+                             color: Color(0xFF72AAD8),
+                          ),
+                ),),
+          ],
         ),
       ],
     );
   }
 }
+

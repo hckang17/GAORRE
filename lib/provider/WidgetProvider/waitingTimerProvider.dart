@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
+import 'package:gaorre/provider/Data/waitingDataProvider.dart';
 
 class TimerWidget extends ConsumerStatefulWidget {
   final int minutesToAdd;
@@ -23,19 +23,35 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
   @override
   void initState() {
     super.initState();
-    var index = ref.read(waitingProvider.notifier).getWaitingData()!.teamInfoList.indexWhere((team) => team.waitingNumber == widget.waitingNumber);
-    final entryTime = ref.read(waitingProvider.notifier).getWaitingData()!.teamInfoList[index].entryTime!;
+    var index = ref
+        .read(waitingProvider.notifier)
+        .getWaitingData()!
+        .teamInfoList
+        .indexWhere((team) => team.waitingNumber == widget.waitingNumber);
+    final entryTime = ref
+        .read(waitingProvider.notifier)
+        .getWaitingData()!
+        .teamInfoList[index]
+        .entryTime!;
     _remainingTime = entryTime.difference(DateTime.now());
     _timerText = formatTime(_remainingTime);
     _imagePath = 'assets/image/timer_images/timer1.png';
-    _startTimer();
+    _startTimer(entryTime);
   }
 
   // MM:SS 형태로 포맷팅하는 함수
   String formatTime(Duration d) {
+    // Duration이 음수일 경우 "OUT" 반환
+    if (d.inSeconds < 0) {
+      return "OUT";
+    }
+
+    // 두 자리 숫자로 포맷팅을 도와주는 내부 함수
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String twoDigitMinutes = twoDigits(d.inMinutes.remainder(60));
     String twoDigitSeconds = twoDigits(d.inSeconds.remainder(60));
+
+    // 포맷팅된 시간 문자열 반환
     return "$twoDigitMinutes:$twoDigitSeconds";
   }
 
@@ -45,12 +61,12 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
     super.dispose();
   }
 
-  void _startTimer() {
+  void _startTimer(DateTime entryTime) {
     const oneSecond = Duration(seconds: 1);
     _timer = Timer.periodic(oneSecond, (timer) {
       if (_remainingTime.inSeconds > 0) {
         setState(() {
-          _remainingTime -= oneSecond;
+          _remainingTime = entryTime.difference(DateTime.now());
           _timerText = formatTime(_remainingTime);
           _updateImagePath();
         });
@@ -103,111 +119,3 @@ class _TimerWidgetState extends ConsumerState<TimerWidget> {
     );
   }
 }
-
-
-// import 'dart:async';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// class TimerWidget extends StatefulWidget {
-//   final int minutesToAdd;
-//   final WidgetRef ref;
-//   final int waitingNumber;
-
-//   TimerWidget({required this.minutesToAdd, required this.waitingNumber, required this.ref});
-
-//   @override
-//   _TimerWidgetState createState() => _TimerWidgetState();
-// }
-
-// class _TimerWidgetState extends State<TimerWidget> {
-//   late Timer _timer;
-//   late Duration _remainingTime;
-//   late String _timerText;
-//   String? _imagePath;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _remainingTime = Duration(minutes: widget.minutesToAdd);
-//     _timerText = '00:00';
-//     _imagePath = 'assets/image/timer_images/timer1.png';
-//     _startTimer();
-//   }
-
-//   @override
-//   void dispose() {
-//     _timer.cancel();
-//     super.dispose();
-//   }
-
-//   void _startTimer() {
-//     const oneSecond = Duration(seconds: 1);
-//     _timer = Timer.periodic(oneSecond, (timer) {
-//       if (_remainingTime.inSeconds > 0) {
-//         setState(() {
-//           _remainingTime -= oneSecond;
-//           _updateTimerText();
-//           _updateImagePath();
-//         });
-//       } else {
-//         _timer.cancel();
-//         setState(() {
-//           _timerText = '00:00';
-//           _imagePath = 'assets/image/timer_images/timer4.png';
-//         });
-//       }
-//     });
-//   }
-
-//   void _updateTimerText() {
-//     final int minutes = _remainingTime.inMinutes;
-//     final int seconds = _remainingTime.inSeconds % 60;
-//     setState(() {
-//       _timerText = '$minutes:$seconds';
-//     });
-//   }
-
-//   void _updateImagePath() {
-//     final int quarterTime = widget.minutesToAdd ~/ 4;
-//     final int halfTime = widget.minutesToAdd ~/ 2;
-//     final int threeQuarterTime = widget.minutesToAdd * 3 ~/ 4;
-
-//     if (_remainingTime.inMinutes <= quarterTime) {
-//       _imagePath = 'assets/image/timer_images/timer4.png';
-//       print("timer image update!");
-//     } else if (_remainingTime.inMinutes <= halfTime) {
-//       _imagePath = 'assets/image/timer_images/timer3.png';
-//       print("timer image update!");
-//     } else if (_remainingTime.inMinutes <= threeQuarterTime) {
-//       _imagePath = 'assets/image/timer_images/timer2.png';
-//       print("timer image update!");
-//     } else {
-//       _imagePath = 'assets/image/timer_images/timer1.png';
-//       print("timer image update!");
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       mainAxisAlignment: MainAxisAlignment.center,
-//       children: [
-//         if (_imagePath != null)
-//           Image.asset(
-//             _imagePath!,
-//             width: 30,
-//             height: 30,
-//           ),
-//         SizedBox(height: 10),
-//         Text(
-//           _timerText,
-//           style: TextStyle(
-//             fontFamily: 'Dovemayo_gothic',
-//             fontSize: 20,
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }

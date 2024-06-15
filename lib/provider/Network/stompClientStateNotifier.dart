@@ -1,16 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:orre_manager/presenter/Widget/AlertDialog.dart';
-import 'package:orre_manager/provider/Data/tableDataProvider.dart';
-import 'package:orre_manager/provider/Data/waitingDataProvider.dart';
-import 'package:orre_manager/provider/errorStateNotifier.dart';
-import 'package:orre_manager/services/websocket_services.dart';
+import 'package:gaorre/provider/Data/UserLogProvider.dart';
+import 'package:gaorre/provider/Data/waitingDataProvider.dart';
+import 'package:gaorre/provider/errorStateNotifier.dart';
+import 'package:gaorre/services/websocket_services.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
-
 
 final stompErrorStack = StateProvider<int>((ref) => 0);
 
@@ -57,12 +54,14 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
           onWebSocketError: (dynamic error) {
             print("websocket error: $error [StompClientStateNotifier]");
             ref.read(waitingProvider.notifier).setClient(null);
+            ref.read(userLogProvider.notifier).setClient(null);
             state = null;
             streamController.add(reconnectionCallback(StompStatus.ERROR));
           },
           onDisconnect: (_) {
             print('disconnected [StompClientStateNotifier]');
             ref.read(waitingProvider.notifier).setClient(null);
+            ref.read(userLogProvider.notifier).setClient(null);
             state = null;
             streamController.add(reconnectionCallback(StompStatus.ERROR));
           },
@@ -75,13 +74,15 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
             ref.read(stompState.notifier).state = StompStatus.DISCONNECTED;
             print("websocket done [StompClientStateNotifier]");
             ref.read(waitingProvider.notifier).setClient(null);
+            ref.read(userLogProvider.notifier).setClient(null);
             // ref.read(tableProvider.notifier).setClient(null); 아직은 안해도 됨.
             // 연결 끊김 시 재시도 로직
             // 여기에 만약 network off 로 인한 웹소켓끊어짐이라면? 대응해야할거같은데.
             streamController.add(reconnectionCallback(StompStatus.ERROR));
           },
           // heartbeatOutgoing: const Duration(seconds: 10), // 클라이언트에서 서버로 20초마다 heartbeat 보냄
-          heartbeatIncoming: const Duration(seconds: 10), // 서버에서 클라이언트로 20초마다 heartbeat 수신 기대
+          heartbeatIncoming:
+              const Duration(seconds: 10), // 서버에서 클라이언트로 20초마다 heartbeat 수신 기대
         ),
       );
 
@@ -99,8 +100,8 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
     // 필요한 초기화 수행
     // 예를 들어, 여기서 다시 구독 로직을 실행
     ref.read(waitingProvider.notifier).setClient(client);
+    ref.read(userLogProvider.notifier).setClient(client);
     // ref.read(tableProvider.notifier).setClient(client);
-
   }
 
   reconnectionCallback(StompStatus status) async {
@@ -111,7 +112,10 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
       return;
     }
 
-    if (ref.read(errorStateNotifierProvider.notifier).state.contains(Error.network)) {
+    if (ref
+        .read(errorStateNotifierProvider.notifier)
+        .state
+        .contains(Error.network)) {
       return;
     }
 
@@ -129,7 +133,6 @@ class StompClientStateNotifier extends StateNotifier<StompClient?> {
     client!.deactivate();
   }
 }
-
 
 class StompLegacy {
 // enum StompStatus {
@@ -255,8 +258,6 @@ class StompLegacy {
 //   }
 // }
 
-
-
 // class StompClientStateNotifier extends StateNotifier<StompClient?> {
 //   final Ref ref;
 //   late StompClient client;
@@ -360,4 +361,3 @@ class StompLegacy {
 //   }
 // }
 }
-
